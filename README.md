@@ -72,6 +72,20 @@ Wenn ein Termin verfügbar ist, wird dieser mit den eingetragenen Daten gebucht.
 
 8) Buchen des Impftermins
 
+## Termin gebucht, was nun?
+
+Nachdem dein Termin erfolgreich gebucht wurde, erhälst du eine Mail, in der du zunächst deine 
+Mail-Adresse bestätigen musst. Nachdem du die Mail bestätigt hast, erhälst du zu jedem Termin 
+eine Buchungsbestätigung. That's it!
+
+## Das könnte noch kommen
+
+Es gibt noch ein paar Features, die cool wären. Die Ideen werden hier mal gesammelt und
+werden (von uns oder euch - feel free!) irgendwann hinzukommen:
+
+- [ ] Datum eingrenzen bei der Terminwahl
+- [ ] ...
+
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
 
@@ -79,6 +93,7 @@ Wenn ein Termin verfügbar ist, wird dieser mit den eingetragenen Daten gebucht.
 weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 
 * Erstellung des Impf-Codes
+* Filterung der verfügbaren Termine nach Impfstoff
 * Möglichkeit zum Eintragen mehrerer Impf-Codes und Kontaktdaten
 * Headless Selenium Support
 * *... ein paar andere Sachen, wir wollen ja keine schlafenden Hunde wecken ;-)* 
