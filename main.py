@@ -39,8 +39,9 @@ class ImpfterminService():
 
         # Verfügbare Impfstoffe laden
         self.verfuegbare_impfstoffe = {}
-        if not self.impfstoffe_laden():
-            quit()
+        while not self.impfstoffe_laden():
+            self.log.warn("Erneuter Versuch in 60 Sekunden")
+            time.sleep(60)
 
         # Sonstige
         self.terminpaar = None
@@ -80,7 +81,7 @@ class ImpfterminService():
             self.log.error("Impfzentren können nicht geladen werden")
         return False
 
-    @retry_on_failure()
+    @retry_on_failure(1)
     def impfstoffe_laden(self):
         """Laden der verfügbaren Impstoff-Qualifikationen.
         In der Regel gibt es 3 Qualifikationen, die je nach Altersgruppe verteilt werden.
@@ -88,7 +89,6 @@ class ImpfterminService():
         """
         path = "assets/static/its/vaccination-list.json"
         res = self.s.get(self.domain + path)
-
         if res.ok:
             res_json = res.json()
             self.log.info(f"{len(res_json)} Impfstoffe am Impfzentrum verfügbar")
@@ -259,7 +259,7 @@ class ImpfterminService():
             termin_gefunden, status_code = its.terminsuche()
             if status_code >= 400:
                 its.cookies_erneuern()
-            else:
+            elif not termin_gefunden:
                 time.sleep(check_delay)
 
         its.termin_buchen()
