@@ -6,7 +6,11 @@ from base64 import b64encode
 from datetime import datetime
 
 import requests
+from selenium.webdriver import ActionChains
 from selenium.webdriver import Chrome
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 from tools.clog import CLogger
 from tools.utils import retry_on_failure
@@ -15,6 +19,8 @@ from tools.utils import retry_on_failure
 class ImpfterminService():
     def __init__(self, code: str, plz: str, kontakt: dict):
         self.code = str(code).upper()
+        self.splitted_code = self.code.split("-")
+
         self.plz = str(plz)
         self.kontakt = kontakt
         self.authorization = b64encode(bytes(f":{code}", encoding='utf-8')).decode("utf-8")
@@ -87,7 +93,9 @@ class ImpfterminService():
         In der Regel gibt es 3 Qualifikationen, die je nach Altersgruppe verteilt werden.
 
         """
+
         path = "assets/static/its/vaccination-list.json"
+
         res = self.s.get(self.domain + path)
         if res.ok:
             res_json = res.json()
@@ -101,17 +109,15 @@ class ImpfterminService():
                 self.verfuegbare_impfstoffe[qualifikation] = name
                 self.log.info(f"{qualifikation}: {name} --> Altersgruppe: {alter} --> Intervall: {intervall} Tage")
             print(" ")
-
             return True
+
         self.log.error("Keine Impfstoffe im ausgewählten Impfzentrum verfügbar")
         return False
 
+    @retry_on_failure()
     def cookies_erneuern(self):
-        """Erneuern des bm_sz Cookies mit Selenium. Dazu wird die Suche-Seite aufgerufen.
-        Der Cookie muss alle 10 Minuten oder alle 5 Terminsuche-Requests erneuert werden.
+        self.log.info("Browser-Cookies generieren")
 
-        :return: bool
-        """
         # Chromedriver anhand des OS auswählen
         chromedriver = None
         operating_system = platform.system().lower()
@@ -125,22 +131,92 @@ class ImpfterminService():
             else:
                 chromedriver = "./tools/chromedriver/chromedriver-mac-intel"
 
-        path = f"impftermine/suche/{self.code}/{self.plz}"
+        path = "impftermine/service?plz={}".format(self.plz)
         with Chrome(chromedriver) as driver:
             driver.get(self.domain + path)
 
-            # Aus Erfahrung ist die Cookie-Generierung zuverlässiger,
-            # wenn man kurz wartet
-            time.sleep(3)
+            # Klick auf "Auswahl bestätigen" im Cookies-Banner
+            button_xpath = ".//html/body/app-root/div/div/div/div[2]/div[2]/div/div[1]/a"
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(button).click().perform()
 
-            # bm_sz-Cookie extrahieren und abspeichern
-            cookie = driver.get_cookie("bm_sz")
-            if cookie:
-                self.s.cookies.update({c['name']: c['value'] for c in driver.get_cookies()})
-                self.log.info("Cookie generiert: *{}".format(cookie.get("value")[-6:]))
-                return True
-            else:
-                self.log.error("Cookie kann nicht erstellt werden!")
+            # Klick auf "Vermittlungscode bereits vorhanden"
+            button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
+                           "div/div/app-corona-vaccination/div[2]/div/div/label[1]/span"
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(button).click().perform()
+
+            # Auswahl des ersten Code-Input-Feldes
+            input_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
+                          "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
+                          "form[1]/div[1]/label/app-ets-input-code/div/div[1]/label/input"
+            input_field = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, input_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(input_field).click().perform()
+
+            # Code eintragen
+            for key in self.splitted_code[0]:
+                input_field.send_keys(key)
+                time.sleep(.1)
+
+            # Auswahl des zweiten Code-Input-Feldes
+            input_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
+                          "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
+                          "form[1]/div[1]/label/app-ets-input-code/div/div[3]/label/input"
+            input_field = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, input_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(input_field).click().perform()
+
+            # Code eintragen
+            for key in self.splitted_code[1]:
+                input_field.send_keys(key)
+                time.sleep(.1)
+
+            # Auswahl des dritten Code-Input-Feldes
+            input_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
+                          "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
+                          "form[1]/div[1]/label/app-ets-input-code/div/div[5]/label/input"
+            input_field = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, input_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(input_field).click().perform()
+
+            # Code eintragen
+            for key in self.splitted_code[2]:
+                input_field.send_keys(key)
+                time.sleep(.1)
+
+            # Klick auf "Termin suchen"
+            self.log.info("BROWSER - Klick auf 'Termin suchen'")
+            button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
+                           "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
+                           "form[1]/div[2]/button"
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(button).click().perform()
+
+            # Maus-Bewegung hinzufügen (nicht sichtbar)
+            action.move_by_offset(10, 20).perform()
+
+            # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
+            try:
+                cookie = driver.get_cookie("bm_sz")
+                if cookie:
+                    self.s.cookies.clear()
+                    self.s.cookies.update({c['name']: c['value'] for c in driver.get_cookies()})
+                    self.log.info("Browser-Cookie generiert: *{}".format(cookie.get("value")[-6:]))
+                    return True
+                else:
+                    self.log.error("Cookies können nicht erstellt werden!")
+                    return False
+            except:
                 return False
 
     @retry_on_failure()
@@ -150,14 +226,17 @@ class ImpfterminService():
 
         :return: bool
         """
+
         path = f"rest/login?plz={self.plz}"
+
         res = self.s.get(self.domain + path)
         if res.ok:
             # Checken, welche Impfstoffe für das Alter zur Verfügung stehen
             self.qualifikationen = res.json().get("qualifikationen")
             if self.qualifikationen:
-                zugewiesene_impfstoffe = " ".join([self.verfuegbare_impfstoffe.get(q, "N/A")
-                                                   for q in self.qualifikationen])
+                zugewiesene_impfstoffe = " ".join(
+                    [self.verfuegbare_impfstoffe.get(q, "N/A")
+                     for q in self.qualifikationen])
                 self.log.info("Erfolgreich mit Code eingeloggt")
                 self.log.info(f"Qualifizierte Impfstoffe: {zugewiesene_impfstoffe}")
                 print(" ")
@@ -190,6 +269,7 @@ class ImpfterminService():
 
         :return: bool, status-code
         """
+
         path = f"rest/suche/terminpaare?plz={self.plz}"
 
         res = self.s.get(self.domain + path)
@@ -219,6 +299,7 @@ class ImpfterminService():
 
         :return: bool
         """
+
         path = "rest/buchung"
 
         # Daten für Impftermin sammeln
@@ -325,6 +406,6 @@ if __name__ == "__main__":
         print(f"Kontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
         ImpfterminService.run(code=code, plz=plz, kontakt=kontakt, check_delay=60)
     except KeyError:
-        print("Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden."
-              "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe"
+        print("Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
+              "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
               "deine Daten beim Programmstart erneut ein.")
