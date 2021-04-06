@@ -193,7 +193,6 @@ class ImpfterminService():
                 time.sleep(.1)
 
             # Klick auf "Termin suchen"
-            self.log.info("BROWSER - Klick auf 'Termin suchen'")
             button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
                            "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
                            "form[1]/div[2]/button"
