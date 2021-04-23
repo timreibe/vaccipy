@@ -269,13 +269,13 @@ class ImpfterminService():
         :return: bool, status-code
         """
 
-        path = f"rest/suche/terminpaare?plz={self.plz}"
+        path = f"rest/suche/impfterminsuche?plz={self.plz}"
 
         res = self.s.get(self.domain + path)
         if res.ok:
             res_json = res.json()
 
-            terminpaare = res_json.get("terminpaare")
+            terminpaare = res_json.get("termine")
             if terminpaare:
                 # Auswahl des erstbesten Terminpaares
                 self.terminpaar = terminpaare[0]
