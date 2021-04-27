@@ -61,7 +61,7 @@ class ImpfterminService():
         """
         url = "https://www.impfterminservice.de/assets/static/impfzentren.json"
 
-        res = self.s.get(url)
+        res = self.s.get(url, timeout=15)
         if res.ok:
             # Antwort-JSON umformattieren für einfachere Handhabung
             formattierte_impfzentren = {}
@@ -96,7 +96,7 @@ class ImpfterminService():
 
         path = "assets/static/its/vaccination-list.json"
 
-        res = self.s.get(self.domain + path)
+        res = self.s.get(self.domain + path, timeout=15)
         if res.ok:
             res_json = res.json()
             self.log.info(f"{len(res_json)} Impfstoffe am Impfzentrum verfügbar")
@@ -228,7 +228,7 @@ class ImpfterminService():
 
         path = f"rest/login?plz={self.plz}"
 
-        res = self.s.get(self.domain + path)
+        res = self.s.get(self.domain + path, timeout=15)
         if res.ok:
             # Checken, welche Impfstoffe für das Alter zur Verfügung stehen
             self.qualifikationen = res.json().get("qualifikationen")
@@ -271,10 +271,9 @@ class ImpfterminService():
 
         path = f"rest/suche/impfterminsuche?plz={self.plz}"
 
-        res = self.s.get(self.domain + path)
+        res = self.s.get(self.domain + path, timeout=15)
         if res.ok:
             res_json = res.json()
-
             terminpaare = res_json.get("termine")
             if terminpaare:
                 # Auswahl des erstbesten Terminpaares
@@ -309,7 +308,7 @@ class ImpfterminService():
             "contact": self.kontakt
         }
 
-        res = self.s.post(self.domain + path, json=data)
+        res = self.s.post(self.domain + path, json=data, timeout=15)
         if res.status_code == 201:
             self.log.success("Termin erfolgreich gebucht!")
             return True
@@ -403,7 +402,7 @@ if __name__ == "__main__":
         plz = kontaktdaten["plz"]
         kontakt = kontaktdaten["kontakt"]
         print(f"Kontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
-        ImpfterminService.run(code=code, plz=plz, kontakt=kontakt, check_delay=60)
+        ImpfterminService.run(code=code, plz=plz, kontakt=kontakt, check_delay=30)
     except KeyError:
         print("Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
               "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
