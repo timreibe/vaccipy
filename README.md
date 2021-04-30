@@ -8,6 +8,20 @@ Unsere Großeltern möchten sich gerne impfen lassen, aber telefonsich unter 116
 ist auch noch immer irgendwie Neuland. Jetzt kommt es zum Konflikt: einerseits möchte man natürlich gerne bei der Terminbuchung helfen,
 andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Computer zu hocken und die Seite zu aktualisieren...
 
+## Distributions
+
+
+For a better user experience we are creating different distributions. (See `dist/` folder):  
+(The subfolders of `dist/` are standalone and can be shipped.)  
+
+To execute just select your distribution and run the following file:  
+Available distributions:
+- [x] Windows ([dist/windows-terminservice/windows-terminservice.exe](dist/windows-terminservice/windows-terminservice.exe))
+- [ ] Mac ( ) 
+- [ ] Linux ( ) 
+
+For more info on how to ship the files see [Shipping](#Shipping)
+
 ## Requirements
 
 * Python 3 (getestet mit Python 3.9)
@@ -25,6 +39,11 @@ ausgeführt werden:
 ```shell
 python3 main.py
 ```
+
+
+
+
+
 
 ## Wie funktioniert vaccipy?
 
@@ -84,7 +103,31 @@ Es gibt noch ein paar Features, die cool wären. Die Ideen werden hier mal gesam
 werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 
 - [ ] Datum eingrenzen bei der Terminwahl
+- [ ] Linux build
+- [ ] Mac Build
 - [ ] ...
+
+## Shipping
+
+
+For creating distributions we use [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html).  
+Steps to create destribution: 
+- Create .spec file for main.py
+- Build dist based on this .spec file:
+
+```shell
+pyinstaller --clean specs/SPECNAME.spec
+```
+
+
+### Windows
+
+Create .spec file:
+```shell
+pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\"  --add-data "..\log\impfterminservice.log;log\" --name windows-terminservice
+```
+After executing pyinstaller your can find new dist in the dist folder. 
+
 
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
@@ -98,5 +141,10 @@ weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 * Headless Selenium Support
 * *... ein paar andere Sachen, wir wollen ja keine schlafenden Hunde wecken ;-)* 
 
+
+# Resources
+- [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
+
 # Seid vernünftig und missbraucht das Tool nicht.
 save da world. my final message. goodbye.
+

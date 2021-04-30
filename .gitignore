@@ -1,3 +1,7 @@
 .idea/
 .vscode/settings.json
 __pycache__/
+
+
+# data
+kontaktdaten.json 
