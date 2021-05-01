@@ -16,7 +16,7 @@ andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Co
 Die notwendigen Python-Module können mittels pip installiert werden.
 
 ```shell    
-pip3 install requirements.txt
+pip3 install -r requirements.txt
 ```
 
 `vaccipy` kann über die Kommandozeile oder in einer beliebigen python-Entwicklungsumgebung
