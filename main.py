@@ -160,7 +160,7 @@ class ImpfterminService():
             action = ActionChains(driver)
             action.move_to_element(input_field).click().perform()
 
-            # Code eintragen    
+            # Code eintragen
             input_field.send_keys(self.code)
             time.sleep(.1)
 
@@ -285,7 +285,15 @@ class ImpfterminService():
             self.log.success("Termin erfolgreich gebucht!")
             return True
         else:
-            self.log.error("Termin konnte nicht gebucht werden")
+            data = res.json()
+            try:
+                error = data['errors']['status']
+            except KeyError:
+                error = ''
+            if 'nicht mehr verfügbar' in error:
+                self.log.error(f"Diesen Termin gibts nicht mehr: {error}")
+            else:
+                self.log.error(f"Termin konnte nicht gebucht werden: {data}")
             return False
 
     @staticmethod
@@ -305,15 +313,18 @@ class ImpfterminService():
             its.cookies_erneuern()
             time.sleep(3)
 
-        termin_gefunden = False
-        while not termin_gefunden:
-            termin_gefunden, status_code = its.terminsuche()
-            if status_code >= 400:
-                its.cookies_erneuern()
-            elif not termin_gefunden:
-                time.sleep(check_delay)
+        while True:
+            termin_gefunden = False
+            while not termin_gefunden:
+                termin_gefunden, status_code = its.terminsuche()
+                if status_code >= 400:
+                    its.cookies_erneuern()
+                elif not termin_gefunden:
+                    time.sleep(check_delay)
 
-        its.termin_buchen()
+            if its.termin_buchen():
+                break
+            time.sleep(300)
 
 
 if __name__ == "__main__":
