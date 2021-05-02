@@ -22,6 +22,15 @@ def retry_on_failure(retries=10):
                 except (TimeoutError, ReadTimeout):
                     self.log.error("Timeout exception raised",
                                    prefix=function.__name__)
+
+                    # ein Timeout-Error kann passieren,
+                    # wenn die Server überlastet sind sind
+                    # hier erfolgt ein Timeout-Error meist,
+                    # wenn die Cookies abgelaufen sind
+
+                    if function.__name__ != "cookies_erneuern":
+                        self.cookies_erneuern()
+
                 except Exception as e:
                     exc = type(e).__name__
                     self.log.error(f"{exc} exception raised - retry {r}",
