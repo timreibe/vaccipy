@@ -136,8 +136,9 @@ class ImpfterminService():
             driver.get(self.domain + path)
 
             # Klick auf "Auswahl bestätigen" im Cookies-Banner
+            # Warteraum-Support: Timeout auf 1 Stunde
             button_xpath = ".//html/body/app-root/div/div/div/div[2]/div[2]/div/div[1]/a"
-            button = WebDriverWait(driver, 1).until(
+            button = WebDriverWait(driver, 60*60).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
             action.move_to_element(button).click().perform()
