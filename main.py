@@ -243,7 +243,13 @@ class ImpfterminService():
 
         path = f"rest/suche/impfterminsuche?plz={self.plz}"
 
-        res = self.s.get(self.domain + path, timeout=15)
+        while True:
+            res = self.s.get(self.domain + path, timeout=15)
+            if not res.ok or 'Virtueller Warteraum des Impfterminservice' not in res.text:
+                break
+            self.log.info('Wartezimmer... zZz...')
+            time.sleep(30)
+
         if res.ok:
             res_json = res.json()
             terminpaare = res_json.get("termine")
