@@ -1,7 +1,8 @@
 import traceback
 
 from requests.exceptions import ReadTimeout
-
+from json import JSONDecodeError
+import time
 
 def retry_on_failure(retries=10):
     """Decorator zum Errorhandling beim Ausführen einer Methode im Loop.
@@ -19,15 +20,29 @@ def retry_on_failure(retries=10):
                 r = total_rounds - rounds + 1
                 try:
                     return function(self, *args, **kwargs)
-                except (TimeoutError, ReadTimeout):
-                    self.log.error("Timeout exception raised",
-                                   prefix=function.__name__)
 
+                except (TimeoutError, ReadTimeout):
                     # ein Timeout-Error kann passieren,
                     # wenn die Server überlastet sind sind
                     # hier erfolgt ein Timeout-Error meist,
                     # wenn die Cookies abgelaufen sind
 
+                    self.log.error("Timeout exception raised", prefix=function.__name__)
+
+                    if function.__name__ != "cookies_erneuern":
+                        self.cookies_erneuern()
+
+                except JSONDecodeError:
+                    # die API gibt eine nicht-JSON-Response,
+                    # wenn die IP (temporär) gebannt ist, oder die Website
+                    # sich im Wartungsmodus befindet
+
+                    self.log.error("JSON parsing error | IP gebannt oder Website down, "
+                                   "erneuter Versuch in 30 Sekunden",
+                                   prefix=function.__name__)
+                    time.sleep(30)
+
+                    # cookies erneuern
                     if function.__name__ != "cookies_erneuern":
                         self.cookies_erneuern()
 
