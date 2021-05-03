@@ -1,6 +1,5 @@
 # Gruppierung der Impfzentren
-Sicher ist dir schon aufgefallen, dass du deinen Code bei mehreren Impfzentren für die Terminsuche verwenden kannst
-Aber bei welchen denn eigentlich genau?
+Sicher ist dir schon aufgefallen, dass du deinen Code bei mehreren Impfzentren für die Terminsuche verwenden kannst - aber bei welchen denn eigentlich genau?
 
 **Die Impfzentren sind in 17 Gruppen aufgeteilt.
 Du kannst den Code bei jedem Impfzentrum der Gruppe für die Terminsuche verwenden.**
