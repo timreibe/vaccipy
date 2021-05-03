@@ -1,8 +1,9 @@
+import time
 import traceback
+from json import JSONDecodeError
 
 from requests.exceptions import ReadTimeout
-from json import JSONDecodeError
-import time
+
 
 def retry_on_failure(retries=10):
     """Decorator zum Errorhandling beim Ausführen einer Methode im Loop.
@@ -51,7 +52,8 @@ def retry_on_failure(retries=10):
                     self.log.error(f"{exc} exception raised - retry {r}",
                                    prefix=function.__name__)
                     if rounds == 1:
-                        err = "\n".join(x.strip() for x in traceback.format_exc().splitlines()[-3:])
+                        err = "\n".join(
+                            x.strip() for x in traceback.format_exc().splitlines()[-3:])
                         self.log.error(err)
                         return False
                     rounds -= 1
