@@ -43,8 +43,8 @@ def retry_on_failure(retries=10):
                                    prefix=function.__name__)
                     time.sleep(30)
 
-                    # cookies erneuern
-                    if function.__name__ != "cookies_erneuern":
+                    # Cookies erneuern bei der Terminsuche
+                    if function.__name__ == "terminsuche":
                         self.cookies_erneuern()
 
                 except Exception as e:
