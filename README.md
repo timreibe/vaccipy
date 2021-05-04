@@ -150,7 +150,7 @@ pyinstaller --clean specs/mac-intel-terminservice.spec
 Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.     
 
 
-### MacOs Intel
+### MacOs M1
 
 .spec Datei erstellen und anschließend Distribution erstellen:
 ```shell
