@@ -1,3 +1,11 @@
 .idea/
 .vscode/settings.json
 __pycache__/
+
+
+# data
+kontaktdaten.json 
+
+# pyinstaller 
+# temporary building files:
+build/    
