@@ -136,8 +136,9 @@ class ImpfterminService():
             driver.get(self.domain + path)
 
             # Klick auf "Auswahl bestätigen" im Cookies-Banner
+            # Warteraum-Support: Timeout auf 1 Stunde
             button_xpath = ".//html/body/app-root/div/div/div/div[2]/div[2]/div/div[1]/a"
-            button = WebDriverWait(driver, 1).until(
+            button = WebDriverWait(driver, 60*60).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
             action.move_to_element(button).click().perform()
@@ -159,7 +160,7 @@ class ImpfterminService():
             action = ActionChains(driver)
             action.move_to_element(input_field).click().perform()
 
-            # Code eintragen    
+            # Code eintragen
             input_field.send_keys(self.code)
             time.sleep(.1)
 
@@ -242,7 +243,13 @@ class ImpfterminService():
 
         path = f"rest/suche/impfterminsuche?plz={self.plz}"
 
-        res = self.s.get(self.domain + path, timeout=15)
+        while True:
+            res = self.s.get(self.domain + path, timeout=15)
+            if not res.ok or 'Virtueller Warteraum des Impfterminservice' not in res.text:
+                break
+            self.log.info('Wartezimmer... zZz...')
+            time.sleep(30)
+
         if res.ok:
             res_json = res.json()
             terminpaare = res_json.get("termine")
@@ -284,7 +291,15 @@ class ImpfterminService():
             self.log.success("Termin erfolgreich gebucht!")
             return True
         else:
-            self.log.error("Termin konnte nicht gebucht werden")
+            data = res.json()
+            try:
+                error = data['errors']['status']
+            except KeyError:
+                error = ''
+            if 'nicht mehr verfügbar' in error:
+                self.log.error(f"Diesen Termin gibts nicht mehr: {error}")
+            else:
+                self.log.error(f"Termin konnte nicht gebucht werden: {data}")
             return False
 
     @staticmethod
@@ -304,15 +319,18 @@ class ImpfterminService():
             its.cookies_erneuern()
             time.sleep(3)
 
-        termin_gefunden = False
-        while not termin_gefunden:
-            termin_gefunden, status_code = its.terminsuche()
-            if status_code >= 400:
-                its.cookies_erneuern()
-            elif not termin_gefunden:
-                time.sleep(check_delay)
+        while True:
+            termin_gefunden = False
+            while not termin_gefunden:
+                termin_gefunden, status_code = its.terminsuche()
+                if status_code >= 400:
+                    its.cookies_erneuern()
+                elif not termin_gefunden:
+                    time.sleep(check_delay)
 
-        its.termin_buchen()
+            if its.termin_buchen():
+                break
+            time.sleep(300)
 
 
 def main():

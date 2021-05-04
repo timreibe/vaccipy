@@ -30,7 +30,7 @@ For more info on how to ship the files see [Shipping](#Shipping)
 Die notwendigen Python-Module können mittels pip installiert werden.
 
 ```shell    
-pip3 install requirements.txt
+pip3 install -r requirements.txt
 ```
 
 `vaccipy` kann über die Kommandozeile oder in einer beliebigen python-Entwicklungsumgebung
@@ -52,7 +52,7 @@ Zunächst trägst du deinen "Impf-Code" (*Beispiel: A1B2-C3D4-E5F6*), die PLZ de
 und deine Daten (Anschrift, Telefon, Mail) ein, die bei der Terminbuchung angegeben werden sollen.
 Du wirst zur Eingabe aufgefordert und deine Daten werden in der Datei `./kontaktdaten.json` gespeichert.
 
-*Hinweis: Es kann sein, dass für mehrere Impfzentren unterschiedliche Codes benötigt werden.*
+*Hinweis: Es kann sein, dass für mehrere Impfzentren unterschiedliche Codes benötigt werden (mehr Infos: [Auflistung der gruppierten Impfzentren](impfzentren_gruppiert.md)).*
 
 Anschließend passiert alles automatisch: `vaccipy` checkt für dich minütlich, ob ein Termin verfügbar ist 
 und **bucht den erstbesten**.
@@ -147,4 +147,3 @@ weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 
 # Seid vernünftig und missbraucht das Tool nicht.
 save da world. my final message. goodbye.
-
