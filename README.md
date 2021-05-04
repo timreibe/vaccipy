@@ -8,19 +8,18 @@ Unsere Großeltern möchten sich gerne impfen lassen, aber telefonsich unter 116
 ist auch noch immer irgendwie Neuland. Jetzt kommt es zum Konflikt: einerseits möchte man natürlich gerne bei der Terminbuchung helfen,
 andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Computer zu hocken und die Seite zu aktualisieren...
 
-## Distributions
+## Distributionen
 
+Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne installation von Python direkt ausgeführt werden können. (Siehe `dist/` Ordner):  
+(Die Unterfolder von `dist/` sind jeweils Distributionen die geteilt werden können und eigenständig funktionieren.)
 
-For a better user experience we are creating different distributions. (See `dist/` folder):  
-(The subfolders of `dist/` are standalone and can be shipped.)  
-
-To execute just select your distribution and run the following file:  
-Available distributions:
+Zum ausführen des Programms, einfach die passende Distribution (basierend auf dem eigenen Betriebssysstem) auswählen und die folgende Datei ausführen:  
+Verfügbare Distributionen:
 - [x] Windows ([dist/windows-terminservice/windows-terminservice.exe](dist/windows-terminservice/windows-terminservice.exe))
 - [ ] Mac ( ) 
 - [ ] Linux ( ) 
 
-For more info on how to ship the files see [Shipping](#Shipping)
+Für mehr Info zum Verteilen und erstellen der Distributionen: [Shipping](#Shipping)
 
 ## Requirements
 
@@ -110,23 +109,22 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 ## Shipping
 
 
-For creating distributions we use [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html).  
-Steps to create destribution: 
-- Create .spec file for main.py
-- Build dist based on this .spec file:
-
-```shell
-pyinstaller --clean specs/SPECNAME.spec
-```
+Zum erstellen der Distributionenn wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
+Schritte zum erstellen einer Distribution: 
+- Erstelle eine .spec Datei für die main.py (einmalig)
+- Erstlle die Distribution basierend auf der erstllten .spec Datei:
+    ```shell
+    pyinstaller --clean specs/SPECNAME.spec
+    ```
 
 
 ### Windows
 
-Create .spec file:
+.spec Datei erstellen: 
 ```shell
 pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\"  --add-data "..\log\impfterminservice.log;log\" --name windows-terminservice
 ```
-After executing pyinstaller your can find new dist in the dist folder. 
+Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.     
 
 
 

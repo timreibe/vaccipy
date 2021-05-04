@@ -5,3 +5,6 @@ __pycache__/
 
 # data
 kontaktdaten.json 
+
+# pyinstaller 
+build/
