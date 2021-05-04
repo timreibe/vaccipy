@@ -27,7 +27,7 @@ class ImpfterminService():
 
         # Logging einstellen
         self.log = CLogger("impfterminservice")
-        self.log.set_prefix(f"*{self.code[-4:]}")
+        self.log.set_prefix(f"*{self.code[-4:]} | {self.plz}")
 
         # Session erstellen
         self.s = requests.Session()
@@ -193,7 +193,7 @@ class ImpfterminService():
     @retry_on_failure()
     def login(self):
         """Einloggen mittels Code, um qualifizierte Impfstoffe zu erhalten.
-        Dieser Schritt ist wahrscheinlich nicht zwigend notwendig, aber schadet auch nicht.
+        Dieser Schritt ist wahrscheinlich nicht zwingend notwendig, aber schadet auch nicht.
 
         :return: bool
         """
