@@ -10,15 +10,30 @@ andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Co
 
 ## Distributionen
 
-Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne installation von Python direkt ausgeführt werden können. (Siehe `dist/` Ordner):  
-(Die Unterfolder von `dist/` sind jeweils Distributionen die geteilt werden können und eigenständig funktionieren.)
+Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne installation von Python direkt ausgeführt werden können. 
+Die Unterfolder von `dist/` sind jeweils Distributionen die geteilt werden können und eigenständig funktionieren.
 
-Zum ausführen des Programms, einfach die passende Distribution (basierend auf dem eigenen Betriebssysstem) auswählen und die folgende Datei ausführen:  
+Zum Ausführen des Programms, einfach die passende Distribution (basierend auf dem eigenen Betriebssysstem) auswählen und die folgende Datei ausführen. 
+
+*Hinweis: Es wird jeweils immer der gesamte Ordner benötigt!* 
+
 Verfügbare Distributionen:
 - [x] Windows ([dist/windows-terminservice/windows-terminservice.exe](dist/windows-terminservice/windows-terminservice.exe))
 - [x] Mac Intel ([dist/mac-intel-terminservice/mac-intel-terminservice](dist/mac-intel-terminservice/mac-intel-terminservice))
-- [] Mac M1 ([dist/mac-m1-terminservice/mac-m1-terminservice](dist/mac-m1-terminservice/mac-m1-terminservicegit))
+- [x] Mac M1 ([dist/mac-m1-terminservice/mac-m1-terminservice](dist/mac-m1-terminservice/mac-m1-terminservice))
 - [ ] Linux ( ) 
+
+Ausführung unter Mac im Terminal:
+```shell
+# In Vaccipy-Ordner navigieren
+cd ~/path/to/vaccipy/
+
+# Intel
+./dist/mac-intel-terminservice/mac-intel-terminservice
+
+# ARM (M1)
+./dist/mac-m1-terminservice/mac-m1-terminservice
+```
 
 Für mehr Info zum Verteilen und erstellen der Distributionen: [Shipping](#Shipping)
 
@@ -39,11 +54,6 @@ ausgeführt werden:
 ```shell
 python3 main.py
 ```
-
-
-
-
-
 
 ## Wie funktioniert vaccipy?
 
@@ -120,18 +130,33 @@ Schritte zum erstellen einer Distribution:
 
 ### Windows
 
-.spec Datei erstellen: 
+.spec Datei erstellen und anschließend Distribution erstellen:
 ```shell
 pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\"  --add-data "..\log\impfterminservice.log;log\" --name windows-terminservice
+
+pyinstaller --clean specs/windows-terminservice.spec
 ```
 Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.     
 
 
 ### MacOs Intel
 
-.spec Datei erstellen:
+.spec Datei erstellen und anschließend Distribution erstellen:
 ```shell
 pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-intel:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-intel-terminservice
+
+pyinstaller --clean specs/mac-intel-terminservice.spec
+```
+Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.     
+
+
+### MacOs Intel
+
+.spec Datei erstellen und anschließend Distribution erstellen:
+```shell
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-m1:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-m1-terminservice
+
+pyinstaller --clean specs/mac-m1-terminservice.spec 
 ```
 Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.     
 
