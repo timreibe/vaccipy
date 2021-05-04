@@ -16,7 +16,8 @@ Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die
 Zum ausführen des Programms, einfach die passende Distribution (basierend auf dem eigenen Betriebssysstem) auswählen und die folgende Datei ausführen:  
 Verfügbare Distributionen:
 - [x] Windows ([dist/windows-terminservice/windows-terminservice.exe](dist/windows-terminservice/windows-terminservice.exe))
-- [ ] Mac ( ) 
+- [x] Mac Intel ([dist/mac-intel-terminservice/mac-intel-terminservice](dist/mac-intel-terminservice/mac-intel-terminservice))
+- [] Mac M1 ([dist/mac-m1-terminservice/mac-m1-terminservice](dist/mac-m1-terminservice/mac-m1-terminservicegit))
 - [ ] Linux ( ) 
 
 Für mehr Info zum Verteilen und erstellen der Distributionen: [Shipping](#Shipping)
@@ -103,7 +104,6 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 
 - [ ] Datum eingrenzen bei der Terminwahl
 - [ ] Linux build
-- [ ] Mac Build
 - [ ] ...
 
 ## Shipping
@@ -112,7 +112,7 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 Zum erstellen der Distributionenn wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
 Schritte zum erstellen einer Distribution: 
 - Erstelle eine .spec Datei für die main.py (einmalig)
-- Erstlle die Distribution basierend auf der erstllten .spec Datei:
+- Erstelle die Distribution basierend auf der erstellten .spec Datei:
     ```shell
     pyinstaller --clean specs/SPECNAME.spec
     ```
@@ -127,6 +127,13 @@ pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\ch
 Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.     
 
 
+### MacOs Intel
+
+.spec Datei erstellen:
+```shell
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-intel:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-intel-terminservice
+```
+Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.     
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
 

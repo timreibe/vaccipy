@@ -2,6 +2,7 @@
 .vscode/settings.json
 __pycache__/
 
+*.DS_Store
 
 # data
 kontaktdaten.json 
