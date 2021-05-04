@@ -8,6 +8,19 @@ Unsere Großeltern möchten sich gerne impfen lassen, aber telefonsich unter 116
 ist auch noch immer irgendwie Neuland. Jetzt kommt es zum Konflikt: einerseits möchte man natürlich gerne bei der Terminbuchung helfen,
 andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Computer zu hocken und die Seite zu aktualisieren...
 
+## Distributionen
+
+Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne installation von Python direkt ausgeführt werden können. (Siehe `dist/` Ordner):  
+(Die Unterfolder von `dist/` sind jeweils Distributionen die geteilt werden können und eigenständig funktionieren.)
+
+Zum ausführen des Programms, einfach die passende Distribution (basierend auf dem eigenen Betriebssysstem) auswählen und die folgende Datei ausführen:  
+Verfügbare Distributionen:
+- [x] Windows ([dist/windows-terminservice/windows-terminservice.exe](dist/windows-terminservice/windows-terminservice.exe))
+- [ ] Mac ( ) 
+- [ ] Linux ( ) 
+
+Für mehr Info zum Verteilen und erstellen der Distributionen: [Shipping](#Shipping)
+
 ## Requirements
 
 * Python 3 (getestet mit Python 3.9)
@@ -25,6 +38,11 @@ ausgeführt werden:
 ```shell
 python3 main.py
 ```
+
+
+
+
+
 
 ## Wie funktioniert vaccipy?
 
@@ -84,7 +102,30 @@ Es gibt noch ein paar Features, die cool wären. Die Ideen werden hier mal gesam
 werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 
 - [ ] Datum eingrenzen bei der Terminwahl
+- [ ] Linux build
+- [ ] Mac Build
 - [ ] ...
+
+## Shipping
+
+
+Zum erstellen der Distributionenn wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
+Schritte zum erstellen einer Distribution: 
+- Erstelle eine .spec Datei für die main.py (einmalig)
+- Erstlle die Distribution basierend auf der erstllten .spec Datei:
+    ```shell
+    pyinstaller --clean specs/SPECNAME.spec
+    ```
+
+
+### Windows
+
+.spec Datei erstellen: 
+```shell
+pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\"  --add-data "..\log\impfterminservice.log;log\" --name windows-terminservice
+```
+Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.     
+
 
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
@@ -97,6 +138,10 @@ weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 * Möglichkeit zum Eintragen mehrerer Impf-Codes und Kontaktdaten
 * Headless Selenium Support
 * *... ein paar andere Sachen, wir wollen ja keine schlafenden Hunde wecken ;-)* 
+
+
+# Resources
+- [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
 
 # Seid vernünftig und missbraucht das Tool nicht.
 save da world. my final message. goodbye.

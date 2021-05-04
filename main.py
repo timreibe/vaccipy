@@ -333,7 +333,7 @@ class ImpfterminService():
             time.sleep(300)
 
 
-if __name__ == "__main__":
+def main():
     print("vaccipy 1.0\n")
 
     # Check, ob die Datei "kontaktdaten.json" existiert
@@ -391,8 +391,15 @@ if __name__ == "__main__":
         plz = kontaktdaten["plz"]
         kontakt = kontaktdaten["kontakt"]
         print(f"Kontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
-        ImpfterminService.run(code=code, plz=plz, kontakt=kontakt, check_delay=30)
-    except KeyError:
+    except KeyError as exc:
         print("Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
               "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
               "deine Daten beim Programmstart erneut ein.")
+        raise exc
+
+    ImpfterminService.run(code=code, plz=plz, kontakt=kontakt, check_delay=30)
+    
+
+
+if __name__ == "__main__":
+    main()
