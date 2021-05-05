@@ -2,6 +2,8 @@
 
 `vaccipy` hilft dabei, einen Impftermin beim [Impfterminservice](https://www.impfterminservice.de/) zu buchen.
 
+![Beispiel Programmdurchlauf](beispiel_programmdurchlauf.png)
+
 ## Ausgangssituation
 
 Unsere Großeltern möchten sich gerne impfen lassen, aber telefonsich unter 116117 kommen sie nicht durch und das Internet
