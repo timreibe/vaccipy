@@ -2,7 +2,7 @@ import time
 import traceback
 from json import JSONDecodeError
 
-from requests.exceptions import ReadTimeout
+from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
 
 
 def retry_on_failure(retries=10):
@@ -33,12 +33,19 @@ def retry_on_failure(retries=10):
                     if function.__name__ != "cookies_erneuern":
                         self.cookies_erneuern()
 
+                except (ConnectTimeout, ConnectionError):
+                    # Keine Internetverbindung
+                    self.log.error("Connection exception | Es besteht keine Internetverbindung,"
+                                   "erneuter Versuch in 30 Sekunden",
+                                   prefix=function.__name__)
+                    time.sleep(30)
+
                 except JSONDecodeError:
                     # die API gibt eine nicht-JSON-Response,
                     # wenn die IP (temporär) gebannt ist, oder die Website
                     # sich im Wartungsmodus befindet
 
-                    self.log.error("JSON parsing error | IP gebannt oder Website down, "
+                    self.log.error("JSON parsing exception | IP gebannt oder Website down, "
                                    "erneuter Versuch in 30 Sekunden",
                                    prefix=function.__name__)
                     time.sleep(30)
