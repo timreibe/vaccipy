@@ -1,8 +1,6 @@
 # vaccipy
 
-`vaccipy` hilft dabei, einen Impftermin beim [Impfterminservice](https://www.impfterminservice.de/) zu buchen.
-
-[Download vaccipy!](#download)
+`vaccipy` hilft dabei, einen Impftermin beim [Impfterminservice](https://www.impfterminservice.de/) zu buchen. [Zum Download!](#download)
 
 ![Beispiel Programmdurchlauf](beispiel_programmdurchlauf.png)
 
@@ -29,11 +27,11 @@ Verfügbare Distributionen:
 - [x] [Download Mac M1](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fmac-m1-terminservice)
 - [ ] Linux ( ) 
 
-Ausführung Windows: 
+**Ausführung Windows:** 
 - .zip Ordner entpacken
 - Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
 
-Ausführung unter Mac im Terminal:
+**Ausführung unter Mac im Terminal:**
 
 ```shell
 # In Vaccipy-Ordner oder entpackten .zip Ordner navigieren
@@ -42,7 +40,7 @@ cd ~/path/to/vaccipy/
 # Intel
 ./dist/mac-intel-terminservice/mac-intel-terminservice
 
-# ARM (M1)
+# M1
 ./dist/mac-m1-terminservice/mac-m1-terminservice
 ```
 
