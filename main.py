@@ -2,6 +2,7 @@ import json
 import os
 import platform
 import time
+import threading
 from base64 import b64encode
 from datetime import datetime
 
@@ -12,10 +13,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from plyer import notification
 from tools.clog import CLogger
 from tools.utils import retry_on_failure
 
-
+import traceback
 class ImpfterminService():
     def __init__(self, code: str, plz: str, kontakt: dict):
         self.code = str(code).upper()
@@ -49,9 +51,16 @@ class ImpfterminService():
             self.log.warn("Erneuter Versuch in 60 Sekunden")
             time.sleep(60)
 
+        #OS
+        self.operating_system = platform.system().lower()
+
         # Sonstige
         self.terminpaar = None
         self.qualifikationen = []
+        self.app_name = str(self)
+    
+    def __str__(self) -> str:
+        return "ImpfterminService"
 
     @retry_on_failure()
     def impfzentren_laden(self):
@@ -117,15 +126,13 @@ class ImpfterminService():
     @retry_on_failure()
     def cookies_erneuern(self):
         self.log.info("Browser-Cookies generieren")
-
         # Chromedriver anhand des OS auswählen
         chromedriver = None
-        operating_system = platform.system().lower()
-        if 'linux' in operating_system:
+        if 'linux' in self.operating_system:
             chromedriver = "./tools/chromedriver/chromedriver-linux"
-        elif 'windows' in operating_system:
+        elif 'windows' in self.operating_system:
             chromedriver = "./tools/chromedriver/chromedriver-windows.exe"
-        elif 'darwin' in operating_system:
+        elif 'darwin' in self.operating_system:
             if "arm" in platform.processor().lower():
                 chromedriver = "./tools/chromedriver/chromedriver-mac-m1"
             else:
@@ -288,7 +295,9 @@ class ImpfterminService():
 
         res = self.s.post(self.domain + path, json=data, timeout=15)
         if res.status_code == 201:
-            self.log.success("Termin erfolgreich gebucht!")
+            msg = "Termin erfolgreich gebucht!"
+            self.log.success(msg)
+            self._desktop_notification("Terminbuchung:",msg)
             return True
         else:
             data = res.json()
@@ -297,9 +306,13 @@ class ImpfterminService():
             except KeyError:
                 error = ''
             if 'nicht mehr verfügbar' in error:
-                self.log.error(f"Diesen Termin gibts nicht mehr: {error}")
+                msg = f"Diesen Termin gibts nicht mehr: {error}"
+                self.log.error(msg)
+                self._desktop_notification("Terminbuchung:",msg)
             else:
-                self.log.error(f"Termin konnte nicht gebucht werden: {data}")
+                msg=f"Termin konnte nicht gebucht werden: {data}"
+                self.log.error(msg)
+                self._desktop_notification("Terminbuchung:",msg)
             return False
 
     @staticmethod
@@ -332,6 +345,21 @@ class ImpfterminService():
                 break
             time.sleep(300)
 
+    def _desktop_notification(self,title:str,message:str):
+        """
+        Starts a thread and creates a desktop notification using plyer.notification
+        """
+        try:
+            notification_thread = threading.Thread(
+                target=notification.notify(
+                app_name=self.app_name,
+                title=title,
+                message=message)
+                )
+
+            notification_thread.start()
+        except Exception as exc:
+            self.log.error("Error in _desktop_notification: " +str(exc.__class__.__name__)+traceback.format_exc())
 
 def main():
     print("vaccipy 1.0\n")

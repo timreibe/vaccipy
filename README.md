@@ -144,7 +144,7 @@ Schritte zum Erstellen einer Distribution:
 
 .spec Datei erstellen und anschließend Distribution erstellen:
 ```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\"  --add-data "..\log\impfterminservice.log;log\" --name windows-terminservice
+pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\"  --add-data "..\log\impfterminservice.log;log\" --name windows-terminservice --hidden-import plyer.platforms.win.notification
 
 pyinstaller --clean specs/windows-terminservice.spec
 ```     
@@ -154,7 +154,7 @@ pyinstaller --clean specs/windows-terminservice.spec
 
 .spec Datei erstellen und anschließend Distribution erstellen:
 ```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-intel:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-intel-terminservice
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-intel:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-intel-terminservice --hidden-import plyer.platforms.macosx.notification
 
 pyinstaller --clean specs/mac-intel-terminservice.spec
 ```     
@@ -164,7 +164,7 @@ pyinstaller --clean specs/mac-intel-terminservice.spec
 
 .spec Datei erstellen und anschließend Distribution erstellen:
 ```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-m1:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-m1-terminservice
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-m1:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-m1-terminservice --hidden-import plyer.platforms.macosx.notification
 
 pyinstaller --clean specs/mac-m1-terminservice.spec 
 ```   
