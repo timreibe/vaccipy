@@ -1,19 +1,19 @@
 import json
 import os
 import platform
+import requests
 import time
 import traceback
 from base64 import b64encode
 from datetime import datetime
-from threading import Thread
-
-import requests
 from plyer import notification
+from random import choice
 from selenium.webdriver import ActionChains
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from threading import Thread
 
 from tools.clog import CLogger
 from tools.utils import retry_on_failure
@@ -276,7 +276,7 @@ class ImpfterminService():
             terminpaare = res_json.get("termine")
             if terminpaare:
                 # Auswahl des erstbesten Terminpaares
-                self.terminpaar = terminpaare[0]
+                self.terminpaar = choice(terminpaare)
                 self.log.success("Terminpaar gefunden!")
 
                 for num, termin in enumerate(self.terminpaar, 1):
@@ -358,7 +358,7 @@ class ImpfterminService():
 
             if its.termin_buchen():
                 break
-            time.sleep(300)
+            time.sleep(30)
 
     def _desktop_notification(self, title: str, message: str):
         """
