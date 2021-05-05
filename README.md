@@ -34,8 +34,9 @@ Ausführung Windows:
 - Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
 
 Ausführung unter Mac im Terminal:
+
 ```shell
-# In Vaccipy-Ordner navigieren
+# In Vaccipy-Ordner oder entpackten .zip Ordner navigieren
 cd ~/path/to/vaccipy/
 
 # Intel
