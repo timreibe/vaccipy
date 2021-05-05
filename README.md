@@ -4,6 +4,17 @@
 
 ![Beispiel Programmdurchlauf](beispiel_programmdurchlauf.png)
 
+## Bedanken?
+
+<a href="https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m">
+<img align="right" width="150" height="150" src="https://www.doctorswithoutborders.org/sites/default/files/badge_2.png">
+</a>
+.. musst du dich nicht - aber es freut uns sehr, wenn wir dir die Terminsuche etwas erleichtern konnten. 
+
+Für den Fall, dass du dein Dank gerne in Geld ausdrücken möchtest, haben wir [hier eine Spendenaktion](https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m) eingerichtet. [ÄRZTE OHNE GRENZEN](www.aerzte-ohne-grenzen.de) leistet weltweit medizinische Nothilfe in Krisen- und Kriegsgebieten und nach Naturkatastrophen.
+
+Es wäre mega cool, wenn du dich daran beteiligst - ist aber vollkommen freiwillig, also no pressure 😉
+
 ## Ausgangssituation
 
 Unsere Großeltern möchten sich gerne impfen lassen, aber telefonsich unter 116117 kommen sie nicht durch und das Internet
@@ -74,7 +85,7 @@ Du wirst zur Eingabe aufgefordert und deine Daten werden in der Datei `./kontakt
 *Hinweis: Es kann sein, dass für mehrere Impfzentren unterschiedliche Codes benötigt werden (mehr Infos: [Auflistung der gruppierten Impfzentren](impfzentren_gruppiert.md)).*
 
 Anschließend passiert alles automatisch: `vaccipy` checkt für dich minütlich, ob ein Termin verfügbar ist 
-und **bucht ~~den erstbeste~~ einen zufälligenn**.
+und **bucht ~~den erstbeste~~ einen zufälligen**.
 
 ## Workflow
 
