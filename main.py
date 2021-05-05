@@ -364,6 +364,10 @@ class ImpfterminService():
         """
         Starts a thread and creates a desktop notification using plyer.notification
         """
+
+        if 'windows' not in self.operating_system:
+            return
+
         try:
             Thread(target=notification.notify(
                 app_name=self.app_name,
