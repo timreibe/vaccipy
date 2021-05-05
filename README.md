@@ -2,6 +2,8 @@
 
 `vaccipy` hilft dabei, einen Impftermin beim [Impfterminservice](https://www.impfterminservice.de/) zu buchen.
 
+[Download vaccipy!](#download)
+
 ![Beispiel Programmdurchlauf](beispiel_programmdurchlauf.png)
 
 ## Ausgangssituation
@@ -20,8 +22,8 @@ Zum Ausführen des Programms, einfach die passende Distribution (basierend auf d
 *Hinweis: Es wird jeweils immer der gesamte Ordner benötigt!* 
 
 
-
-Download verfügbare Distributionen:
+### Download 
+Verfügbare Distributionen:
 - [x] [Download Windows](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice) 
 - [x] [Download Mac Intel](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fmac-intel-terminservice) 
 - [x] [Download Mac M1](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fmac-m1-terminservice)
