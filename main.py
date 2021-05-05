@@ -105,7 +105,7 @@ class ImpfterminService():
                 qualifikation = impfstoff.get("qualification")
                 name = impfstoff.get("name", "N/A")
                 alter = impfstoff.get("age")
-                intervall = impfstoff.get("interval")
+                intervall = impfstoff.get("interval", "?")
                 self.verfuegbare_impfstoffe[qualifikation] = name
                 self.log.info(f"{qualifikation}: {name} --> Altersgruppe: {alter} --> Intervall: {intervall} Tage")
             print(" ")
@@ -131,9 +131,23 @@ class ImpfterminService():
             else:
                 chromedriver = "./tools/chromedriver/chromedriver-mac-intel"
 
+
         path = "impftermine/service?plz={}".format(self.plz)
+
+
         with Chrome(chromedriver) as driver:
             driver.get(self.domain + path)
+
+            # Queue Bypass
+            queue_cookie = driver.get_cookie("akavpwr_User_allowed")
+            if queue_cookie:
+                self.log.info("Im Warteraum, Seite neuladen")
+                queue_cookie["name"] = "akavpau_User_allowed"
+                driver.add_cookie(queue_cookie)
+
+                # Seite neu laden
+                driver.get(self.domain + path)
+                driver.refresh()
 
             # Klick auf "Auswahl bestätigen" im Cookies-Banner
             # Warteraum-Support: Timeout auf 1 Stunde
@@ -247,7 +261,7 @@ class ImpfterminService():
             res = self.s.get(self.domain + path, timeout=15)
             if not res.ok or 'Virtueller Warteraum des Impfterminservice' not in res.text:
                 break
-            self.log.info('Wartezimmer... zZz...')
+            self.log.info('Warteraum... zZz...')
             time.sleep(30)
 
         if res.ok:
