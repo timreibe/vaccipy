@@ -34,26 +34,14 @@ Zum Ausführen des Programms, einfach die passende Distribution (basierend auf d
 ### Download 
 Verfügbare Distributionen:
 - [x] [Download Windows](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice) 
-- [x] [Download Mac Intel](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fmac-intel-terminservice) 
-- [x] [Download Mac M1](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fmac-m1-terminservice)
-- [ ] Linux ( ) 
+- [ ] MacOS Intel
+- [ ] MacOS M1 
+- [ ] Linux 
 
 **Ausführung Windows:** 
 - .zip Ordner entpacken
 - Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
 
-**Ausführung unter Mac im Terminal:**
-
-```shell
-# In Vaccipy-Ordner oder entpackten .zip Ordner navigieren
-cd ~/path/to/vaccipy/
-
-# Intel
-./dist/mac-intel-terminservice/mac-intel-terminservice
-
-# M1
-./dist/mac-m1-terminservice/mac-m1-terminservice
-```
 
 Für mehr Info zum Verteilen und Erstellen der Distributionen: [Shipping](#Shipping)
 
@@ -158,25 +146,6 @@ pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\ch
 pyinstaller --clean specs/windows-terminservice.spec
 ```     
 
-
-### MacOs Intel
-
-.spec Datei erstellen und anschließend Distribution erstellen:
-```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-intel:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-intel-terminservice --hidden-import plyer.platforms.macosx.notification
-
-pyinstaller --clean specs/mac-intel-terminservice.spec
-```     
-
-
-### MacOs M1
-
-.spec Datei erstellen und anschließend Distribution erstellen:
-```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-m1:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-m1-terminservice --hidden-import plyer.platforms.macosx.notification
-
-pyinstaller --clean specs/mac-m1-terminservice.spec 
-```   
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
 
