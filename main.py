@@ -2,22 +2,23 @@ import json
 import os
 import platform
 import time
-import threading
+import traceback
 from base64 import b64encode
 from datetime import datetime
+from threading import Thread
 
 import requests
+from plyer import notification
 from selenium.webdriver import ActionChains
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from plyer import notification
 from tools.clog import CLogger
 from tools.utils import retry_on_failure
 
-import traceback
+
 class ImpfterminService():
     def __init__(self, code: str, plz: str, kontakt: dict):
         self.code = str(code).upper()
@@ -51,14 +52,14 @@ class ImpfterminService():
             self.log.warn("Erneuter Versuch in 60 Sekunden")
             time.sleep(60)
 
-        #OS
+        # OS
         self.operating_system = platform.system().lower()
 
         # Sonstige
         self.terminpaar = None
         self.qualifikationen = []
         self.app_name = str(self)
-    
+
     def __str__(self) -> str:
         return "ImpfterminService"
 
@@ -116,7 +117,8 @@ class ImpfterminService():
                 alter = impfstoff.get("age")
                 intervall = impfstoff.get("interval", "?")
                 self.verfuegbare_impfstoffe[qualifikation] = name
-                self.log.info(f"{qualifikation}: {name} --> Altersgruppe: {alter} --> Intervall: {intervall} Tage")
+                self.log.info(
+                    f"{qualifikation}: {name} --> Altersgruppe: {alter} --> Intervall: {intervall} Tage")
             print(" ")
             return True
 
@@ -138,9 +140,7 @@ class ImpfterminService():
             else:
                 chromedriver = "./tools/chromedriver/chromedriver-mac-intel"
 
-
         path = "impftermine/service?plz={}".format(self.plz)
-
 
         with Chrome(chromedriver) as driver:
             driver.get(self.domain + path)
@@ -159,7 +159,7 @@ class ImpfterminService():
             # Klick auf "Auswahl bestätigen" im Cookies-Banner
             # Warteraum-Support: Timeout auf 1 Stunde
             button_xpath = ".//html/body/app-root/div/div/div/div[2]/div[2]/div/div[1]/a"
-            button = WebDriverWait(driver, 60*60).until(
+            button = WebDriverWait(driver, 60 * 60).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
             action.move_to_element(button).click().perform()
@@ -280,7 +280,8 @@ class ImpfterminService():
                 self.log.success("Terminpaar gefunden!")
 
                 for num, termin in enumerate(self.terminpaar, 1):
-                    ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime('%d.%m.%Y um %H:%M Uhr')
+                    ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
+                        '%d.%m.%Y um %H:%M Uhr')
                     self.log.success(f"{num}. Termin: {ts}")
                 return True, 200
             else:
@@ -311,7 +312,7 @@ class ImpfterminService():
         if res.status_code == 201:
             msg = "Termin erfolgreich gebucht!"
             self.log.success(msg)
-            self._desktop_notification("Terminbuchung:",msg)
+            self._desktop_notification("Terminbuchung:", msg)
             return True
         else:
             data = res.json()
@@ -322,11 +323,11 @@ class ImpfterminService():
             if 'nicht mehr verfügbar' in error:
                 msg = f"Diesen Termin gibts nicht mehr: {error}"
                 self.log.error(msg)
-                self._desktop_notification("Terminbuchung:",msg)
+                self._desktop_notification("Terminbuchung:", msg)
             else:
-                msg=f"Termin konnte nicht gebucht werden: {data}"
+                msg = f"Termin konnte nicht gebucht werden: {data}"
                 self.log.error(msg)
-                self._desktop_notification("Terminbuchung:",msg)
+                self._desktop_notification("Terminbuchung:", msg)
             return False
 
     @staticmethod
@@ -359,21 +360,20 @@ class ImpfterminService():
                 break
             time.sleep(300)
 
-    def _desktop_notification(self,title:str,message:str):
+    def _desktop_notification(self, title: str, message: str):
         """
         Starts a thread and creates a desktop notification using plyer.notification
         """
         try:
-            notification_thread = threading.Thread(
-                target=notification.notify(
+            Thread(target=notification.notify(
                 app_name=self.app_name,
                 title=title,
                 message=message)
-                )
-
-            notification_thread.start()
+            ).start()
         except Exception as exc:
-            self.log.error("Error in _desktop_notification: " +str(exc.__class__.__name__)+traceback.format_exc())
+            self.log.error("Error in _desktop_notification: " + str(exc.__class__.__name__)
+                           + traceback.format_exc())
+
 
 def main():
     print("vaccipy 1.0\n")
@@ -381,7 +381,8 @@ def main():
     # Check, ob die Datei "kontaktdaten.json" existiert
     kontaktdaten_erstellen = True
     if os.path.isfile("kontaktdaten.json"):
-        daten_laden = input("Sollen die vorhandene Daten aus 'kontaktdaten.json' geladen werden (y/n)?: ").lower()
+        daten_laden = input(
+            "Sollen die vorhandene Daten aus 'kontaktdaten.json' geladen werden (y/n)?: ").lower()
         if daten_laden != "n":
             kontaktdaten_erstellen = False
 
@@ -440,7 +441,6 @@ def main():
         raise exc
 
     ImpfterminService.run(code=code, plz=plz, kontakt=kontakt, check_delay=30)
-    
 
 
 if __name__ == "__main__":
