@@ -74,7 +74,7 @@ Du wirst zur Eingabe aufgefordert und deine Daten werden in der Datei `./kontakt
 *Hinweis: Es kann sein, dass für mehrere Impfzentren unterschiedliche Codes benötigt werden (mehr Infos: [Auflistung der gruppierten Impfzentren](impfzentren_gruppiert.md)).*
 
 Anschließend passiert alles automatisch: `vaccipy` checkt für dich minütlich, ob ein Termin verfügbar ist 
-und **bucht den erstbesten**.
+und **bucht ~~den erstbeste~~ einen zufälligenn**.
 
 ## Workflow
 
@@ -94,7 +94,7 @@ Anschließend werden die Cookies extrahiert und im Script aufgenommen.
 4) Mit dem Code "einloggen", im Browser ist das der Schritt: Impfzentrum auswählen und den Code eintragen
 
 Die nachkommenden Schritte erfolgen im Loop. Es werden minütlich verfügbare Termine abgerufen und, 
-sollte ein Termin verfügbar sein, der erstbeste ausgewählt. Dieser Prozess kann eine längere Zeit dauern und 
+sollten Termine verfügbar sein, ~~der erstbeste~~ ein zufälliger ausgewählt. Dieser Prozess kann eine längere Zeit dauern und 
 die Cookies laufen irgendwann ab (entweder alle 10 Minuten oder nach 5-6 Anfragen). Sobald die Cookies abgelaufen
 sind, wird wieder ein Chrome-Fenster geöffnet und neue Cookies erstellt.
 
