@@ -126,6 +126,7 @@ Schritte zum erstellen einer Distribution:
     ```shell
     pyinstaller --clean specs/SPECNAME.spec
     ```
+    Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.  
 
 
 ### Windows
@@ -135,8 +136,7 @@ Schritte zum erstellen einer Distribution:
 pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\"  --add-data "..\log\impfterminservice.log;log\" --name windows-terminservice
 
 pyinstaller --clean specs/windows-terminservice.spec
-```
-Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.     
+```     
 
 
 ### MacOs Intel
@@ -146,8 +146,7 @@ Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/`
 pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-intel:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-intel-terminservice
 
 pyinstaller --clean specs/mac-intel-terminservice.spec
-```
-Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.     
+```     
 
 
 ### MacOs M1
@@ -157,8 +156,7 @@ Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/`
 pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-m1:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-m1-terminservice
 
 pyinstaller --clean specs/mac-m1-terminservice.spec 
-```
-Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.     
+```   
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
 
