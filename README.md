@@ -1,8 +1,6 @@
 # vaccipy
 
-`vaccipy` hilft dabei, einen Impftermin beim [Impfterminservice](https://www.impfterminservice.de/) zu buchen.
-
-[Download vaccipy!](#download)
+`vaccipy` hilft dabei, einen Impftermin beim [Impfterminservice](https://www.impfterminservice.de/) zu buchen. [Zum Download!](#download)
 
 ![Beispiel Programmdurchlauf](beispiel_programmdurchlauf.png)
 
@@ -29,11 +27,11 @@ Verfügbare Distributionen:
 - [x] [Download Mac M1](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fmac-m1-terminservice)
 - [ ] Linux ( ) 
 
-Ausführung Windows: 
+**Ausführung Windows:** 
 - .zip Ordner entpacken
 - Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
 
-Ausführung unter Mac im Terminal:
+**Ausführung unter Mac im Terminal:**
 
 ```shell
 # In Vaccipy-Ordner oder entpackten .zip Ordner navigieren
@@ -42,7 +40,7 @@ cd ~/path/to/vaccipy/
 # Intel
 ./dist/mac-intel-terminservice/mac-intel-terminservice
 
-# ARM (M1)
+# M1
 ./dist/mac-m1-terminservice/mac-m1-terminservice
 ```
 
@@ -144,7 +142,7 @@ Schritte zum Erstellen einer Distribution:
 
 .spec Datei erstellen und anschließend Distribution erstellen:
 ```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\"  --add-data "..\log\impfterminservice.log;log\" --name windows-terminservice
+pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\"  --add-data "..\log\impfterminservice.log;log\" --name windows-terminservice --hidden-import plyer.platforms.win.notification
 
 pyinstaller --clean specs/windows-terminservice.spec
 ```     
@@ -154,7 +152,7 @@ pyinstaller --clean specs/windows-terminservice.spec
 
 .spec Datei erstellen und anschließend Distribution erstellen:
 ```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-intel:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-intel-terminservice
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-intel:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-intel-terminservice --hidden-import plyer.platforms.macosx.notification
 
 pyinstaller --clean specs/mac-intel-terminservice.spec
 ```     
@@ -164,7 +162,7 @@ pyinstaller --clean specs/mac-intel-terminservice.spec
 
 .spec Datei erstellen und anschließend Distribution erstellen:
 ```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-m1:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-m1-terminservice
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-m1:tools/chromedriver/"  --add-data "../log/impfterminservice.log:log/" --name mac-m1-terminservice --hidden-import plyer.platforms.macosx.notification
 
 pyinstaller --clean specs/mac-m1-terminservice.spec 
 ```   
