@@ -35,7 +35,7 @@ cd ~/path/to/vaccipy/
 ./dist/mac-m1-terminservice/mac-m1-terminservice
 ```
 
-Für mehr Info zum Verteilen und erstellen der Distributionen: [Shipping](#Shipping)
+Für mehr Info zum Verteilen und Erstellen der Distributionen: [Shipping](#Shipping)
 
 ## Requirements
 
@@ -119,8 +119,8 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 ## Shipping
 
 
-Zum erstellen der Distributionenn wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
-Schritte zum erstellen einer Distribution: 
+Zum Erstellen der Distributionenn wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
+Schritte zum Erstellen einer Distribution: 
 - Erstelle eine .spec Datei für die main.py (einmalig)
 - Erstelle die Distribution basierend auf der erstellten .spec Datei:
     ```shell
