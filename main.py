@@ -1,22 +1,25 @@
 import json
 import os
 import platform
-import requests
 import time
 import traceback
 from base64 import b64encode
 from datetime import datetime
-from plyer import notification
 from random import choice
+from threading import Thread
+
+import requests
+from plyer import notification
 from selenium.webdriver import ActionChains
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from threading import Thread
 
 from tools.clog import CLogger
 from tools.utils import retry_on_failure
+
+PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class ImpfterminService():
@@ -131,14 +134,14 @@ class ImpfterminService():
         # Chromedriver anhand des OS auswählen
         chromedriver = None
         if 'linux' in self.operating_system:
-            chromedriver = "./tools/chromedriver/chromedriver-linux"
+            chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux")
         elif 'windows' in self.operating_system:
-            chromedriver = "./tools/chromedriver/chromedriver-windows.exe"
+            chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-windows.exe")
         elif 'darwin' in self.operating_system:
             if "arm" in platform.processor().lower():
-                chromedriver = "./tools/chromedriver/chromedriver-mac-m1"
+                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-mac-m1")
             else:
-                chromedriver = "./tools/chromedriver/chromedriver-mac-intel"
+                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-mac-intel")
 
         path = "impftermine/service?plz={}".format(self.plz)
 
@@ -226,7 +229,7 @@ class ImpfterminService():
             # Checken, welche Impfstoffe für das Alter zur Verfügung stehen
             self.qualifikationen = res.json().get("qualifikationen")
             if self.qualifikationen:
-                zugewiesene_impfstoffe = " ".join(
+                zugewiesene_impfstoffe = ", ".join(
                     [self.verfuegbare_impfstoffe.get(q, "N/A")
                      for q in self.qualifikationen])
                 self.log.info("Erfolgreich mit Code eingeloggt")
@@ -383,8 +386,9 @@ def main():
     print("vaccipy 1.0\n")
 
     # Check, ob die Datei "kontaktdaten.json" existiert
+    kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
     kontaktdaten_erstellen = True
-    if os.path.isfile("kontaktdaten.json"):
+    if os.path.isfile(kontaktdaten_path):
         daten_laden = input(
             "Sollen die vorhandene Daten aus 'kontaktdaten.json' geladen werden (y/n)?: ").lower()
         if daten_laden != "n":
@@ -426,11 +430,11 @@ def main():
             "kontakt": kontakt
         }
 
-        with open('kontaktdaten.json', 'w', encoding='utf-8') as f:
+        with open(kontaktdaten_path, 'w', encoding='utf-8') as f:
             json.dump(kontaktdaten, f, ensure_ascii=False, indent=4)
 
     else:
-        with open("kontaktdaten.json") as f:
+        with open(kontaktdaten_path) as f:
             kontaktdaten = json.load(f)
 
     try:

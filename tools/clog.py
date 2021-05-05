@@ -1,7 +1,10 @@
 import logging
+import os
 import sys
 from logging import StreamHandler as _SH
 from logging.handlers import TimedRotatingFileHandler as _TRFH
+
+PATH = os.path.dirname(os.path.realpath(__file__))
 
 # basic logging configuration
 _COLORS = dict(CRITICAL='\033[95m', FATAL='\033[95m', ERROR='\033[91m',
@@ -99,7 +102,13 @@ class CLogger(object):
 
         # set file handler and file logging
         file_fmt = logging.Formatter(file_fmt, datefmt=date_fmt)
-        filename = './log/{}.log'.format(module)
+
+        # create log folder if not exist already
+        log_dir_path = os.path.join(PATH, 'log')
+        if not os.path.isdir(log_dir_path):
+            os.mkdir(log_dir_path)
+
+        filename = os.path.join(log_dir_path, f'{module}.log')
         file_handler = _TRFH(filename=filename, when='D', interval=1,
                              backupCount=30, encoding='utf-8', delay=False)
         file_handler.setFormatter(file_fmt)
