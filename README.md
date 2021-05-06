@@ -141,7 +141,7 @@ Schritte zum Erstellen einer Distribution:
 
 .spec Datei erstellen und anschließend Distribution erstellen:
 ```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\"  --add-data "..\log\impfterminservice.log;log\" --name windows-terminservice --hidden-import plyer.platforms.win.notification
+pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification
 
 pyinstaller --clean specs/windows-terminservice.spec
 ```     
