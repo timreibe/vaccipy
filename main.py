@@ -7,6 +7,7 @@ from base64 import b64encode
 from datetime import datetime
 from random import choice
 from threading import Thread
+from typing import Dict, List
 
 import requests
 from plyer import notification
@@ -50,7 +51,7 @@ class ImpfterminService():
             quit()
 
         # Verfügbare Impfstoffe laden
-        self.verfuegbare_impfstoffe = {}
+        self.verfuegbare_qualifikationen:List[Dict] = []
         while not self.impfstoffe_laden():
             self.log.warn("Erneuter Versuch in 60 Sekunden")
             time.sleep(60)
@@ -112,17 +113,17 @@ class ImpfterminService():
         res = self.s.get(self.domain + path, timeout=15)
         if res.ok:
             res_json = res.json()
-            self.log.info(f"{len(res_json)} Impfstoffe am Impfzentrum verfügbar")
+            self.verfuegbare_qualifikationen=res_json
 
-            for impfstoff in res_json:
-                qualifikation = impfstoff.get("qualification")
-                name = impfstoff.get("name", "N/A")
-                alter = impfstoff.get("age")
-                intervall = impfstoff.get("interval", "?")
-                self.verfuegbare_impfstoffe[qualifikation] = name
+            # Ausgabe der verfügbaren Impfstoffe:
+            for qualifikation in self.verfuegbare_qualifikationen: 
+                q_id = qualifikation["qualification"]
+                alter = qualifikation.get("age","N/A")
+                intervall = qualifikation.get("interval","?")
+                impfstoffe = qualifikation["tssname"]
                 self.log.info(
-                    f"{qualifikation}: {name} --> Altersgruppe: {alter} --> Intervall: {intervall} Tage")
-            print(" ")
+                    f"{q_id}: Impfstoffe: {impfstoffe} --> Altersgruppe: {alter} --> Intervall: {intervall} Tage")            
+            print("\n")
             return True
 
         self.log.error("Keine Impfstoffe im ausgewählten Impfzentrum verfügbar")
@@ -228,9 +229,10 @@ class ImpfterminService():
         if res.ok:
             # Checken, welche Impfstoffe für das Alter zur Verfügung stehen
             self.qualifikationen = res.json().get("qualifikationen")
-            if self.qualifikationen:
+
+            if self.qualifikationen:    
                 zugewiesene_impfstoffe = ", ".join(
-                    [self.verfuegbare_impfstoffe.get(q, "N/A")
+                    [self.verfuegbare_qualifikationen.get(q, "N/A")
                      for q in self.qualifikationen])
                 self.log.info("Erfolgreich mit Code eingeloggt")
                 self.log.info(f"Qualifizierte Impfstoffe: {zugewiesene_impfstoffe}")
