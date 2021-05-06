@@ -5,7 +5,7 @@ __pycache__/
 *.DS_Store
 
 # log
-tools/log/*
+log/
 
 # data
 kontaktdaten.json 
