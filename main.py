@@ -51,7 +51,7 @@ class ImpfterminService():
             quit()
 
         # Verfügbare Impfstoffe laden
-        self.verfuegbare_qualifikationen:List[Dict] = []
+        self.verfuegbare_qualifikationen: List[Dict] = []
         while not self.impfstoffe_laden():
             self.log.warn("Erneuter Versuch in 60 Sekunden")
             time.sleep(60)
@@ -77,13 +77,13 @@ class ImpfterminService():
 
         res = self.s.get(url, timeout=15)
         if res.ok:
-            # Antwort-JSON umformattieren für einfachere Handhabung
-            formattierte_impfzentren = {}
+            # Antwort-JSON umformatieren für einfachere Handhabung
+            formatierte_impfzentren = {}
             for bundesland, impfzentren in res.json().items():
                 for impfzentrum in impfzentren:
-                    formattierte_impfzentren[impfzentrum["PLZ"]] = impfzentrum
+                    formatierte_impfzentren[impfzentrum["PLZ"]] = impfzentrum
 
-            self.verfuegbare_impfzentren = formattierte_impfzentren
+            self.verfuegbare_impfzentren = formatierte_impfzentren
             self.log.info(f"{len(self.verfuegbare_impfzentren)} Impfzentren verfügbar")
 
             # Prüfen, ob Impfzentrum zur eingetragenen PLZ existiert
@@ -115,17 +115,18 @@ class ImpfterminService():
             res_json = res.json()
             
             for qualifikation in res_json:
-                qualifikation["impfstoffe"] = qualifikation.get("tssname","N/A").replace(" ","").split(",")
+                qualifikation["impfstoffe"] = qualifikation.get("tssname",
+                                                                "N/A").replace(" ", "").split(",")
                 self.verfuegbare_qualifikationen.append(qualifikation)
 
             # Ausgabe der verfügbaren Impfstoffe:
             for qualifikation in self.verfuegbare_qualifikationen: 
                 q_id = qualifikation["qualification"]
                 alter = qualifikation.get("age","N/A")
-                intervall = qualifikation.get("interval","?")
+                intervall = qualifikation.get("interval", " ?")
                 impfstoffe = str(qualifikation["impfstoffe"])
                 self.log.info(
-                    f"{q_id}: Impfstoffe: {impfstoffe} --> Altersgruppe: {alter} --> Intervall: {intervall} Tage")            
+                    f"[{q_id}] Altersgruppe: {alter} (Intervall: {intervall} Tage) --> {impfstoffe}")
             print("\n")
             return True
 
@@ -237,12 +238,12 @@ class ImpfterminService():
                 zugewiesene_impfstoffe = set()
 
                 for q in self.qualifikationen:
-                    for verfügbare_q in self.verfuegbare_qualifikationen:
-                        if verfügbare_q["qualification"] == q: 
-                            zugewiesene_impfstoffe.update(verfügbare_q["impfstoffe"])
+                    for verfuegbare_q in self.verfuegbare_qualifikationen:
+                        if verfuegbare_q["qualification"] == q:
+                            zugewiesene_impfstoffe.update(verfuegbare_q["impfstoffe"])
                 
                 self.log.info("Erfolgreich mit Code eingeloggt")
-                self.log.info(f"Qualifizierte Impfstoffe: {str(zugewiesene_impfstoffe)}")
+                self.log.info(f"Zugewiesene Impfstoffe: {str(zugewiesene_impfstoffe)}")
                 print(" ")
 
                 return True
