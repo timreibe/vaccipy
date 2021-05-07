@@ -113,14 +113,17 @@ class ImpfterminService():
         res = self.s.get(self.domain + path, timeout=15)
         if res.ok:
             res_json = res.json()
-            self.verfuegbare_qualifikationen=res_json
+            
+            for qualifikation in res_json:
+                qualifikation["impfstoffe"] = qualifikation.get("tssname","N/A").replace(" ","").split(",")
+                self.verfuegbare_qualifikationen.append(qualifikation)
 
             # Ausgabe der verfügbaren Impfstoffe:
             for qualifikation in self.verfuegbare_qualifikationen: 
                 q_id = qualifikation["qualification"]
                 alter = qualifikation.get("age","N/A")
                 intervall = qualifikation.get("interval","?")
-                impfstoffe = qualifikation["tssname"]
+                impfstoffe = str(qualifikation["impfstoffe"])
                 self.log.info(
                     f"{q_id}: Impfstoffe: {impfstoffe} --> Altersgruppe: {alter} --> Intervall: {intervall} Tage")            
             print("\n")
@@ -231,11 +234,15 @@ class ImpfterminService():
             self.qualifikationen = res.json().get("qualifikationen")
 
             if self.qualifikationen:    
-                zugewiesene_impfstoffe = ", ".join(
-                    [self.verfuegbare_qualifikationen.get(q, "N/A")
-                     for q in self.qualifikationen])
+                zugewiesene_impfstoffe = set()
+
+                for q in self.qualifikationen:
+                    for verfügbare_q in self.verfuegbare_qualifikationen:
+                        if verfügbare_q["qualification"] == q: 
+                            zugewiesene_impfstoffe.update(verfügbare_q["impfstoffe"])
+                
                 self.log.info("Erfolgreich mit Code eingeloggt")
-                self.log.info(f"Qualifizierte Impfstoffe: {zugewiesene_impfstoffe}")
+                self.log.info(f"Qualifizierte Impfstoffe: {str(zugewiesene_impfstoffe)}")
                 print(" ")
 
                 return True
