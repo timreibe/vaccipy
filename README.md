@@ -2,7 +2,7 @@
 
 `vaccipy` hilft dabei, einen Impftermin beim [Impfterminservice](https://www.impfterminservice.de/) zu buchen. [Zum Download!](#download)
 
-![Beispiel Programmdurchlauf](beispiel_programmdurchlauf.png)
+![Beispiel Programmdurchlauf](images/beispiel_programmdurchlauf.png)
 
 ## Bedanken?
 
@@ -77,7 +77,7 @@ und **bucht ~~den erstbeste~~ einen zufälligen**.
 
 ## Workflow
 
-![workflow](workflow.png)
+![workflow](images/workflow.png)
 
 `vaccipy` nutzt die selben Endpunkte zur Terminbuchung, wie dein Browser.
 
