@@ -243,7 +243,7 @@ class ImpfterminService():
                             zugewiesene_impfstoffe.update(verfuegbare_q["impfstoffe"])
                 
                 self.log.info("Erfolgreich mit Code eingeloggt")
-                self.log.info(f"Zugewiesene Impfstoffe: {str(zugewiesene_impfstoffe)}")
+                self.log.info(f"Mögliche Impfstoffe: {str(zugewiesene_impfstoffe)}")
                 print(" ")
 
                 return True
