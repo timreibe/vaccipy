@@ -7,6 +7,7 @@ from base64 import b64encode
 from datetime import datetime
 from random import choice
 from threading import Thread
+from typing import Dict, List
 
 import requests
 from plyer import notification
@@ -50,7 +51,7 @@ class ImpfterminService():
             quit()
 
         # Verfügbare Impfstoffe laden
-        self.verfuegbare_impfstoffe = {}
+        self.verfuegbare_qualifikationen: List[Dict] = []
         while not self.impfstoffe_laden():
             self.log.warn("Erneuter Versuch in 60 Sekunden")
             time.sleep(60)
@@ -76,13 +77,13 @@ class ImpfterminService():
 
         res = self.s.get(url, timeout=15)
         if res.ok:
-            # Antwort-JSON umformattieren für einfachere Handhabung
-            formattierte_impfzentren = {}
+            # Antwort-JSON umformatieren für einfachere Handhabung
+            formatierte_impfzentren = {}
             for bundesland, impfzentren in res.json().items():
                 for impfzentrum in impfzentren:
-                    formattierte_impfzentren[impfzentrum["PLZ"]] = impfzentrum
+                    formatierte_impfzentren[impfzentrum["PLZ"]] = impfzentrum
 
-            self.verfuegbare_impfzentren = formattierte_impfzentren
+            self.verfuegbare_impfzentren = formatierte_impfzentren
             self.log.info(f"{len(self.verfuegbare_impfzentren)} Impfzentren verfügbar")
 
             # Prüfen, ob Impfzentrum zur eingetragenen PLZ existiert
@@ -112,17 +113,21 @@ class ImpfterminService():
         res = self.s.get(self.domain + path, timeout=15)
         if res.ok:
             res_json = res.json()
-            self.log.info(f"{len(res_json)} Impfstoffe am Impfzentrum verfügbar")
+            
+            for qualifikation in res_json:
+                qualifikation["impfstoffe"] = qualifikation.get("tssname",
+                                                                "N/A").replace(" ", "").split(",")
+                self.verfuegbare_qualifikationen.append(qualifikation)
 
-            for impfstoff in res_json:
-                qualifikation = impfstoff.get("qualification")
-                name = impfstoff.get("name", "N/A")
-                alter = impfstoff.get("age")
-                intervall = impfstoff.get("interval", "?")
-                self.verfuegbare_impfstoffe[qualifikation] = name
+            # Ausgabe der verfügbaren Impfstoffe:
+            for qualifikation in self.verfuegbare_qualifikationen: 
+                q_id = qualifikation["qualification"]
+                alter = qualifikation.get("age","N/A")
+                intervall = qualifikation.get("interval", " ?")
+                impfstoffe = str(qualifikation["impfstoffe"])
                 self.log.info(
-                    f"{qualifikation}: {name} --> Altersgruppe: {alter} --> Intervall: {intervall} Tage")
-            print(" ")
+                    f"[{q_id}] Altersgruppe: {alter} (Intervall: {intervall} Tage) --> {impfstoffe}")
+            print("\n")
             return True
 
         self.log.error("Keine Impfstoffe im ausgewählten Impfzentrum verfügbar")
@@ -228,12 +233,17 @@ class ImpfterminService():
         if res.ok:
             # Checken, welche Impfstoffe für das Alter zur Verfügung stehen
             self.qualifikationen = res.json().get("qualifikationen")
-            if self.qualifikationen:
-                zugewiesene_impfstoffe = ", ".join(
-                    [self.verfuegbare_impfstoffe.get(q, "N/A")
-                     for q in self.qualifikationen])
+
+            if self.qualifikationen:    
+                zugewiesene_impfstoffe = set()
+
+                for q in self.qualifikationen:
+                    for verfuegbare_q in self.verfuegbare_qualifikationen:
+                        if verfuegbare_q["qualification"] == q:
+                            zugewiesene_impfstoffe.update(verfuegbare_q["impfstoffe"])
+                
                 self.log.info("Erfolgreich mit Code eingeloggt")
-                self.log.info(f"Qualifizierte Impfstoffe: {zugewiesene_impfstoffe}")
+                self.log.info(f"Mögliche Impfstoffe: {str(zugewiesene_impfstoffe)}")
                 print(" ")
 
                 return True
