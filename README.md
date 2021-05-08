@@ -4,16 +4,6 @@
 
 ![Beispiel Programmdurchlauf](images/beispiel_programmdurchlauf.png)
 
-## Bedanken?
-
-<a href="https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m">
-<img align="right" width="150" height="150" src="https://www.doctorswithoutborders.org/sites/default/files/badge_2.png">
-</a>
-.. musst du dich nicht - aber es freut uns sehr, wenn wir dir die Terminsuche etwas erleichtern konnten. 
-
-Für den Fall, dass du dein Dank gerne in Geld ausdrücken möchtest, haben wir [hier eine Spendenaktion](https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m) eingerichtet. [ÄRZTE OHNE GRENZEN](www.aerzte-ohne-grenzen.de) leistet weltweit medizinische Nothilfe in Krisen- und Kriegsgebieten und nach Naturkatastrophen.
-
-Es wäre mega cool, wenn du dich daran beteiligst - ist aber vollkommen freiwillig, also no pressure 😉
 
 ## Ausgangssituation
 
@@ -159,8 +149,19 @@ weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 * *... ein paar andere Sachen, wir wollen ja keine schlafenden Hunde wecken ;-)* 
 
 
-# Resources
+## Resources
 - [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
+
+## Bedanken?
+
+<a href="https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m">
+<img align="right" width="150" height="150" src="https://www.doctorswithoutborders.org/sites/default/files/badge_2.png">
+</a>
+.. musst du dich nicht - aber es freut uns sehr, wenn wir dir die Terminsuche etwas erleichtern konnten. 
+
+Für den Fall, dass du dein Dank gerne in Geld ausdrücken möchtest, haben wir [hier eine Spendenaktion](https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m) eingerichtet. [ÄRZTE OHNE GRENZEN](www.aerzte-ohne-grenzen.de) leistet weltweit medizinische Nothilfe in Krisen- und Kriegsgebieten und nach Naturkatastrophen.
+
+Es wäre mega cool, wenn du dich daran beteiligst - ist aber vollkommen freiwillig, also no pressure 😉
 
 # Seid vernünftig und missbraucht das Tool nicht.
 save da world. my final message. goodbye.
