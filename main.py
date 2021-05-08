@@ -429,7 +429,7 @@ def main():
             "hausnummer": hausnummer,
             "plz": wohnort_plz,
             "ort": wohnort,
-            "phone": "+49" + str(telefonnummer),
+            "phone": "+49" + str(telefonnummer).removeprefix("+49").removeprefix("0"),
             "notificationChannel": "email",
             "notificationReceiver": mail,
         }
