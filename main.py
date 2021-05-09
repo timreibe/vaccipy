@@ -316,7 +316,7 @@ class ImpfterminService():
         # Daten für Impftermin sammeln
         data = {
             "plz": self.plz,
-            "slots": [self.terminpaar[0].get("slotId"), self.terminpaar[1].get("slotId")],
+            "slots": [termin.get("slotId") for termin in self.terminpaar],
             "qualifikationen": self.qualifikationen,
             "contact": self.kontakt
         }
