@@ -36,5 +36,5 @@ jobs:
         run: pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification
       
       - name: Build Windows
-        run: pyinstaller --clean specs/windows-terminservice.spec
+        run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec
         
