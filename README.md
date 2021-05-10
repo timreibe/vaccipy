@@ -1,4 +1,5 @@
 # vaccipy
+[![build-windows](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
 
 `vaccipy` hilft dabei, einen Impftermin beim [Impfterminservice](https://www.impfterminservice.de/) zu buchen. [Zum Download!](#download)
 
