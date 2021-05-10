@@ -125,7 +125,7 @@ Aktuelle Pipelines:
 
 ### Generell
 
-Zum Erstellen der Distributionenn wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
+Zum Erstellen der Distributionen wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
 Schritte zum Erstellen einer Distribution: 
 - Erstelle eine .spec Datei für die main.py (einmalig)
 - Erstelle die Distribution basierend auf der erstellten .spec Datei:
