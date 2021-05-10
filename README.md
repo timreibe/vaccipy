@@ -112,7 +112,9 @@ Es gibt noch ein paar Features, die cool wären. Die Ideen werden hier mal gesam
 werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 
 - [ ] Datum eingrenzen bei der Terminwahl
-- [ ] Linux build
+- [ ] Macosx Build / Pipeline
+- [ ] Linux Build / Pipeline
+- [ ] Raspi support
 - [ ] ...
 
 ## Shipping
