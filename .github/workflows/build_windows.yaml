@@ -37,4 +37,40 @@ jobs:
       
       - name: Build Windows
         run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec
-        
+      
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v7 # You can change this to use a specific version
+        with:
+          # The arguments for the `git add` command (see the paragraph below for more info)
+          # Default: '.'
+          add: 'dist/windows-terminservice --force'
+
+          # The name of the user that will be displayed as the author of the commit
+          # Default: depends on the default_author input
+          author_name: build_windows-workflow
+
+          # The local path to the directory where your repository is located. You should use actions/checkout first to set it up
+          # Default: '.'
+          # cwd: '.'
+
+          # Determines the way the action fills missing author name and email. Three options are available:
+          # - github_actor -> UserName <UserName@users.noreply.github.com>
+          # - user_info -> Your Display Name <your-actual@email.com>
+          # - github_actions -> github-actions <email associated with the github logo>
+          # Default:
+          default_author: github_actor
+
+          # The message for the commit
+          # Default: 'Commit from GitHub Actions (name of the workflow)'
+          message: "Windows Build: `date`"
+
+          # Whether to push the commit and, if any, its tags to the repo. It can also be used to set the git push arguments (see the paragraph below for more info)
+          # Default: true
+          # push: false
+
+          # Remove
+          remove: ''
+
+          # Arguments for the git tag command (the tag name always needs to be the first word not preceded by an hyphen)
+          # Default: ''
+          # tag: ''
