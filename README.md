@@ -115,7 +115,14 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 - [ ] ...
 
 ## Shipping
+### Workflows
+Um den Buildprozess zu vereinfachen gibt es verschiedene Buildpipelines, welche bei push Events in den Masterbranch ausgeführt werden.   
+Die pipelines sind im `.github/workflows` Ordner zu finden. 
 
+Aktuelle Pipelines:
+- [x] Windows Build-Pipeline
+
+### Generell
 
 Zum Erstellen der Distributionenn wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
 Schritte zum Erstellen einer Distribution: 
