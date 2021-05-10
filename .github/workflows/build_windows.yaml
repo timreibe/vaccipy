@@ -62,7 +62,7 @@ jobs:
 
           # The message for the commit
           # Default: 'Commit from GitHub Actions (name of the workflow)'
-          message: "Windows Build: `date`"
+          message: "Windows Build: `date +'%Y-%m-%d %H:%M:%S'`"
 
           # Whether to push the commit and, if any, its tags to the repo. It can also be used to set the git push arguments (see the paragraph below for more info)
           # Default: true
