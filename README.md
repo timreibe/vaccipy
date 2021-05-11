@@ -1,9 +1,7 @@
 # vaccipy
 [![build-windows](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
 
-`vaccipy` hilft dabei, einen Impftermin beim [Impfterminservice](https://www.impfterminservice.de/) zu buchen. [Zum Download!](#download)
-
-![Beispiel Programmdurchlauf](images/beispiel_programmdurchlauf.png)
+Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).
 
 <a href="https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
@@ -14,48 +12,6 @@
 Unsere Großeltern möchten sich gerne impfen lassen, aber telefonsich unter 116117 kommen sie nicht durch und das Internet
 ist auch noch immer irgendwie Neuland. Jetzt kommt es zum Konflikt: einerseits möchte man natürlich gerne bei der Terminbuchung helfen,
 andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Computer zu hocken und die Seite zu aktualisieren...
-
-## Distributionen
-
-Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne installation von Python direkt ausgeführt werden können. 
-Die Unterfolder von `dist/` sind jeweils Distributionen die geteilt werden können und eigenständig funktionieren.
-
-Zum Ausführen des Programms, einfach die passende Distribution (basierend auf dem eigenen Betriebssysstem) auswählen und die folgende Datei ausführen. 
-
-*Hinweis: Es wird jeweils immer der gesamte Ordner benötigt!* 
-
-
-### Download 
-Verfügbare Distributionen:
-- [x] [Windows](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice) 
-- [ ] MacOS Intel
-- [ ] MacOS M1 
-- [ ] Linux 
-
-**Ausführung Windows:** 
-- .zip Ordner entpacken
-- Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
-
-
-Für mehr Info zum Verteilen und Erstellen der Distributionen: [Shipping](#Shipping)
-
-## Requirements
-
-* Python 3 (getestet mit Python 3.9)
-* pip (zur Installation der Python-Module, getestet mit pip3)
-
-Die notwendigen Python-Module können mittels pip installiert werden.
-
-```shell    
-pip3 install -r requirements.txt
-```
-
-`vaccipy` kann über die Kommandozeile oder in einer beliebigen python-Entwicklungsumgebung
-ausgeführt werden:
-
-```shell
-python3 main.py
-```
 
 ## Wie funktioniert vaccipy?
 
@@ -103,22 +59,58 @@ Wenn ein Termin verfügbar ist, wird dieser mit den eingetragenen Daten gebucht.
 
 8) Buchen des Impftermins
 
+
 ## Termin gebucht, was nun?
 
 Nachdem dein Termin erfolgreich gebucht wurde, erhälst du eine Mail, in der du zunächst deine 
 Mail-Adresse bestätigen musst. Nachdem du die Mail bestätigt hast, erhälst du zu jedem Termin 
 eine Buchungsbestätigung. That's it!
 
-## Das könnte noch kommen
+## Programmdurchlauf
+![Beispiel Programmdurchlauf](images/beispiel_programmdurchlauf.png)
 
-Es gibt noch ein paar Features, die cool wären. Die Ideen werden hier mal gesammelt und
-werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 
-- [ ] Datum eingrenzen bei der Terminwahl
-- [ ] Macosx Build / Pipeline
-- [ ] Linux Build / Pipeline
-- [ ] Raspi support
-- [ ] ...
+## Requirements
+
+* Python 3 (getestet mit Python 3.9)
+* pip (zur Installation der Python-Module, getestet mit pip3)
+
+Die notwendigen Python-Module können mittels pip installiert werden.
+
+```shell    
+pip3 install -r requirements.txt
+```
+
+`vaccipy` kann über die Kommandozeile oder in einer beliebigen python-Entwicklungsumgebung
+ausgeführt werden:
+
+```shell
+python3 main.py
+```
+
+## Distributionen
+
+Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne installation von Python direkt ausgeführt werden können. 
+Die Unterfolder von `dist/` sind jeweils Distributionen die geteilt werden können und eigenständig funktionieren.
+
+Zum Ausführen des Programms, einfach die passende Distribution (basierend auf dem eigenen Betriebssysstem) auswählen und die folgende Datei ausführen. 
+
+*Hinweis: Es wird jeweils immer der gesamte Ordner benötigt!* 
+
+
+### Download 
+Verfügbare Distributionen:
+- [x] [Windows](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice) 
+- [ ] MacOS Intel
+- [ ] MacOS M1 
+- [ ] Linux 
+
+**Ausführung Windows:** 
+- .zip Ordner entpacken
+- Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
+
+
+Für mehr Info zum Verteilen und Erstellen der Distributionen: [Shipping](#Shipping)
 
 ## Shipping
 ### Workflows
@@ -149,6 +141,18 @@ pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\ch
 pyinstaller --clean specs/windows-terminservice.spec
 ```     
 
+### Resources
+- [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
+
+## Das könnte noch kommen
+
+Es gibt noch ein paar Features, die cool wären. Die Ideen werden hier mal gesammelt und
+werden (von uns oder euch - feel free!) irgendwann hinzukommen:
+
+- [ ] Datum eingrenzen bei der Terminwahl
+- [ ] Macosx Build / Pipeline
+- [ ] Linux Build / Pipeline
+- [ ] Raspi support
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
 
@@ -159,18 +163,14 @@ weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 * Filterung der verfügbaren Termine nach Impfstoff
 * Möglichkeit zum Eintragen mehrerer Impf-Codes und Kontaktdaten
 * Headless Selenium Support
-* *... ein paar andere Sachen, wir wollen ja keine schlafenden Hunde wecken ;-)* 
 
-
-## Resources
-- [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
 
 ## Bedanken?
 
 <a href="https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m">
 <img align="right" width="150" height="150" src="https://www.doctorswithoutborders.org/sites/default/files/badge_2.png">
 </a>
-.. musst du dich nicht - aber es freut uns sehr, wenn wir dir die Terminsuche etwas erleichtern konnten. 
+.. musst du dich nicht. Es freut uns sehr, wenn wir dir die Terminsuche etwas erleichtern konnten. 
 
 Für den Fall, dass du dein Dank gerne in Geld ausdrücken möchtest, haben wir [hier eine Spendenaktion](https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m) eingerichtet. [ÄRZTE OHNE GRENZEN](www.aerzte-ohne-grenzen.de) leistet weltweit medizinische Nothilfe in Krisen- und Kriegsgebieten und nach Naturkatastrophen.
 
