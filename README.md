@@ -1,7 +1,7 @@
 # vaccipy
 [![build-windows](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
 
-`vaccipy` - Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).
+Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).
 
 <a href="https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
