@@ -226,7 +226,6 @@ class ImpfterminService():
 
         :return: bool
         """
-
         path = f"rest/login?plz={self.plz}"
 
         res = self.s.get(self.domain + path, timeout=15)
@@ -356,9 +355,12 @@ class ImpfterminService():
 
         its = ImpfterminService(code, plz, kontakt)
         its.cookies_erneuern()
-        while not its.login():
-            its.cookies_erneuern()
-            time.sleep(3)
+
+        # quick & dirty login fix: überspringen!
+        #
+        # while not its.login():
+        #     its.cookies_erneuern()
+        #     time.sleep(3)
 
         while True:
             termin_gefunden = False
@@ -418,7 +420,7 @@ def main():
         hausnummer = input("Hausnummer: ")
         wohnort_plz = input("PLZ des Wohnorts: ")
         wohnort = input("Wohnort: ")
-        telefonnummer = input("Telefonnummer: ")
+        telefonnummer = input("Telefonnummer: +49")
         mail = input("Mail: ")
 
         kontakt = {
@@ -429,7 +431,7 @@ def main():
             "hausnummer": hausnummer,
             "plz": wohnort_plz,
             "ort": wohnort,
-            "phone": "+49" + str(telefonnummer).removeprefix("+49").removeprefix("0"),
+            "phone": f"+49{telefonnummer}",
             "notificationChannel": "email",
             "notificationReceiver": mail,
         }
