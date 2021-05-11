@@ -5,6 +5,9 @@
 
 ![Beispiel Programmdurchlauf](images/beispiel_programmdurchlauf.png)
 
+<a href="https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice">
+<img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
+</a>
 
 ## Ausgangssituation
 
@@ -24,7 +27,7 @@ Zum Ausführen des Programms, einfach die passende Distribution (basierend auf d
 
 ### Download 
 Verfügbare Distributionen:
-- [x] [Download Windows](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice) 
+- [x] [Windows](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice) 
 - [ ] MacOS Intel
 - [ ] MacOS M1 
 - [ ] Linux 
