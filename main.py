@@ -242,14 +242,15 @@ class ImpfterminService():
                             zugewiesene_impfstoffe.update(verfuegbare_q["impfstoffe"])
                 
                 self.log.info("Erfolgreich mit Code eingeloggt")
-                self.log.info(f"Mögliche Impfstoffe: {str(zugewiesene_impfstoffe)}")
+                self.log.info(f"Mögliche Impfstoffe: {list(zugewiesene_impfstoffe)}")
                 print(" ")
 
                 return True
             else:
-                self.log.error("Keine qualifizierten Impfstoffe verfügbar!")
+                self.log.warn("Keine qualifizierten Impfstoffe verfügbar")
         else:
-            self.log.error("Einloggen mit Code nicht möglich!")
+            self.log.warn("Einloggen mit Code nicht möglich")
+        print(" ")
         return False
 
     @retry_on_failure()
@@ -356,11 +357,8 @@ class ImpfterminService():
         its = ImpfterminService(code, plz, kontakt)
         its.cookies_erneuern()
 
-        # quick & dirty login fix: überspringen!
-        #
-        # while not its.login():
-        #     its.cookies_erneuern()
-        #     time.sleep(3)
+        # login ist nicht zwingend erforderlich
+        its.login()
 
         while True:
             termin_gefunden = False
