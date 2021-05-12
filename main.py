@@ -113,16 +113,16 @@ class ImpfterminService():
         res = self.s.get(self.domain + path, timeout=15)
         if res.ok:
             res_json = res.json()
-            
+
             for qualifikation in res_json:
                 qualifikation["impfstoffe"] = qualifikation.get("tssname",
                                                                 "N/A").replace(" ", "").split(",")
                 self.verfuegbare_qualifikationen.append(qualifikation)
 
             # Ausgabe der verfügbaren Impfstoffe:
-            for qualifikation in self.verfuegbare_qualifikationen: 
+            for qualifikation in self.verfuegbare_qualifikationen:
                 q_id = qualifikation["qualification"]
-                alter = qualifikation.get("age","N/A")
+                alter = qualifikation.get("age", "N/A")
                 intervall = qualifikation.get("interval", " ?")
                 impfstoffe = str(qualifikation["impfstoffe"])
                 self.log.info(
@@ -233,14 +233,14 @@ class ImpfterminService():
             # Checken, welche Impfstoffe für das Alter zur Verfügung stehen
             self.qualifikationen = res.json().get("qualifikationen")
 
-            if self.qualifikationen:    
+            if self.qualifikationen:
                 zugewiesene_impfstoffe = set()
 
                 for q in self.qualifikationen:
                     for verfuegbare_q in self.verfuegbare_qualifikationen:
                         if verfuegbare_q["qualification"] == q:
                             zugewiesene_impfstoffe.update(verfuegbare_q["impfstoffe"])
-                
+
                 self.log.info("Erfolgreich mit Code eingeloggt")
                 self.log.info(f"Mögliche Impfstoffe: {list(zugewiesene_impfstoffe)}")
                 print(" ")
