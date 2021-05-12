@@ -18,7 +18,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from tools.clog import CLogger
-from tools.utils import retry_on_failure
+from tools.utils import retry_on_failure, remove_prefix
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -113,16 +113,16 @@ class ImpfterminService():
         res = self.s.get(self.domain + path, timeout=15)
         if res.ok:
             res_json = res.json()
-            
+
             for qualifikation in res_json:
                 qualifikation["impfstoffe"] = qualifikation.get("tssname",
                                                                 "N/A").replace(" ", "").split(",")
                 self.verfuegbare_qualifikationen.append(qualifikation)
 
             # Ausgabe der verfügbaren Impfstoffe:
-            for qualifikation in self.verfuegbare_qualifikationen: 
+            for qualifikation in self.verfuegbare_qualifikationen:
                 q_id = qualifikation["qualification"]
-                alter = qualifikation.get("age","N/A")
+                alter = qualifikation.get("age", "N/A")
                 intervall = qualifikation.get("interval", " ?")
                 impfstoffe = str(qualifikation["impfstoffe"])
                 self.log.info(
@@ -226,7 +226,6 @@ class ImpfterminService():
 
         :return: bool
         """
-
         path = f"rest/login?plz={self.plz}"
 
         res = self.s.get(self.domain + path, timeout=15)
@@ -234,23 +233,24 @@ class ImpfterminService():
             # Checken, welche Impfstoffe für das Alter zur Verfügung stehen
             self.qualifikationen = res.json().get("qualifikationen")
 
-            if self.qualifikationen:    
+            if self.qualifikationen:
                 zugewiesene_impfstoffe = set()
 
                 for q in self.qualifikationen:
                     for verfuegbare_q in self.verfuegbare_qualifikationen:
                         if verfuegbare_q["qualification"] == q:
                             zugewiesene_impfstoffe.update(verfuegbare_q["impfstoffe"])
-                
+
                 self.log.info("Erfolgreich mit Code eingeloggt")
-                self.log.info(f"Mögliche Impfstoffe: {str(zugewiesene_impfstoffe)}")
+                self.log.info(f"Mögliche Impfstoffe: {list(zugewiesene_impfstoffe)}")
                 print(" ")
 
                 return True
             else:
-                self.log.error("Keine qualifizierten Impfstoffe verfügbar!")
+                self.log.warn("Keine qualifizierten Impfstoffe verfügbar")
         else:
-            self.log.error("Einloggen mit Code nicht möglich!")
+            self.log.warn("Einloggen mit Code nicht möglich")
+        print(" ")
         return False
 
     @retry_on_failure()
@@ -356,9 +356,9 @@ class ImpfterminService():
 
         its = ImpfterminService(code, plz, kontakt)
         its.cookies_erneuern()
-        while not its.login():
-            its.cookies_erneuern()
-            time.sleep(3)
+
+        # login ist nicht zwingend erforderlich
+        its.login()
 
         while True:
             termin_gefunden = False
@@ -418,8 +418,13 @@ def main():
         hausnummer = input("Hausnummer: ")
         wohnort_plz = input("PLZ des Wohnorts: ")
         wohnort = input("Wohnort: ")
-        telefonnummer = input("Telefonnummer: ")
+        telefonnummer = input("Telefonnummer: +49")
         mail = input("Mail: ")
+
+        # Anführende Zahlen und Leerzeichen entfernen
+        telefonnummer = telefonnummer.strip()
+        telefonnummer = remove_prefix(telefonnummer, "+49")
+        telefonnummer = remove_prefix(telefonnummer, "0")
 
         kontakt = {
             "anrede": anrede,
@@ -429,7 +434,7 @@ def main():
             "hausnummer": hausnummer,
             "plz": wohnort_plz,
             "ort": wohnort,
-            "phone": "+49" + str(telefonnummer).removeprefix("+49").removeprefix("0"),
+            "phone": f"+49{telefonnummer}",
             "notificationChannel": "email",
             "notificationReceiver": mail,
         }
