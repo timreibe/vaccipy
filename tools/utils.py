@@ -69,3 +69,9 @@ def retry_on_failure(retries=10):
         return wrapper
 
     return retry_function
+
+
+def remove_prefix(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    return text
