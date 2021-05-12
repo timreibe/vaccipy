@@ -118,7 +118,7 @@ Um den Buildprozess zu vereinfachen gibt es verschiedene Buildpipelines, welche 
 Die pipelines sind im `.github/workflows` Ordner zu finden. 
 
 Aktuelle Pipelines:
-- [x] Windows Build-Pipeline
+- [x] [Windows Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
 
 ### Generell
 
@@ -153,6 +153,7 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 - [ ] Macosx Build / Pipeline
 - [ ] Linux Build / Pipeline
 - [ ] Raspi support
+- [ ] Code Zertifikate für Windows
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
 
