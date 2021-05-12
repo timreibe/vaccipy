@@ -18,7 +18,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from tools.clog import CLogger
-from tools.utils import retry_on_failure
+from tools.utils import retry_on_failure, remove_prefix
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -420,6 +420,11 @@ def main():
         wohnort = input("Wohnort: ")
         telefonnummer = input("Telefonnummer: +49")
         mail = input("Mail: ")
+
+        # Anführende Zahlen und Leerzeichen entfernen
+        telefonnummer = telefonnummer.strip()
+        telefonnummer = remove_prefix(telefonnummer, "+49")
+        telefonnummer = remove_prefix(telefonnummer, "0")
 
         kontakt = {
             "anrede": anrede,
