@@ -6,13 +6,16 @@ on:
   # Triggers the workflow on push events but only for the master branch
   push:
     branches: [ master ]
-    paths: 
-      - "!.github/workflows**"
-      - "!dist/**"
-      - "!images/**"
-      - "!**/README.md"
-      - "!**/.gitignore"
-      - "!**.md"
+    paths-ignore: 
+      - ".github/workflows**"
+      - "dist/**"
+      - "images/**"
+      - "**.md"
+      - "**.gitignore"
+      - "**clog.py"
+      - "**LICENSE"
+
+    
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:

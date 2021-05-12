@@ -72,6 +72,9 @@ def retry_on_failure(retries=10):
 
 
 def remove_prefix(text, prefix):
+    """
+    Entfernt einen gegebenen String vom Angang des Textes.
+    """
     if text.startswith(prefix):
         return text[len(prefix):]
     return text
