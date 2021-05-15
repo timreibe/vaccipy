@@ -12,7 +12,6 @@ on:
       - "images/**"
       - "**.md"
       - "**.gitignore"
-      - "**clog.py"
       - "**LICENSE"
       - "**-windows**"
       - "**-linux**"
