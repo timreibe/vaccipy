@@ -152,7 +152,6 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 - [ ] Datum eingrenzen bei der Terminwahl
 - [ ] Macosx Build / Pipeline
 - [ ] Linux Build / Pipeline
-- [ ] Raspi support
 - [ ] Code Zertifikate für Windows
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
