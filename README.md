@@ -4,7 +4,7 @@
 Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).
 
 ## Schnellstart:
-Für einen Schnellstart den passenden Download auswählen und hier weiterlesen: [Schnellstart / Distributionen](#schnellstart-/-distributionen)
+Für einen Schnellstart den passenden Download auswählen und hier weiterlesen: [Schnellstart / Distributionen](#schnellstart--distributionen)
 
 <a href="https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
