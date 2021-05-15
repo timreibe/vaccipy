@@ -43,9 +43,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Make Windows .spec
-        run: pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification
-      
       - name: Build Windows
         run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec
       
