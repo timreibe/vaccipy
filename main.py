@@ -2,7 +2,6 @@ import json
 import os
 import platform
 import time
-import traceback
 from base64 import b64encode
 from datetime import datetime
 from random import choice
@@ -10,12 +9,14 @@ from threading import Thread
 from typing import Dict, List
 
 import requests
+import traceback
 from plyer import notification
 from selenium.webdriver import ActionChains
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 
 from tools.clog import CLogger
 from tools.utils import retry_on_failure, remove_prefix
@@ -136,21 +137,10 @@ class ImpfterminService():
     @retry_on_failure()
     def cookies_erneuern(self):
         self.log.info("Browser-Cookies generieren")
-        # Chromedriver anhand des OS auswählen
-        chromedriver = None
-        if 'linux' in self.operating_system:
-            chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux")
-        elif 'windows' in self.operating_system:
-            chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-windows.exe")
-        elif 'darwin' in self.operating_system:
-            if "arm" in platform.processor().lower():
-                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-mac-m1")
-            else:
-                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-mac-intel")
 
         path = "impftermine/service?plz={}".format(self.plz)
 
-        with Chrome(chromedriver) as driver:
+        with Chrome(ChromeDriverManager().install()) as driver:
             driver.get(self.domain + path)
 
             # Queue Bypass
