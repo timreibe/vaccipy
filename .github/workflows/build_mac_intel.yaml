@@ -1,0 +1,52 @@
+# Build Mac-Intel workflow
+name: build-mac-intel
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push events but only for the master branch
+  push:
+    branches: [ master ]
+    paths-ignore: 
+      - ".github/workflows**"
+      - "dist/**"
+      - "images/**"
+      - "**.md"
+      - "**.gitignore"
+      - "**clog.py"
+      - "**LICENSE"
+      - "**-windows**"
+      - "**-linux**"
+
+    
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements.txt
+
+      - name: Build MacOS Intel
+        run: pyinstaller --clean --noconfirm specs/mac-intel-terminservice.spec
+      
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v7 # You can change this to use a specific version
+        with:
+          # The arguments for the `git add` command (see the paragraph below for more info)
+          # Default: '.'
+          add: 'dist/mac-intel-terminservice --force'
+
+          author_name: build_mac-intel-workflow
+
+          message: "Mac-Intel build workflow"

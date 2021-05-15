@@ -3,6 +3,9 @@
 
 Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).
 
+## Schnellstart:
+Für einen Schnellstart den passenden Download auswählen und hier weiterlesen: [Schnellstart / Distributionen](#schnellstart-/-distributionen)
+
 <a href="https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
 </a>
@@ -88,7 +91,7 @@ ausgeführt werden:
 python3 main.py
 ```
 
-## Distributionen
+## Schnellstart / Distributionen
 
 Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne installation von Python direkt ausgeführt werden können. 
 Die Unterfolder von `dist/` sind jeweils Distributionen die geteilt werden können und eigenständig funktionieren.
@@ -101,7 +104,7 @@ Zum Ausführen des Programms, einfach die passende Distribution (basierend auf d
 ### Download 
 Verfügbare Distributionen:
 - [x] [Windows](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice) 
-- [ ] MacOS Intel
+- [x] [MacOS Intel](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fmac-intel-terminservice)
 - [ ] MacOS M1 
 - [ ] Linux 
 
@@ -109,16 +112,22 @@ Verfügbare Distributionen:
 - .zip Ordner entpacken
 - Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
 
+**Ausführung Mac**
+- -zip Ordner entpacken
+- Im `mac-intel-terminservice`-Ordner die `mac-intel-terminservice` mit einem Doppelclick ausführen.
 
 Für mehr Info zum Verteilen und Erstellen der Distributionen: [Shipping](#Shipping)
 
 ## Shipping
 ### Workflows
 Um den Buildprozess zu vereinfachen gibt es verschiedene Buildpipelines, welche bei push Events in den Masterbranch ausgeführt werden.   
-Die pipelines sind im `.github/workflows` Ordner zu finden. 
+Die pipelines sind im `.github/workflows` Ordner zu finden.
+
+Ein Workflow erstellt ein neues Build anhand der gegebenen .spec Datei! Diese muss ggf. manuell geändert werden!
 
 Aktuelle Pipelines:
 - [x] [Windows Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
+- [x] [Mac-Intel Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_mac_intel.yaml)
 
 ### Generell
 
@@ -126,20 +135,32 @@ Zum Erstellen der Distributionen wird [pyinstaller](https://pyinstaller.readthed
 Schritte zum Erstellen einer Distribution: 
 - Erstelle eine .spec Datei für die main.py (einmalig)
 - Erstelle die Distribution basierend auf der erstellten .spec Datei:
-    ```shell
-    pyinstaller --clean specs/SPECNAME.spec
-    ```
-    Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.  
+
+Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` Ordner zu finden.  
 
 
 ### Windows
 
-.spec Datei erstellen und anschließend Distribution erstellen:
+.spec Datei erstellen:
 ```shell
 pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification
-
+```
+Distribution erstellen (automatisiert in Build-Pipeline):
+```shell
 pyinstaller --clean specs/windows-terminservice.spec
 ```     
+
+### Mac Intel
+
+.spec Datei erstellen:
+```shell
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-mac-intel:tools/chromedriver/" --name mac-intel-terminservice
+```
+
+Distribution erstellen (automatisiert in Build-Pipeline):
+```shell
+pyinstaller --clean specs/mac-intel-terminservice.spec
+```    
 
 ### Resources
 - [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
@@ -150,7 +171,7 @@ Es gibt noch ein paar Features, die cool wären. Die Ideen werden hier mal gesam
 werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 
 - [ ] Datum eingrenzen bei der Terminwahl
-- [ ] Macosx Build / Pipeline
+- [ ] Mac M1 Build / Pipeline
 - [ ] Linux Build / Pipeline
 - [ ] Code Zertifikate für Windows
 
