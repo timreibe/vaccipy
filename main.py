@@ -445,7 +445,7 @@ def main():
             "Trage nun die PLZ deines Impfzentrums ein. Für mehrere Impfzentren die PLZ's kommagetrennt nacheinander.\n"
             "Beispiel: 68163, 69124, 69469\n")
         plz_impfzentren = input("> PLZ's der Impfzentren: ")
-        plz_impfzentren = [plz.strip() for plz in plz_impfzentren.split(",")]
+        plz_impfzentren = list(set([plz.strip() for plz in plz_impfzentren.split(",")]))
 
         anrede = input("\n> Anrede (Frau/Herr/...): ")
         vorname = input("> Vorname: ")
