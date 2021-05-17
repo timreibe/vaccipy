@@ -490,9 +490,17 @@ def main():
 
     try:
         code = kontaktdaten["code"]
-        plz_impfzentren = kontaktdaten["plz_impfzentren"]
+
+        # Hinweis, wenn noch alte Version der Kontaktdaten.json verwendet wird
+        if kontaktdaten.get("plz"):
+            print("\nACHTUNG: Du verwendest noch die alte Version der 'Kontaktdaten.json'!\n"
+                  "Lösche vor dem nächsten Ausführen die Datei und fülle die Kontaktdaten bitte erneut aus.")
+            plz_impfzentren = [kontaktdaten.get("plz")]
+        else:
+            plz_impfzentren = kontaktdaten["plz_impfzentren"]
+
         kontakt = kontaktdaten["kontakt"]
-        print(f"Kontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
+        print(f"\nKontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
     except KeyError as exc:
         print("Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
               "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
