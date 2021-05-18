@@ -153,6 +153,7 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 - [ ] Macosx Build / Pipeline
 - [ ] Linux Build / Pipeline
 - [ ] Code Zertifikate für Windows
+- [ ] Artifacts, Packages und Releases
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
 
