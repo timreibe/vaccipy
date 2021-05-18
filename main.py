@@ -401,8 +401,10 @@ class ImpfterminService():
         res = self.s.post(self.domain + path, json=data, timeout=15)
         if res.ok:
             self.log.success("Der Impf-Code wurde erfolgreich angefragt, bitte prüfe deine Mails!")
+            return True
         else:
             self.log.error("Code-Verifikation fehlgeschlagen", res.text)
+            return False
 
     @staticmethod
     def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, check_delay: int = 30):
