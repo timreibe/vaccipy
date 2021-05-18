@@ -6,8 +6,7 @@ on:
   # Triggers the workflow on push events but only for the master branch
   push:
     branches: [ master ]
-    paths-ignore: 
-      - ".github/workflows**"
+    paths-ignore:
       - "dist/**"
       - "images/**"
       - "**.md"
@@ -43,9 +42,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Make Windows .spec
-        run: pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification
-      
       - name: Build Windows
         run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec
       
