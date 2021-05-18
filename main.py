@@ -2,6 +2,8 @@ import json
 import os
 import platform
 import time
+import sys
+
 from base64 import b64encode
 from datetime import datetime
 from random import choice
@@ -25,17 +27,20 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class ImpfterminService():
-    def __init__(self, code: str, plz: str, kontakt: dict):
+    def __init__(self, code: str, plz_impfzentren: list, kontakt: dict):
         self.code = str(code).upper()
         self.splitted_code = self.code.split("-")
 
-        self.plz = str(plz)
+        # PLZ's zu String umwandeln
+        self.plz_impfzentren = sorted([str(plz) for plz in plz_impfzentren])
+        self.plz_termin = None
+
         self.kontakt = kontakt
         self.authorization = b64encode(bytes(f":{code}", encoding='utf-8')).decode("utf-8")
 
         # Logging einstellen
         self.log = CLogger("impfterminservice")
-        self.log.set_prefix(f"*{self.code[-4:]} | {self.plz}")
+        self.log.set_prefix(f"*{self.code[-4:]} | {', '.join(self.plz_impfzentren)}")
 
         # Session erstellen
         self.s = requests.Session()
@@ -74,6 +79,7 @@ class ImpfterminService():
 
         :return: bool
         """
+
         url = "https://www.impfterminservice.de/assets/static/impfzentren.json"
 
         res = self.s.get(url, timeout=15)
@@ -87,17 +93,24 @@ class ImpfterminService():
             self.verfuegbare_impfzentren = formatierte_impfzentren
             self.log.info(f"{len(self.verfuegbare_impfzentren)} Impfzentren verfügbar")
 
-            # Prüfen, ob Impfzentrum zur eingetragenen PLZ existiert
-            self.impfzentrum = self.verfuegbare_impfzentren.get(self.plz)
-            if self.impfzentrum:
-                self.domain = self.impfzentrum.get("URL")
-                self.log.info("'{}' in {} {} ausgewählt".format(
-                    self.impfzentrum.get("Zentrumsname").strip(),
-                    self.impfzentrum.get("PLZ"),
-                    self.impfzentrum.get("Ort")))
+            # Prüfen, ob Impfzentren zur eingetragenen PLZ existieren
+            plz_geprueft = []
+            for plz in self.plz_impfzentren:
+                self.impfzentrum = self.verfuegbare_impfzentren.get(plz)
+                if self.impfzentrum:
+                    self.domain = self.impfzentrum.get("URL")
+                    self.log.info("'{}' in {} {} ausgewählt".format(
+                        self.impfzentrum.get("Zentrumsname").strip(),
+                        self.impfzentrum.get("PLZ"),
+                        self.impfzentrum.get("Ort")))
+                    plz_geprueft.append(plz)
+
+            if plz_geprueft:
+                self.plz_impfzentren = plz_geprueft
                 return True
             else:
-                self.log.error(f"Kein Impfzentrum in PLZ {self.plz} verfügbar")
+                self.log.error("Kein Impfzentrum zu eingetragenen PLZ's verfügbar.")
+                return False
         else:
             self.log.error("Impfzentren können nicht geladen werden")
         return False
@@ -128,7 +141,7 @@ class ImpfterminService():
                 impfstoffe = str(qualifikation["impfstoffe"])
                 self.log.info(
                     f"[{q_id}] Altersgruppe: {alter} (Intervall: {intervall} Tage) --> {impfstoffe}")
-            print("\n")
+            print("")
             return True
 
         self.log.error("Keine Impfstoffe im ausgewählten Impfzentrum verfügbar")
@@ -138,7 +151,22 @@ class ImpfterminService():
     def cookies_erneuern(self):
         self.log.info("Browser-Cookies generieren")
 
-        path = "impftermine/service?plz={}".format(self.plz)
+        # Chromedriver anhand des OS auswählen
+        chromedriver = None
+        if 'linux' in self.operating_system:
+            if "64" in platform.architecture() or sys.maxsize > 2**32:
+                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux-64")
+            else:
+                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux-32")
+        elif 'windows' in self.operating_system:
+            chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-windows.exe")
+        elif 'darwin' in self.operating_system:
+            if "arm" in platform.processor().lower():
+                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-mac-m1")
+            else:
+                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-mac-intel")
+
+        path = "impftermine/service?plz={}".format(choice(self.plz_impfzentren))
 
         with Chrome(ChromeDriverManager().install()) as driver:
             driver.get(self.domain + path)
@@ -216,7 +244,7 @@ class ImpfterminService():
 
         :return: bool
         """
-        path = f"rest/login?plz={self.plz}"
+        path = f"rest/login?plz={choice(self.plz_impfzentren)}"
 
         res = self.s.get(self.domain + path, timeout=15)
         if res.ok:
@@ -244,7 +272,7 @@ class ImpfterminService():
         return False
 
     @retry_on_failure()
-    def terminsuche(self):
+    def terminsuche(self, plz):
         """Es wird nach einen verfügbaren Termin in der gewünschten PLZ gesucht.
         Ausgewählt wird der erstbeste Termin (!).
         Zurückgegeben wird das Ergebnis der Abfrage und der Status-Code.
@@ -265,7 +293,7 @@ class ImpfterminService():
         :return: bool, status-code
         """
 
-        path = f"rest/suche/impfterminsuche?plz={self.plz}"
+        path = f"rest/suche/impfterminsuche?plz={plz}"
 
         while True:
             res = self.s.get(self.domain + path, timeout=15)
@@ -280,15 +308,20 @@ class ImpfterminService():
             if terminpaare:
                 # Auswahl des erstbesten Terminpaares
                 self.terminpaar = choice(terminpaare)
-                self.log.success("Terminpaar gefunden!")
-
+                self.plz_termin = plz
+                self.log.success(f"Terminpaar gefunden!")
+                self.impfzentrum = self.verfuegbare_impfzentren.get(plz)
+                self.log.success("'{}' in {} {}".format(
+                    self.impfzentrum.get("Zentrumsname").strip(),
+                    self.impfzentrum.get("PLZ"),
+                    self.impfzentrum.get("Ort")))
                 for num, termin in enumerate(self.terminpaar, 1):
                     ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                         '%d.%m.%Y um %H:%M Uhr')
                     self.log.success(f"{num}. Termin: {ts}")
                 return True, 200
             else:
-                self.log.info("Keine Termine verfügbar")
+                self.log.info(f"Keine Termine verfügbar in {plz}")
         else:
             self.log.error("Terminpaare können nicht geladen werden")
         return False, res.status_code
@@ -305,7 +338,7 @@ class ImpfterminService():
 
         # Daten für Impftermin sammeln
         data = {
-            "plz": self.plz,
+            "plz": self.plz_termin,
             "slots": [termin.get("slotId") for termin in self.terminpaar],
             "qualifikationen": self.qualifikationen,
             "contact": self.kontakt
@@ -334,17 +367,17 @@ class ImpfterminService():
             return False
 
     @staticmethod
-    def run(code: str, plz: str, kontakt: json, check_delay: int = 60):
+    def run(code: str, plz_impfzentren: list, kontakt: dict, check_delay: int = 30):
         """Workflow für die Terminbuchung.
 
         :param code: 14-stelliger Impf-Code
-        :param plz: PLZ des Impfzentrums
+        :param plz_impfzentren: Liste mit PLZ von Impfzentren
         :param kontakt: Kontaktdaten der zu impfenden Person als JSON
         :param check_delay: Zeit zwischen Iterationen der Terminsuche
         :return:
         """
 
-        its = ImpfterminService(code, plz, kontakt)
+        its = ImpfterminService(code, plz_impfzentren, kontakt)
         its.cookies_erneuern()
 
         # login ist nicht zwingend erforderlich
@@ -353,14 +386,27 @@ class ImpfterminService():
         while True:
             termin_gefunden = False
             while not termin_gefunden:
-                termin_gefunden, status_code = its.terminsuche()
-                if status_code >= 400:
-                    its.cookies_erneuern()
-                elif not termin_gefunden:
-                    time.sleep(check_delay)
 
+                # durchlaufe jede eingegebene PLZ und suche nach Termin
+                for plz in its.plz_impfzentren:
+                    termin_gefunden, status_code = its.terminsuche(plz)
+
+                    # Durchlauf aller PLZ unterbrechen, wenn Termin gefunden wurde
+                    if termin_gefunden:
+                        break
+                    # Cookies erneuern
+                    elif status_code >= 400:
+                        its.cookies_erneuern()
+                    # Suche pausieren
+                    if not termin_gefunden:
+                        time.sleep(check_delay)
+
+            # Programm beenden, wenn Termin gefunden wurde
             if its.termin_buchen():
-                break
+                return True
+
+            # Pausieren, wenn Terminbuchung nicht möglich war
+            # Anschließend nach neuem Termin suchen
             time.sleep(30)
 
     def _desktop_notification(self, title: str, message: str):
@@ -383,33 +429,40 @@ class ImpfterminService():
 
 
 def main():
-    print("vaccipy 1.0\n")
+    print("vaccipy - Automatische Terminbuchung für den Corona Impfterminservice")
 
     # Check, ob die Datei "kontaktdaten.json" existiert
     kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
     kontaktdaten_erstellen = True
     if os.path.isfile(kontaktdaten_path):
-        daten_laden = input(
-            "Sollen die vorhandene Daten aus 'kontaktdaten.json' geladen werden (y/n)?: ").lower()
-        if daten_laden != "n":
+        daten_laden = input("\n> Sollen die vorhandene Daten aus 'kontaktdaten.json' "
+                            "geladen werden (y/n)?: ").lower()
+        if daten_laden.lower() != "n":
             kontaktdaten_erstellen = False
 
     if kontaktdaten_erstellen:
-        print("Bitte trage zunächst deinen Impfcode und deine Kontaktdaten ein.\n"
+        print("\nBitte trage zunächst deinen Impfcode und deine Kontaktdaten ein.\n"
               "Die Daten werden anschließend lokal in der Datei 'kontaktdaten.json' abgelegt.\n"
               "Du musst sie zukünftig nicht mehr eintragen.\n")
-        code = input("Code: ")
-        plz = input("PLZ des Impfzentrums: ")
+        code = input("> Code: ")
+        print(
+            "\nMit einem Code kann in mehreren Impfzentren gleichzeitig nach einem Termin gesucht werden.\n"
+            "Eine Übersicht über die Gruppierung der Impfzentren findest du hier:\n"
+            "https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren\n\n"
+            "Trage nun die PLZ deines Impfzentrums ein. Für mehrere Impfzentren die PLZ's kommagetrennt nacheinander.\n"
+            "Beispiel: 68163, 69124, 69469\n")
+        plz_impfzentren = input("> PLZ's der Impfzentren: ")
+        plz_impfzentren = list(set([plz.strip() for plz in plz_impfzentren.split(",")]))
 
-        anrede = input("Anrede (Frau/Herr/...): ")
-        vorname = input("Vorname: ")
-        nachname = input("Nachname: ")
-        strasse = input("Strasse: ")
-        hausnummer = input("Hausnummer: ")
-        wohnort_plz = input("PLZ des Wohnorts: ")
-        wohnort = input("Wohnort: ")
-        telefonnummer = input("Telefonnummer: +49")
-        mail = input("Mail: ")
+        anrede = input("\n> Anrede (Frau/Herr/...): ")
+        vorname = input("> Vorname: ")
+        nachname = input("> Nachname: ")
+        strasse = input("> Strasse: ")
+        hausnummer = input("> Hausnummer: ")
+        wohnort_plz = input("> PLZ des Wohnorts: ")
+        wohnort = input("> Wohnort: ")
+        telefonnummer = input("> Telefonnummer: +49")
+        mail = input("> Mail: ")
 
         # Anführende Zahlen und Leerzeichen entfernen
         telefonnummer = telefonnummer.strip()
@@ -431,7 +484,7 @@ def main():
 
         kontaktdaten = {
             "code": code,
-            "plz": plz,
+            "plz_impfzentren": plz_impfzentren,
             "kontakt": kontakt
         }
 
@@ -444,16 +497,25 @@ def main():
 
     try:
         code = kontaktdaten["code"]
-        plz = kontaktdaten["plz"]
+
+        # Hinweis, wenn noch alte Version der Kontaktdaten.json verwendet wird
+        if kontaktdaten.get("plz"):
+            print("\nACHTUNG: Du verwendest noch die alte Version der 'Kontaktdaten.json'!\n"
+                  "Lösche vor dem nächsten Ausführen die Datei und fülle die Kontaktdaten bitte erneut aus.")
+            plz_impfzentren = [kontaktdaten.get("plz")]
+        else:
+            plz_impfzentren = kontaktdaten["plz_impfzentren"]
+
         kontakt = kontaktdaten["kontakt"]
-        print(f"Kontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
+        print(f"\nKontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
     except KeyError as exc:
         print("Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
               "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
               "deine Daten beim Programmstart erneut ein.")
         raise exc
 
-    ImpfterminService.run(code=code, plz=plz, kontakt=kontakt, check_delay=30)
+    ImpfterminService.run(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
+                          check_delay=30)
 
 
 if __name__ == "__main__":
