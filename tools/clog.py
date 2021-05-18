@@ -4,6 +4,9 @@ import sys
 from logging import StreamHandler as _SH
 from logging.handlers import TimedRotatingFileHandler as _TRFH
 
+# windows log: ←[0m enfernen
+os.system("colors")
+
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 # basic logging configuration
