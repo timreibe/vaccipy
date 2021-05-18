@@ -150,7 +150,10 @@ class ImpfterminService():
         # Chromedriver anhand des OS auswählen
         chromedriver = None
         if 'linux' in self.operating_system:
-            chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux")
+            if "arm" in platform.processor().lower():
+                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-raspi")
+            else:
+                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux")
         elif 'windows' in self.operating_system:
             chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-windows.exe")
         elif 'darwin' in self.operating_system:
