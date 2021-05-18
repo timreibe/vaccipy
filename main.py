@@ -3,6 +3,8 @@ import os
 import platform
 import time
 import traceback
+import sys
+
 from base64 import b64encode
 from datetime import datetime
 from random import choice
@@ -150,10 +152,10 @@ class ImpfterminService():
         # Chromedriver anhand des OS auswählen
         chromedriver = None
         if 'linux' in self.operating_system:
-            if "arm" in platform.processor().lower():
-                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-raspi")
+            if "64" in platform.architecture() or sys.maxsize > 2**32:
+                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux-64")
             else:
-                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux")
+                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux-32")
         elif 'windows' in self.operating_system:
             chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-windows.exe")
         elif 'darwin' in self.operating_system:
