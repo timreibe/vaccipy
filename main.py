@@ -1,10 +1,9 @@
 import json
 import os
 import platform
+import sys
 import time
 import traceback
-import sys
-
 from base64 import b64encode
 from datetime import datetime
 from random import choice
@@ -152,7 +151,7 @@ class ImpfterminService():
         # Chromedriver anhand des OS auswählen
         chromedriver = None
         if 'linux' in self.operating_system:
-            if "64" in platform.architecture() or sys.maxsize > 2**32:
+            if "64" in platform.architecture() or sys.maxsize > 2 ** 32:
                 chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux-64")
             else:
                 chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux-32")
@@ -270,7 +269,7 @@ class ImpfterminService():
         return False
 
     @retry_on_failure()
-    def terminsuche(self, plz):
+    def termin_suchen(self, plz):
         """Es wird nach einen verfügbaren Termin in der gewünschten PLZ gesucht.
         Ausgewählt wird der erstbeste Termin (!).
         Zurückgegeben wird das Ergebnis der Abfrage und der Status-Code.
@@ -364,8 +363,49 @@ class ImpfterminService():
                 self._desktop_notification("Terminbuchung:", msg)
             return False
 
+    @retry_on_failure()
+    def code_anfordern(self, mail, telefonnummer, plz_impfzentrum, leistungsmerkmal):
+        """SMS-Code beim Impfterminservice anfordern
+
+        :param mail:
+        :param leistungsmerkmal:
+        :param telefonnummer:
+        :param plz_impfzentrum:
+        :return:
+        """
+        path = "rest/smspin/anforderung"
+
+        data = {
+            "email": mail,
+            "leistungsmerkmal": leistungsmerkmal,
+            "phone": "+49" + telefonnummer,
+            "plz": plz_impfzentrum
+        }
+
+        res = self.s.post(self.domain + path, json=data, timeout=15)
+        if res.ok:
+            token = res.json().get("token")
+            return token
+        else:
+            self.log.error("Code kann nicht angefragt werden", res.text)
+            return None
+
+    @retry_on_failure()
+    def code_bestaetigen(self, token, sms_pin):
+        path = f"rest/smspin/verifikation"
+        data = {
+            "token": token,
+            "smspin": sms_pin
+
+        }
+        res = self.s.post(self.domain + path, json=data, timeout=15)
+        if res.ok:
+            self.log.success("Der Impf-Code wurde erfolgreich angefragt, bitte prüfe deine Mails!")
+        else:
+            self.log.error("Code-Verifikation fehlgeschlagen", res.text)
+
     @staticmethod
-    def run(code: str, plz_impfzentren: list, kontakt: dict, check_delay: int = 30):
+    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, check_delay: int = 30):
         """Workflow für die Terminbuchung.
 
         :param code: 14-stelliger Impf-Code
@@ -387,7 +427,7 @@ class ImpfterminService():
 
                 # durchlaufe jede eingegebene PLZ und suche nach Termin
                 for plz in its.plz_impfzentren:
-                    termin_gefunden, status_code = its.terminsuche(plz)
+                    termin_gefunden, status_code = its.termin_suchen(plz)
 
                     # Durchlauf aller PLZ unterbrechen, wenn Termin gefunden wurde
                     if termin_gefunden:
@@ -426,10 +466,7 @@ class ImpfterminService():
                            + traceback.format_exc())
 
 
-def main():
-    print("vaccipy - Automatische Terminbuchung für den Corona Impfterminservice")
-
-    # Check, ob die Datei "kontaktdaten.json" existiert
+def setup_terminsuche():
     kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
     kontaktdaten_erstellen = True
     if os.path.isfile(kontaktdaten_path):
@@ -512,8 +549,64 @@ def main():
               "deine Daten beim Programmstart erneut ein.")
         raise exc
 
-    ImpfterminService.run(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                          check_delay=30)
+    ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
+                                  check_delay=30)
+
+
+def setup_codegenerierung():
+    print("Du kannst dir jetzt direkt einen Impf-Code erstellen.\n"
+          "Dazu benötigst du eine Mailadresse, Telefonnummer und die PLZ deines Impfzentrums.\n")
+
+    mail = input("> Mail: ")
+    telefonnummer = input("> Telefonnummer: +49")
+    plz_impfzentrum = input("> PLZ des Impfzentrums: ")
+    print("")
+
+    its = ImpfterminService("AAAA-AAAA-AAAA", [plz_impfzentrum], {})
+
+    print("Wähle nachfolgend deine Altersgruppe aus (L920, L921, L922 oder L923).\n"
+          "Es ist wichtig, dass du die Gruppe entsprechend deines Alters wählst, "
+          "ansonsten wird dir der Termin vor Ort abesagt.\n"
+          "In den eckigen Klammern siehst du, welche Impfstoffe den Gruppe jeweils zugeordnet sind.\n"
+          "Beispiel: L921\n")
+
+    leistungsmerkmal = input("> Leistungsmerkmal: ")
+
+    # cookies erneuern und code anfordern
+    its.cookies_erneuern()
+    token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, leistungsmerkmal)
+
+    # code bestätigen
+    print("Du erhälst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
+          "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
+          "Beispiel: 123-456\n")
+
+    # 3 Versuche für die SMS-Code-Eingabe
+    for _ in range(3):
+        sms_pin = input("> SMS-Code: ").replace("-", "")
+        if its.code_bestaetigen(token, sms_pin):
+            print("\nDie Code-Generierung war erfolgreich. Starte das Tool neu, wenn du nach einem"
+                  "Termin suchen möchtest.")
+            return True
+
+    return False
+
+
+def main():
+    print("vaccipy - Automatische Terminbuchung für den Corona Impfterminservice")
+
+    # Check, ob die Datei "kontaktdaten.json" existiert
+    print("\nWas möchtest du tun?\n"
+          "[1] Termin suchen\n"
+          "[2] Impf-Code generieren\n")
+
+    option = input("> Option: ")
+    print(" ")
+
+    if option != "2":
+        setup_terminsuche()
+    else:
+        setup_codegenerierung()
 
 
 if __name__ == "__main__":
