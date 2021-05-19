@@ -3,7 +3,7 @@
 
 Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/). 
 </br>**Neues Feature: Dauerhafte Impfcode-Generierung** </br>
-<a href="shorturl.at/uANX2">
+<a href="https://shorturl.at/uANX2">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
 </a>
 
