@@ -642,4 +642,4 @@ if __name__ == "__main__":
     main()
 
     # Für Windows: Fenster 1 Stunde offen halten nach Ausführung
-    time.sleep(60*60)
+    time.sleep(60 * 60)
