@@ -14,6 +14,7 @@ import requests
 from plyer import notification
 from selenium.webdriver import ActionChains
 from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -165,7 +166,10 @@ class ImpfterminService():
 
         path = "impftermine/service?plz={}".format(choice(self.plz_impfzentren))
 
-        with Chrome(chromedriver) as driver:
+        chrome_options = Options()
+        chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+
+        with Chrome(chromedriver, options=chrome_options) as driver:
             driver.get(self.domain + path)
 
             # Queue Bypass
@@ -365,12 +369,13 @@ class ImpfterminService():
 
     @retry_on_failure()
     def code_anfordern(self, mail, telefonnummer, plz_impfzentrum, leistungsmerkmal):
-        """SMS-Code beim Impfterminservice anfordern
+        """
+        SMS-Code beim Impfterminservice anfordern.
 
-        :param mail:
-        :param leistungsmerkmal:
-        :param telefonnummer:
-        :param plz_impfzentrum:
+        :param mail: Mail für Empfang des Codes
+        :param telefonnummer: Telefonnummer für SMS-Code
+        :param plz_impfzentrum: PLZ des Impfzentrums, für das ein Code erstellt werden soll
+        :param leistungsmerkmal: gewählte Impfgruppe (bspw. L921)
         :return:
         """
         path = "rest/smspin/anforderung"
@@ -392,6 +397,14 @@ class ImpfterminService():
 
     @retry_on_failure()
     def code_bestaetigen(self, token, sms_pin):
+        """
+        Bestätigung der Code-Generierung mittels SMS-Code
+
+        :param token: Token der Code-Erstellung
+        :param sms_pin: 6-stelliger SMS-Code
+        :return:
+        """
+
         path = f"rest/smspin/verifikation"
         data = {
             "token": token,
@@ -408,7 +421,8 @@ class ImpfterminService():
 
     @staticmethod
     def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, check_delay: int = 30):
-        """Workflow für die Terminbuchung.
+        """
+        Workflow für die Terminbuchung.
 
         :param code: 14-stelliger Impf-Code
         :param plz_impfzentren: Liste mit PLZ von Impfzentren
@@ -469,6 +483,12 @@ class ImpfterminService():
 
 
 def setup_terminsuche():
+    """
+    Setup für die Terminsuche.
+    Eingabe aller notwendigen Daten und ausführen der Methoden.
+
+    :return:
+    """
     kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
     kontaktdaten_erstellen = True
     if os.path.isfile(kontaktdaten_path):
@@ -556,6 +576,12 @@ def setup_terminsuche():
 
 
 def setup_codegenerierung():
+    """
+    Setup für die Codegenerierung.
+    Eingabe aller notwendigen Daten und ausführen der Methoden.
+
+    :return:
+    """
     print("Du kannst dir jetzt direkt einen Impf-Code erstellen.\n"
           "Dazu benötigst du eine Mailadresse, Telefonnummer und die PLZ deines Impfzentrums.\n")
 
@@ -573,30 +599,29 @@ def setup_codegenerierung():
           "Beispiel: L921\n")
 
     leistungsmerkmal = input("> Leistungsmerkmal: ")
-
+    print(" ")
     # cookies erneuern und code anfordern
     its.cookies_erneuern()
     token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, leistungsmerkmal)
 
-    # code bestätigen
-    print("Du erhälst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
-          "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
-          "Beispiel: 123-456\n")
+    if token is not None:
+        # code bestätigen
+        print("Du erhälst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
+              "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
+              "Beispiel: 123-456\n")
 
-    # 3 Versuche für die SMS-Code-Eingabe
-    for _ in range(3):
-        sms_pin = input("> SMS-Code: ").replace("-", "")
-        if its.code_bestaetigen(token, sms_pin):
-            print("\nDie Code-Generierung war erfolgreich. Starte das Tool neu, wenn du nach einem"
-                  "Termin suchen möchtest.")
-            return True
+        # 3 Versuche für die SMS-Code-Eingabe
+        for _ in range(3):
+            sms_pin = input("> SMS-Code: ").replace("-", "")
+            if its.code_bestaetigen(token, sms_pin):
+                print("\nDu kannst jetzt mit der Terminsuche fortfahren.\n")
+                return True
 
-    return False
+    print("\n\nDie Code-Generierung war leider nicht erfolgreich. Der Prozess wird neugestartet.")
+    setup_codegenerierung()
 
 
 def main():
-    print("vaccipy - Automatische Terminbuchung für den Corona Impfterminservice")
-
     # Check, ob die Datei "kontaktdaten.json" existiert
     print("\nWas möchtest du tun?\n"
           "[1] Termin suchen\n"
@@ -609,7 +634,12 @@ def main():
         setup_terminsuche()
     else:
         setup_codegenerierung()
+        main()
 
 
 if __name__ == "__main__":
+    print("vaccipy - Automatische Terminbuchung für den Corona Impfterminservice")
     main()
+
+    # Für Windows: Fenster 1 Stunde offen halten nach Ausführung
+    time.sleep(60 * 60)
