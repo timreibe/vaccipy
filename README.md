@@ -1,9 +1,9 @@
 # vaccipy
 [![build-windows](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
 
-Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).
-
-<a href="https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice">
+Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/). 
+</br>**Neues Feature: Dauerhafte Impfcode-Generierung** </br>
+<a href="shorturl.at/uANX2">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
 </a>
 
@@ -160,8 +160,6 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 `vaccipy` dient lediglich als Unterstützung bei der Impftermin-Buchung **EINER EINZELNEN PERSON**,
 weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 
-* Erstellung des Impf-Codes
-* Filterung der verfügbaren Termine nach Impfstoff
 * Möglichkeit zum Eintragen mehrerer Impf-Codes und Kontaktdaten
 * Headless Selenium Support
 
