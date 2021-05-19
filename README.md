@@ -2,7 +2,12 @@
 [![build-windows](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
 
 Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).</br>
-‼️ **Neues Feature: Dauerhaft Impf-Code's generieren - egal wo, egal für wen!**</br></br>
+
+## Features
+* Automatisches suchen und buchen von verfügbaren Impfterminen
+* [Suche bei mehreren Impfzentren gleichzeitig](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)
+* **🌟 NEU:** Dauerhaft Impf-Code's generieren - egal wo, egal für wen!</br></br>
+
 <a href="https://cntr.click/9ypzBLb">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
 </a>
@@ -15,12 +20,11 @@ andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Co
 
 ## Wie funktioniert vaccipy?
 
-
 Zunächst trägst du deinen "Impf-Code" (*Beispiel: A1B2-C3D4-E5F6*), die PLZ deines Impfzentrums 
 und deine Daten (Anschrift, Telefon, Mail) ein, die bei der Terminbuchung angegeben werden sollen.
 Du wirst zur Eingabe aufgefordert und deine Daten werden in der Datei `./kontaktdaten.json` gespeichert.
 
-*Hinweis: Es kann sein, dass für mehrere Impfzentren unterschiedliche Codes benötigt werden (mehr Infos: [Auflistung der gruppierten Impfzentren](impfzentren_gruppiert.md)).*
+*Hinweis: Es kann sein, dass für mehrere Impfzentren unterschiedliche Codes benötigt werden (mehr Infos: [Auflistung der gruppierten Impfzentren](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)).*
 
 Anschließend passiert alles automatisch: `vaccipy` checkt für dich minütlich, ob ein Termin verfügbar ist 
 und **bucht ~~den erstbeste~~ einen zufälligen**.
@@ -40,24 +44,27 @@ geöffnet und eine Unterseite des [Impfterminservices](https://www.impfterminser
 Anschließend werden die Cookies extrahiert und im Script aufgenommen.
 
 3) Cookies abrufen
-4) Mit dem Code "einloggen", im Browser ist das der Schritt: Impfzentrum auswählen und den Code eintragen
+4) Mit dem Code "einloggen", im Browser ist das der Schritt: Impfzentrum auswählen und Impf-Code eintragen
 
 Die nachkommenden Schritte erfolgen im Loop. Es werden minütlich verfügbare Termine abgerufen und, 
-sollten Termine verfügbar sein, ~~der erstbeste~~ ein zufälliger ausgewählt. Dieser Prozess kann eine längere Zeit dauern und 
-die Cookies laufen irgendwann ab (entweder alle 10 Minuten oder nach 5-6 Anfragen). Sobald die Cookies abgelaufen
-sind, wird wieder ein Chrome-Fenster geöffnet und neue Cookies erstellt.
+sollten Termine verfügbar sein, ~~der erstbeste~~ ein zufälliger ausgewählt. 
+
+Dieser Prozess kann eine längere Zeit. Sobald die Cookies abgelaufen sind, 
+wird wieder ein Chrome-Fenster geöffnet und neue Cookies erstellt.
 
 5) Termine abrufen: Wenn Termine verfügbar sind, springe zu *Schritt 8*
-   
+ 
+6) (Option 1) Eine Minute warten 
+ 
+*oder*
 
-6) Eine Minute warten **oder**
-7) (bei Ablauf) Cookies erneuern 
+6) (Option 2) bei Ablauf Cookies erneuern 
 
 Wenn ein Termin verfügbar ist, wird dieser mit den eingetragenen Daten gebucht.
 
 **Achtung! Im nächsten Schritt wird ein verbindlicher Impftermin gebucht!**
 
-8) Buchen des Impftermins
+7) Buchen des Impftermins
 
 
 ## Termin gebucht, was nun?
@@ -65,6 +72,10 @@ Wenn ein Termin verfügbar ist, wird dieser mit den eingetragenen Daten gebucht.
 Nachdem dein Termin erfolgreich gebucht wurde, erhälst du eine Mail, in der du zunächst deine 
 Mail-Adresse bestätigen musst. Nachdem du die Mail bestätigt hast, erhälst du zu jedem Termin 
 eine Buchungsbestätigung. That's it!
+
+Du kannst alternativ deine Buchung auch im Browser einsehen. Dazu musst du dich auf
+[www.impfterminservice.de](https://www.impfterminservice.de/) begeben, dein Impfzentrum auswählen
+und anschließend rechts-oben auf "Buchung verwalten" klicken.
 
 ## Programmdurchlauf
 ![Beispiel Programmdurchlauf](images/beispiel_programmdurchlauf.png)
@@ -112,15 +123,15 @@ Verfügbare Distributionen:
 
 Für mehr Info zum Verteilen und Erstellen der Distributionen: [Shipping](#Shipping)
 
-## Shipping
-### Workflows
+### Shipping
+#### Workflows
 Um den Buildprozess zu vereinfachen gibt es verschiedene Buildpipelines, welche bei push Events in den Masterbranch ausgeführt werden.   
 Die pipelines sind im `.github/workflows` Ordner zu finden. 
 
 Aktuelle Pipelines:
 - [x] [Windows Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
 
-### Generell
+#### Generell
 
 Zum Erstellen der Distributionen wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
 Schritte zum Erstellen einer Distribution: 
@@ -132,7 +143,7 @@ Schritte zum Erstellen einer Distribution:
     Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.  
 
 
-### Windows
+#### Windows
 
 .spec Datei erstellen und anschließend Distribution erstellen:
 ```shell
@@ -141,7 +152,7 @@ pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\ch
 pyinstaller --clean specs/windows-terminservice.spec
 ```     
 
-### Resources
+#### Resources
 - [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
 
 ## Das könnte noch kommen
@@ -152,7 +163,7 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 - [ ] Datum eingrenzen bei der Terminwahl
 - [ ] Macosx Build / Pipeline
 - [ ] Linux Build / Pipeline
-- [ ] Code Zertifikate für Windows
+- [ ] Code Zertifikate für Windows (gegen Virusmeldung)
 - [ ] Artifacts, Packages und Releases
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
@@ -162,7 +173,6 @@ weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 
 * Möglichkeit zum Eintragen mehrerer Impf-Codes und Kontaktdaten
 * Headless Selenium Support
-
 
 ## Bedanken?
 
