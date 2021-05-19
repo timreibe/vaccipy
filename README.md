@@ -1,8 +1,8 @@
 # vaccipy
 [![build-windows](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
 
-Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/). 
-</br>**Neues Feature: Dauerhafte Impfcode-Generierung** </br>
+Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).</br>
+‼️ **Neues Feature: Dauerhaft Impf-Code's generieren - egal wo, egal für wen!**</br></br>
 <a href="https://shorturl.at/uANX2">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
 </a>
