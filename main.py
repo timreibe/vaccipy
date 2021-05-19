@@ -15,6 +15,7 @@ from plyer import notification
 from selenium.webdriver import ActionChains
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -165,7 +166,10 @@ class ImpfterminService():
 
         path = "impftermine/service?plz={}".format(choice(self.plz_impfzentren))
 
-        with Chrome(chromedriver) as driver:
+        chrome_options = Options()
+        chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+
+        with Chrome(chromedriver,options=chrome_options) as driver:
             driver.get(self.domain + path)
 
             # Queue Bypass
@@ -401,8 +405,10 @@ class ImpfterminService():
         res = self.s.post(self.domain + path, json=data, timeout=15)
         if res.ok:
             self.log.success("Der Impf-Code wurde erfolgreich angefragt, bitte prüfe deine Mails!")
+            return True
         else:
             self.log.error("Code-Verifikation fehlgeschlagen", res.text)
+            return False
 
     @staticmethod
     def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, check_delay: int = 30):
