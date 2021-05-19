@@ -582,20 +582,20 @@ def setup_codegenerierung():
     its.cookies_erneuern()
     token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, leistungsmerkmal)
 
-    # code bestätigen
-    print("Du erhälst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
-          "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
-          "Beispiel: 123-456\n")
+    if token is not None:
+        # code bestätigen
+        print("Du erhälst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
+              "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
+              "Beispiel: 123-456\n")
 
-    # 3 Versuche für die SMS-Code-Eingabe
-    for _ in range(3):
-        sms_pin = input("> SMS-Code: ").replace("-", "")
-        if its.code_bestaetigen(token, sms_pin):
-            print("\nDie Code-Generierung war erfolgreich. Starte das Tool neu, wenn du nach einem"
-                  "Termin suchen möchtest.")
-            return True
-
-    return False
+        # 3 Versuche für die SMS-Code-Eingabe
+        for _ in range(3):
+            sms_pin = input("> SMS-Code: ").replace("-", "")
+            if its.code_bestaetigen(token, sms_pin):
+                print("\nDie Code-Generierung war erfolgreich. Du kannst jetzt nach einem"
+                      "Termin suchen.\n\n")
+                return True
+    setup_codegenerierung()
 
 
 def main():
@@ -611,8 +611,10 @@ def main():
 
     if option != "2":
         setup_terminsuche()
+        main()
     else:
         setup_codegenerierung()
+        main()
 
 
 if __name__ == "__main__":
