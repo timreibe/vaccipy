@@ -3,14 +3,6 @@
 
 Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).</br>
 
-## Shoutout an:
-
-- DASDING: Danke für das [Feature](https://www.dasding.de/update/wie-impftermin-einfacher-bekommen-100.html) an Dani Rapp!</br>
-<a href="https://www.dasding.de/update/wie-impftermin-einfacher-bekommen-100.html">
-<img width=150
- heigth=10 src=https://www.swr.de/unternehmen/kommunikation/1596146874810,logos-dasding-108~_v-16x9@2dS_-6be50a9c75559ca1aaf1d0b25bae287afdcd877a.png>
-</a>
-
 ## Features
 * Automatisches suchen und buchen von verfügbaren Impfterminen
 * [Suche bei mehreren Impfzentren gleichzeitig](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)
@@ -18,6 +10,14 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 
 <a href="https://cntr.click/9ypzBLb">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
+</a>
+
+## Shoutout an:
+
+- DASDING: Danke für das [Feature](https://www.dasding.de/update/wie-impftermin-einfacher-bekommen-100.html) an Dani Rapp!</br>
+<a href="https://www.dasding.de/update/wie-impftermin-einfacher-bekommen-100.html">
+<img width=150
+ heigth=10 src=https://www.swr.de/unternehmen/kommunikation/1596146874810,logos-dasding-108~_v-16x9@2dS_-6be50a9c75559ca1aaf1d0b25bae287afdcd877a.png>
 </a>
 
 ## Ausgangssituation
