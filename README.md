@@ -6,6 +6,7 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 ## Features
 * Automatisches suchen und buchen von verfügbaren Impfterminen
 * [Suche bei mehreren Impfzentren gleichzeitig](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)
+* Warteschlange umgehen
 * **🌟 NEU:** Dauerhaft Impf-Code's generieren - egal wo, egal für wen!</br></br>
 
 <a href="https://cntr.click/9ypzBLb">
