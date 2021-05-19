@@ -516,7 +516,18 @@ def setup_terminsuche():
         nachname = input("> Nachname: ")
         strasse = input("> Strasse: ")
         hausnummer = input("> Hausnummer: ")
-        wohnort_plz = input("> PLZ des Wohnorts: ")
+        
+        # Sicherstellen, dass die PLZ ein valides Format hat. 
+        _wohnort_plz_valid = False
+        while not _wohnort_plz_valid:
+            wohnort_plz = input("> PLZ des Wohnorts: ")
+            wohnort_plz = wohnort_plz.strip()
+            if len(wohnort_plz) == 5 and wohnort_plz.isdigit():
+                _wohnort_plz_valid = True
+            else:
+                print(f"Die eingegebene PLZ {wohnort_plz} scheint ungültig. Genau 5 Stellen und nur Ziffern sind erlaubt.")
+                
+        
         wohnort = input("> Wohnort: ")
         telefonnummer = input("> Telefonnummer: +49")
         mail = input("> Mail: ")
