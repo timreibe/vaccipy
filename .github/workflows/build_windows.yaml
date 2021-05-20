@@ -7,6 +7,7 @@ on:
   push:
     branches: [ master,beta]
     paths-ignore:
+      - "docs/**"
       - "dist/**"
       - "images/**"
       - "**.md"
@@ -43,7 +44,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build Windows
-        run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec
+        run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec --add-data "tools/cloudscraper;./cloudscraper/"
       
       - name: Commit changes
         uses: EndBug/add-and-commit@v7 # You can change this to use a specific version
