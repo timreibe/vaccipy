@@ -31,7 +31,7 @@ def retry_on_failure(retries=10):
                     self.log.error("Timeout exception raised", prefix=function.__name__)
 
                     if function.__name__ != "cookies_erneuern":
-                        self.cookies_erneuern(False)
+                        self.cookies_erneuern()
 
                 except (ConnectTimeout, ConnectionError):
                     # Keine Internetverbindung
