@@ -322,7 +322,6 @@ class ImpfterminService():
                 action.move_to_element(button).click().perform()
                 time.sleep(3)
 
-
             # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
             try:
                 cookie = driver.get_cookie("bm_sz")
@@ -567,6 +566,7 @@ class ImpfterminService():
             # Anschließend nach neuem Termin suchen
             its.cookies_erneuern()
             time.sleep(5)
+
 
     def _desktop_notification(self, title: str, message: str):
         """
