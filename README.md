@@ -9,7 +9,7 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 * Warteschlange umgehen
 * **🌟 NEU:** Dauerhaft Impf-Code's generieren - egal 
 wo, egal für wen!
-* **🌟 NEU:** Beta Branch (neue, aber noch nicht final getestete Features) 
+* **🌟 NEU:** [Beta Branch (neue, aber noch nicht final getestete Features)](https://github.com/iamnotturner/vaccipy/tree/beta)
 </br></br>
 
 <a href="https://cntr.click/9ypzBLb">
