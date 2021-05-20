@@ -10,7 +10,7 @@ from random import choice
 from threading import Thread
 from typing import Dict, List
 
-import requests
+import cloudscraper
 from plyer import notification
 from selenium.webdriver import ActionChains
 from selenium.webdriver import Chrome
@@ -42,7 +42,7 @@ class ImpfterminService():
         self.log.set_prefix(f"*{self.code[-4:]} | {', '.join(self.plz_impfzentren)}")
 
         # Session erstellen
-        self.s = requests.Session()
+        self.s = cloudscraper.create_scraper()
         self.s.headers.update({
             'Authorization': f'Basic {self.authorization}',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36',
@@ -391,8 +391,11 @@ class ImpfterminService():
         if res.ok:
             token = res.json().get("token")
             return token
+        elif res.status_code == 429:
+            self.log.error("Anfrage wurde geblockt. Bitte später erneut versuchen.")
+            return None
         else:
-            self.log.error("Code kann nicht angefragt werden", res.text)
+            self.log.error(f"Code kann nicht angefragt werden: {res.text}")
             return None
 
     @retry_on_failure()
@@ -416,7 +419,7 @@ class ImpfterminService():
             self.log.success("Der Impf-Code wurde erfolgreich angefragt, bitte prüfe deine Mails!")
             return True
         else:
-            self.log.error("Code-Verifikation fehlgeschlagen", res.text)
+            self.log.error(f"Code-Verifikation fehlgeschlagen: {res.text}")
             return False
 
     @staticmethod
