@@ -147,7 +147,7 @@ class ImpfterminService():
         return False
 
     @retry_on_failure()
-    def cookies_erneuern(self, seleniumcheckout):
+    def cookies_erneuern(self, termin_buchen=False):
         self.log.info("Browser-Cookies generieren")
         # Chromedriver anhand des OS auswählen
         chromedriver = None
@@ -225,7 +225,7 @@ class ImpfterminService():
             # Maus-Bewegung hinzufügen (nicht sichtbar)
             action.move_by_offset(10, 20).perform()
 
-            if seleniumcheckout:
+            if termin_buchen:
                 # Klick auf "Termin suchen"
                 button_xpath = "/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[1]/div[2]/div[2]/button"
                 button = WebDriverWait(driver, 1).until(
