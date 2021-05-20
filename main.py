@@ -490,8 +490,11 @@ class ImpfterminService():
         if res.ok:
             token = res.json().get("token")
             return token
+        elif res.status_code == 429:
+            self.log.error("Anfrage wurde geblockt. Bitte später erneut versuchen.")
+            return None
         else:
-            self.log.error("Code kann nicht angefragt werden", res.text)
+            self.log.error(f"Code kann nicht angefragt werden: {res.text}")
             return None
 
     @retry_on_failure()
@@ -515,7 +518,7 @@ class ImpfterminService():
             self.log.success("Der Impf-Code wurde erfolgreich angefragt, bitte prüfe deine Mails!")
             return True
         else:
-            self.log.error("Code-Verifikation fehlgeschlagen", res.text)
+            self.log.error(f"Code-Verifikation fehlgeschlagen: {res.text}")
             return False
 
     @staticmethod
