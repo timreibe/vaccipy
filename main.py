@@ -10,7 +10,7 @@ from random import choice
 from threading import Thread
 from typing import Dict, List
 
-import requests
+import cloudscraper
 from plyer import notification
 from selenium.webdriver import ActionChains
 from selenium.webdriver import Chrome
@@ -42,7 +42,7 @@ class ImpfterminService():
         self.log.set_prefix(f"*{self.code[-4:]} | {', '.join(self.plz_impfzentren)}")
 
         # Session erstellen
-        self.s = requests.Session()
+        self.s = cloudscraper.create_scraper()
         self.s.headers.update({
             'Authorization': f'Basic {self.authorization}',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36',
@@ -147,7 +147,7 @@ class ImpfterminService():
         return False
 
     @retry_on_failure()
-    def cookies_erneuern(self):
+    def cookies_erneuern(self, seleniumcheckout):
         self.log.info("Browser-Cookies generieren")
         # Chromedriver anhand des OS auswählen
         chromedriver = None
@@ -212,6 +212,7 @@ class ImpfterminService():
             input_field.send_keys(self.code)
             time.sleep(.1)
 
+
             # Klick auf "Termin suchen"
             button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
                            "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
@@ -223,6 +224,104 @@ class ImpfterminService():
 
             # Maus-Bewegung hinzufügen (nicht sichtbar)
             action.move_by_offset(10, 20).perform()
+
+            if seleniumcheckout:
+                # Klick auf "Termin suchen"
+                button_xpath = "/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[1]/div[2]/div[2]/button"
+                button = WebDriverWait(driver, 1).until(
+                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                action = ActionChains(driver)
+                action.move_to_element(button).click().perform()
+                time.sleep(.5)
+
+                # Termin auswählen
+                button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[1]/div[2]/label/div[2]/div'
+                button = WebDriverWait(driver, 1).until(
+                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                action = ActionChains(driver)
+                action.move_to_element(button).click().perform()
+                time.sleep(.5)
+                # Klick Button "AUSWÄHLEN"
+                button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[2]/button[1]'
+                button = WebDriverWait(driver, 1).until(
+                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                action = ActionChains(driver)
+                action.move_to_element(button).click().perform()
+                time.sleep(.5)
+
+                # Klick Daten erfassen
+                button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[2]/div[2]/div[2]/button'
+                button = WebDriverWait(driver, 1).until(
+                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                action = ActionChains(driver)
+                action.move_to_element(button).click().perform()
+                time.sleep(.5)
+
+                # Klick Anrede
+                button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div[1]/label[2]/span'
+                button = WebDriverWait(driver, 1).until(
+                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                action = ActionChains(driver)
+                action.move_to_element(button).click().perform()
+
+                # Input Vorname
+                input_xpath = '/html/body/app-root/div/app-page-its-search/app-its-search-contact-modal/div/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[2]/div[1]/div/label/input'
+                input_field = WebDriverWait(driver, 1).until(
+                    EC.element_to_be_clickable((By.XPATH, input_xpath)))
+                action.move_to_element(input_field).click().perform()
+                input_field.send_keys(self.kontakt['vorname'])  # self.kontakt['name']
+
+                # Input Nachname
+                input_field = driver.find_element_by_xpath(
+                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[2]/div[2]/div/label/input')
+                input_field.send_keys(self.kontakt['nachname'])  # self.kontakt['name']
+
+                # Input PLZ
+                input_field = driver.find_element_by_xpath(
+                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[3]/div[1]/div/label/input')
+                input_field.send_keys(self.kontakt['plz'])  # self.kontakt['name']
+
+                # Input City
+                input_field = driver.find_element_by_xpath(
+                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[3]/div[2]/div/label/input')
+                input_field.send_keys(self.kontakt['ort'])  # self.kontakt['name']
+
+                # Input Strasse
+                input_field = driver.find_element_by_xpath(
+                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[1]/div/label/input')
+                input_field.send_keys(self.kontakt['strasse'])  # self.kontakt['name']
+
+                # Input Hasunummer
+                input_field = driver.find_element_by_xpath(
+                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[2]/div/label/input')
+                input_field.send_keys(self.kontakt['hausnummer'])  # self.kontakt['name']
+
+                # Input Telefonnummer
+                input_field = driver.find_element_by_xpath(
+                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[3]/div/label/div/input')
+                input_field.send_keys(self.kontakt['phone'].replace("+49", ""))  # self.kontakt['name']
+
+                # Input Mail
+                input_field = driver.find_element_by_xpath(
+                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[5]/div/div/label/input')
+                input_field.send_keys(self.kontakt['notificationReceiver'])  # self.kontakt['name']
+
+                # Klick Button "ÜBERNEHMEN"
+                button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[2]/button[1]'
+                button = WebDriverWait(driver, 1).until(
+                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                action = ActionChains(driver)
+                action.move_to_element(button).click().perform()
+                time.sleep(.7)
+
+                # Termin buchen
+                button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[3]/div[2]/div[2]/button'
+                button = WebDriverWait(driver, 1).until(
+                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                action = ActionChains(driver)
+                action.move_to_element(button).click().perform()
+                time.sleep(3)
+
 
             # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
             try:
@@ -432,7 +531,7 @@ class ImpfterminService():
         """
 
         its = ImpfterminService(code, plz_impfzentren, kontakt)
-        its.cookies_erneuern()
+        its.cookies_erneuern(False)
 
         # login ist nicht zwingend erforderlich
         its.login()
@@ -450,10 +549,12 @@ class ImpfterminService():
                         break
                     # Cookies erneuern
                     elif status_code >= 400:
-                        its.cookies_erneuern()
+                        its.cookies_erneuern(False)
                     # Suche pausieren
                     if not termin_gefunden:
                         time.sleep(check_delay)
+
+
 
             # Programm beenden, wenn Termin gefunden wurde
             if its.termin_buchen():
@@ -461,7 +562,7 @@ class ImpfterminService():
 
             # Cookies erneuern und pausieren, wenn Terminbuchung nicht möglich war
             # Anschließend nach neuem Termin suchen
-            its.cookies_erneuern()
+            its.cookies_erneuern(True)
             time.sleep(30)
 
     def _desktop_notification(self, title: str, message: str):
@@ -517,7 +618,7 @@ def setup_terminsuche():
         nachname = input("> Nachname: ")
         strasse = input("> Strasse: ")
         hausnummer = input("> Hausnummer: ")
-        
+
         # Sicherstellen, dass die PLZ ein valides Format hat. 
         _wohnort_plz_valid = False
         while not _wohnort_plz_valid:
@@ -526,9 +627,9 @@ def setup_terminsuche():
             if len(wohnort_plz) == 5 and wohnort_plz.isdigit():
                 _wohnort_plz_valid = True
             else:
-                print(f"Die eingegebene PLZ {wohnort_plz} scheint ungültig. Genau 5 Stellen und nur Ziffern sind erlaubt.")
-                
-        
+                print(
+                    f"Die eingegebene PLZ {wohnort_plz} scheint ungültig. Genau 5 Stellen und nur Ziffern sind erlaubt.")
+
         wohnort = input("> Wohnort: ")
         telefonnummer = input("> Telefonnummer: +49")
         mail = input("> Mail: ")
@@ -613,7 +714,7 @@ def setup_codegenerierung():
     leistungsmerkmal = input("> Leistungsmerkmal: ")
     print(" ")
     # cookies erneuern und code anfordern
-    its.cookies_erneuern()
+    its.cookies_erneuern(False)
     token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, leistungsmerkmal)
 
     if token is not None:
