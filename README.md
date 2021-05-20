@@ -97,6 +97,7 @@ und anschließend rechts-oben auf "Buchung verwalten" klicken.
 
 * Python 3 (getestet mit Python 3.9)
 * pip (zur Installation der Python-Module, getestet mit pip3)
+* Google Chrome
 
 Die notwendigen Python-Module können mittels pip installiert werden.
 
