@@ -459,8 +459,9 @@ class ImpfterminService():
             if its.termin_buchen():
                 return True
 
-            # Pausieren, wenn Terminbuchung nicht möglich war
+            # Cookies erneuern und pausieren, wenn Terminbuchung nicht möglich war
             # Anschließend nach neuem Termin suchen
+            its.cookies_erneuern()
             time.sleep(30)
 
     def _desktop_notification(self, title: str, message: str):
@@ -601,7 +602,7 @@ def setup_codegenerierung():
     plz_impfzentrum = input("> PLZ des Impfzentrums: ")
     print("")
 
-    its = ImpfterminService("AAAA-AAAA-AAAA", [plz_impfzentrum], {})
+    its = ImpfterminService("PLAT-ZHAL-TER1", [plz_impfzentrum], {})
 
     print("Wähle nachfolgend deine Altersgruppe aus (L920, L921, L922 oder L923).\n"
           "Es ist wichtig, dass du die Gruppe entsprechend deines Alters wählst, "
