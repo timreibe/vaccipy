@@ -1,5 +1,6 @@
 # vaccipy
 [![build-windows](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
+[![build-linux-64](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml/badge.svg)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml)
 
 Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).</br>
 
