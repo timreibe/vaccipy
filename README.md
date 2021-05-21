@@ -168,6 +168,15 @@ pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\ch
 pyinstaller --clean specs/windows-terminservice.spec
 ```     
 
+#### Linux
+```shell 
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64;tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper
+
+pyinstaller --clean specs/linux-64-terminservice.spec
+
+```
+
+
 #### Resources
 - [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
 
@@ -177,8 +186,8 @@ Es gibt noch ein paar Features, die cool wären. Die Ideen werden hier mal gesam
 werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 
 - [ ] Datum eingrenzen bei der Terminwahl
-- [ ] Macosx Build / Pipeline
-- [ ] Linux Build / Pipeline
+- [ ] Github Pages
+- [ ] Macosx Build / Pipeline (Mac currently blocks the app: [Branch](https://github.com/iamnotturner/vaccipy/tree/mac-intel-build))
 - [ ] Code Zertifikate für Windows (gegen Virusmeldung)
 - [ ] Artifacts, Packages und Releases
 
