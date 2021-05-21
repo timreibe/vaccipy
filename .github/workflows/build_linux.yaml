@@ -3,8 +3,9 @@ name: build-linux
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master,beta ]
     paths-ignore:
+      - "docs/**"
       - "dist/**"
       - "images/**"
       - "**.md"
@@ -34,7 +35,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build Linux
-        run: pyinstaller --clean --noconfirm specs/linux-terminservice.spec
+        run: pyinstaller --clean --noconfirm specs/linux-terminservice.spec --add-data "tools/cloudscraper:./cloudscraper/"
       
       - name: Commit changes
         uses: EndBug/add-and-commit@v7 
