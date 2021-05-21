@@ -3,12 +3,16 @@
 
 block_cipher = None
 
+# cloudscraper setup:
+import os
+import cloudscraper
+user_agent_path = os.path.join(os.path.dirname(cloudscraper.__file__),"user_agent")
 
 a = Analysis(['../main.py'],
              pathex=['./specs'],
-             binaries=[],
-             datas=[],
-             hiddenimports=[],
+             binaries=[('../tools/chromedriver/chromedriver-linux-64', 'tools/chromedriver/')],
+             datas=[(user_agent_path, 'cloudscraper/user_agent')],
+             hiddenimports=['cloudscraper'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
