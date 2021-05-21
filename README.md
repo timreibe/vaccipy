@@ -148,7 +148,9 @@ Aktuelle Pipelines:
 
 Zum Erstellen der Distributionen wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
 Schritte zum Erstellen einer Distribution: 
-- Erstelle eine .spec Datei für die main.py (einmalig)
+- Erstelle eine .spec Datei für die main.py (einmalig)  
+    ⚠️ACHTUNG⚠️: Beim erstellen der .spec den python code für `cloudscraper` nicht löschen! 
+
 - Erstelle die Distribution basierend auf der erstellten .spec Datei:
     ```shell
     pyinstaller --clean specs/SPECNAME.spec
@@ -158,9 +160,10 @@ Schritte zum Erstellen einer Distribution:
 
 #### Windows
 
-.spec Datei erstellen und anschließend Distribution erstellen:
+.spec Datei erstellen und anschließend Distribution erstellen:  
+⚠️ACHTUNG⚠️: Beim erstellen der .spec den python code für `cloudscraper` nicht löschen! 
 ```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification
+pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification --hidden-import cloudscraper
 
 pyinstaller --clean specs/windows-terminservice.spec
 ```     
