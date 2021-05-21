@@ -8,7 +8,8 @@ __pycache__/
 log/
 
 # data
-kontaktdaten.json 
+kontaktdaten.json
+
 
 # pyinstaller 
 # temporary building files:
