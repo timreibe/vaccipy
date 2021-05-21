@@ -158,7 +158,10 @@ class ImpfterminService():
         :return:
         """
 
-        self.log.info("Browser-Cookies generieren")
+        if terminbuchung == False:
+            self.log.info("Browser-Cookies generieren")
+        else:
+            self.log.info("Termin über Selenium buchen")
         # Chromedriver anhand des OS auswählen
         chromedriver = None
         if 'linux' in self.operating_system:
