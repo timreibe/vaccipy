@@ -7,7 +7,10 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 * Automatisches suchen und buchen von verfügbaren Impfterminen
 * [Suche bei mehreren Impfzentren gleichzeitig](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)
 * Warteschlange umgehen
-* **🌟 NEU:** Dauerhaft Impf-Code's generieren - egal wo, egal für wen!</br></br>
+* **🌟 NEU:** Dauerhaft Impf-Code's generieren - egal 
+wo, egal für wen!
+* **🌟 NEU:** [Beta Branch (neue, aber noch nicht final getestete Features)](https://github.com/iamnotturner/vaccipy/tree/beta)
+</br></br>
 
 <a href="https://cntr.click/9ypzBLb">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
@@ -94,6 +97,7 @@ und anschließend rechts-oben auf "Buchung verwalten" klicken.
 
 * Python 3 (getestet mit Python 3.9)
 * pip (zur Installation der Python-Module, getestet mit pip3)
+* Google Chrome
 
 Die notwendigen Python-Module können mittels pip installiert werden.
 
