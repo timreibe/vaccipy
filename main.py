@@ -577,7 +577,7 @@ class ImpfterminService():
 
             # Cookies erneuern und pausieren, wenn Terminbuchung nicht möglich war
             # Anschließend nach neuem Termin suchen
-            its.cookies_erneuern()
+            its.cookies_erneuern(terminbuchung=True)
             time.sleep(5)
 
     def _desktop_notification(self, title: str, message: str):
