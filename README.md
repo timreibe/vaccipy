@@ -147,6 +147,7 @@ Die pipelines sind im `.github/workflows` Ordner zu finden.
 
 Aktuelle Pipelines:
 - [x] [Windows Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
+- [x] [Linux 64 Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml)
 
 #### Generell
 
@@ -174,7 +175,7 @@ pyinstaller --clean specs/windows-terminservice.spec
 
 #### Linux
 ```shell 
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64;tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64:tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper
 
 pyinstaller --clean specs/linux-64-terminservice.spec
 
