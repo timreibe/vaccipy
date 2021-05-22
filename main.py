@@ -516,7 +516,10 @@ class ImpfterminService():
             elif res.status_code == 429:
                 self.log.error(
                     "Anfrage wurde von der Botprotection geblockt. Es werden manuelle Cookies aus dem Browser benötigt. Bitte Anleitung im FAQ in GITHUB beachten!")
-                cookies = input("Manuelle Cookies:")
+                cookies = input("> Manuelle Cookies:").strip()
+                optional_prefix = "Cookies: "
+                if cookies.startswith(optional_prefix):
+                    cookies = cookies[len(optional_prefix):]
                 self.s.headers.update({
                     'Cookie': cookies
                 })
