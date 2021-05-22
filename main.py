@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import platform
@@ -612,26 +613,22 @@ class ImpfterminService():
                            + traceback.format_exc())
 
 
-def setup_terminsuche():
+def get_kontaktdaten_interactive(filepath=None):
     """
-    Setup für die Terminsuche.
-    Eingabe aller notwendigen Daten und ausführen der Methoden.
+    Interaktive Eingabe und anschließendes Abspeichern der Kontaktdaten.
 
-    :return:
+    :param filepath: Pfad zur JSON-Datei zum Abspeichern der Kontaktdaten. Default: kontaktdaten.json im aktuellen Ordner
+    :return: Dictionary mit Kontaktdaten
     """
 
-    kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
-    kontaktdaten_erstellen = True
-    if os.path.isfile(kontaktdaten_path):
-        daten_laden = input("\n> Sollen die vorhandene Daten aus 'kontaktdaten.json' "
-                            "geladen werden (y/n)?: ").lower()
-        if daten_laden.lower() != "n":
-            kontaktdaten_erstellen = False
+    if filepath is None:
+        filepath = os.path.join(PATH, "kontaktdaten.json")
 
-    if kontaktdaten_erstellen:
-        print("\nBitte trage zunächst deinen Impfcode und deine Kontaktdaten ein.\n"
-              "Die Daten werden anschließend lokal in der Datei 'kontaktdaten.json' abgelegt.\n"
-              "Du musst sie zukünftig nicht mehr eintragen.\n")
+    with open(filepath, 'w', encoding='utf-8') as file:
+        print(
+            "\nBitte trage zunächst deinen Impfcode und deine Kontaktdaten ein.\n"
+            "Die Daten werden anschließend lokal in der Datei 'kontaktdaten.json' abgelegt.\n"
+            "Du musst sie zukünftig nicht mehr eintragen.\n")
         code = input("> Code: ")
         print(
             "\nMit einem Code kann in mehreren Impfzentren gleichzeitig nach einem Termin gesucht werden.\n"
@@ -687,12 +684,57 @@ def setup_terminsuche():
             "kontakt": kontakt
         }
 
-        with open(kontaktdaten_path, 'w', encoding='utf-8') as f:
-            json.dump(kontaktdaten, f, ensure_ascii=False, indent=4)
+        json.dump(kontaktdaten, file, ensure_ascii=False, indent=4)
 
+    return kontaktdaten
+
+
+def get_kontaktdaten(filepath=None):
+    """
+    Lade Kontaktdaten aus Datei.
+
+    :param filepath: Pfad zur JSON-Datei mit Kontaktdaten. Default: kontaktdaten.json im aktuellen Ordner
+    :return: Dictionary mit Kontaktdaten
+    """
+
+    if filepath is None:
+        filepath = os.path.join(PATH, "kontaktdaten.json")
+
+    with open(filepath) as f:
+        return json.load(f)
+
+
+def run_search_interactive():
+    """
+    Interaktives Setup für die Terminsuche:
+    1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen werden sollen.
+    2. Laden der Kontaktdaten aus kontaktdaten.json, oder interaktive Eingabe.
+    3. Terminsuche
+    """
+
+    kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
+    kontaktdaten_erstellen = True
+    if os.path.isfile(kontaktdaten_path):
+        daten_laden = input(
+            "\n> Sollen die vorhandene Daten aus 'kontaktdaten.json' "
+            "geladen werden (y/n)?: ").lower()
+        if daten_laden.lower() != "n":
+            kontaktdaten_erstellen = False
+
+    if kontaktdaten_erstellen:
+        kontaktdaten = get_kontaktdaten_interactive(kontaktdaten_path)
     else:
-        with open(kontaktdaten_path) as f:
-            kontaktdaten = json.load(f)
+        kontaktdaten = get_kontaktdaten(kontaktdaten_path)
+
+    run_search(kontaktdaten)
+
+
+def run_search(kontaktdaten):
+    """
+    Nicht-interaktive Terminsuche
+
+    :param kontaktdaten: Dictionary mit Kontaktdaten
+    """
 
     try:
         code = kontaktdaten["code"]
@@ -717,7 +759,7 @@ def setup_terminsuche():
                                   check_delay=30)
 
 
-def setup_codegenerierung():
+def gen_code_interactive():
     """
     Setup für die Codegenerierung.
     Eingabe aller notwendigen Daten und ausführen der Methoden.
@@ -774,31 +816,60 @@ def setup_codegenerierung():
                 return True
 
     print("\n\nDie Code-Generierung war leider nicht erfolgreich. Der Prozess wird neugestartet.")
-    setup_codegenerierung()
+    gen_code_interactive()
 
 
 def main():
-    # Check, ob die Datei "kontaktdaten.json" existiert
-    print("\nWas möchtest du tun?\n"
-          "[1] Termin suchen\n"
-          "[2] Impf-Code generieren\n")
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(help="commands", dest="command")
 
-    option = input("> Option: ")
-    print(" ")
+    parser_search = subparsers.add_parser("search", help="Termin suchen")
+    parser_search.add_argument(
+        "-f", "--file", help="Lade Kontaktdaten aus dieser JSON-Datei")
 
-    if option == "1":
-        setup_terminsuche()
-    elif option == "2":
-        setup_codegenerierung()
-        main()
+    parser_configure = subparsers.add_parser(
+        "configure", help="JSON-Datei mit Kontaktdaten generieren")
+    parser_configure.add_argument(
+        "-f", "--file", help="Schreibe Kontaktdaten in diese JSON-Datei")
+
+    parser_generate = subparsers.add_parser(
+        "code", help="Impf-Code generieren")
+
+    args = parser.parse_args()
+
+    if args.command == "search":
+        if args.file:
+            run_search(get_kontaktdaten(args.file))
+        else:
+            run_search_interactive()
+
+    elif args.command == "configure":
+        get_kontaktdaten_interactive(args.file)
+
+    elif args.command == "code":
+        gen_code_interactive()
+
     else:
-        print("Falscheingabe! Bitte erneut versuchen:")
-        main()
+        print("\nWas möchtest du tun?\n"
+              "[1] Termin suchen\n"
+              "[2] Impf-Code generieren\n")
+
+        option = input("> Option: ")
+        print(" ")
+
+        if option == "1":
+            run_search_interactive()
+        elif option == "2":
+            gen_code_interactive()
+            main()
+        else:
+            print("Falscheingabe! Bitte erneut versuchen:")
+            main()
+
+        # Für Windows: Fenster 1 Stunde offen halten nach Ausführung
+        time.sleep(60 * 60)
 
 
 if __name__ == "__main__":
     print("vaccipy - Automatische Terminbuchung für den Corona Impfterminservice")
     main()
-
-    # Für Windows: Fenster 1 Stunde offen halten nach Ausführung
-    time.sleep(60 * 60)
