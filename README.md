@@ -116,6 +116,14 @@ ausgeführt werden:
 python3 main.py
 ```
 
+### Optionale Umgebungsvariablen
+
+* `VACCIPY_CHROMEDRIVER`:
+  Name oder relativer Pfad der chromedriver Programmdatei, die du verwenden möchtest.
+  Dies kann verwendet werden, falls du deine eigene chromedriver-Installation verwenden möchtest
+  und wird z. B. auf NixOS benötigt.
+  Beispiel: `chromedriver`
+
 ## Distributionen
 
 Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne installation von Python direkt ausgeführt werden können. 

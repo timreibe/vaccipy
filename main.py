@@ -160,19 +160,21 @@ class ImpfterminService():
 
         self.log.info("Browser-Cookies generieren")
         # Chromedriver anhand des OS auswählen
-        chromedriver = None
-        if 'linux' in self.operating_system:
-            if "64" in platform.architecture() or sys.maxsize > 2 ** 32:
-                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux-64")
-            else:
-                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux-32")
-        elif 'windows' in self.operating_system:
-            chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-windows.exe")
-        elif 'darwin' in self.operating_system:
-            if "arm" in platform.processor().lower():
-                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-mac-m1")
-            else:
-                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-mac-intel")
+        chromedriver = os.getenv("VACCIPY_CHROMEDRIVER")
+        if not chromedriver:
+            if 'linux' in self.operating_system:
+                if "64" in platform.architecture() or sys.maxsize > 2 ** 32:
+                    chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux-64")
+
+                else:
+                    chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-linux-32")
+            elif 'windows' in self.operating_system:
+                chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-windows.exe")
+            elif 'darwin' in self.operating_system:
+                if "arm" in platform.processor().lower():
+                    chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-mac-m1")
+                else:
+                    chromedriver = os.path.join(PATH, "tools/chromedriver/chromedriver-mac-intel")
 
         path = "impftermine/service?plz={}".format(choice(self.plz_impfzentren))
 
