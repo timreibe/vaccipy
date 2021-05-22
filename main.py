@@ -610,10 +610,18 @@ def setup_terminsuche():
     kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
     kontaktdaten_erstellen = True
     if os.path.isfile(kontaktdaten_path):
-        daten_laden = input("\n> Sollen die vorhandene Daten aus 'kontaktdaten.json' "
-                            "geladen werden (y/n)?: ").lower()
+        daten_laden = input("\n> Sollen vorhandene Daten geladen werden? Nein (n), aus 'kontaktdaten.json' (y) "
+                            "oder aus einer anderen Datei (a)?: ").lower()
         if daten_laden.lower() != "n":
             kontaktdaten_erstellen = False
+        if daten_laden.lower() == "a":
+            custom_path = input("\n> Bitte gib den Namen der Datei ein: ").lower()
+            custom_path = os.path.join(PATH, custom_path)
+            if os.path.isfile(custom_path):
+                kontaktdaten_path = custom_path
+            else:
+                print(f"Die Datei {custom_path} existiert nicht!")
+                exit(1)
 
     if kontaktdaten_erstellen:
         print("\nBitte trage zunächst deinen Impfcode und deine Kontaktdaten ein.\n"
