@@ -748,8 +748,14 @@ def setup_codegenerierung():
           "In den eckigen Klammern siehst du, welche Impfstoffe den Gruppe jeweils zugeordnet sind.\n"
           "Beispiel: L921\n")
 
-    leistungsmerkmal = input("> Leistungsmerkmal: ")
-    print(" ")
+    while True:
+        leistungsmerkmal = input("> Leistungsmerkmal: ").upper()
+        if leistungsmerkmal in ["L920", "L921", "L922", "L923"]:
+            break
+        print("Falscheingabe! Bitte erneut versuchen:")
+
+    print()
+
     # cookies erneuern und code anfordern
     its.cookies_erneuern()
     token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, leistungsmerkmal)
