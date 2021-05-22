@@ -1,6 +1,6 @@
 # vaccipy
-[![build-windows](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
-[![build-linux-64](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml/badge.svg)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml)
+[![build](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml)
+[![build-linux-64](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml/badge.svg)](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml)
 
 Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).
 
@@ -23,14 +23,7 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 ## Downloads
 
 > ⚠️ Google Chrome muss auf dem PC installiert sein (Windows, Mac und Linux) 
-
-
-<a href="https://cntr.click/pz01KSQ">
-<img width="100" height="90" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
-</a>
-<a href="https://cntr.click/6Q0PXkK">
-<img width="180" heigth="60" src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
-</a>
+[Letzten Build herunterladen](https://github.com/iamnotturner/vaccipy/releases/latest)
 
 #### BETA Version
 
@@ -47,7 +40,7 @@ Der BETA-Branch enthält neue, noch nicht final getestete Features. [Sollten Feh
 
 ## Ausgangssituation
 
-Unsere Großeltern möchten sich gerne impfen lassen, aber telefonsich unter 116117 kommen sie nicht durch und das Internet
+Unsere Großeltern möchten sich gerne impfen lassen, aber telefonisch unter 116117 kommen sie nicht durch und das Internet
 ist auch noch immer irgendwie Neuland. Jetzt kommt es zum Konflikt: einerseits möchte man natürlich gerne bei der Terminbuchung helfen,
 andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Computer zu hocken und die Seite zu aktualisieren...
 
@@ -255,6 +248,65 @@ python3 main.py search -f max-mustermann.json
 
 ## [Informationen zu den Distributionen und Shipping findest du hier.](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md)
 
+### Download 
+Verfügbare Distributionen:
+- [x] [Windows](https://cntr.click/9ypzBLb)  
+- [x] [Linux](https://cntr.click/6Q0PXkK) 
+- [ ] MacOS Intel
+- [ ] MacOS M1
+
+**Ausführung Windows:** 
+- .zip Ordner entpacken
+- Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
+
+
+Für mehr Info zum Verteilen und Erstellen der Distributionen: [Shipping](#Shipping)
+
+### Shipping
+#### Workflows
+Um den Buildprozess zu vereinfachen gibt es verschiedene Buildpipelines, welche bei push Events in den Masterbranch ausgeführt werden.   
+Die pipelines sind im `.github/workflows` Ordner zu finden. 
+
+Aktuelle Pipelines:
+- [x] [Windows Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
+- [x] [Linux 64 Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml)
+
+#### Generell
+
+Zum Erstellen der Distributionen wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
+Schritte zum Erstellen einer Distribution: 
+- Erstelle eine .spec Datei für die main.py (einmalig)  
+    ⚠️ACHTUNG⚠️: Beim erstellen der .spec den python code für `cloudscraper` nicht löschen! 
+
+- Erstelle die Distribution basierend auf der erstellten .spec Datei:
+    ```shell
+    pyinstaller --clean specs/SPECNAME.spec
+    ```
+    Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.  
+
+
+#### Windows
+
+.spec Datei erstellen und anschließend Distribution erstellen:  
+⚠️ACHTUNG⚠️: Beim erstellen der .spec den python code für `cloudscraper` nicht löschen! 
+```shell
+pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification --hidden-import cloudscraper
+
+pyinstaller --clean specs/windows-terminservice.spec
+```     
+
+#### Linux
+```shell 
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64:tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper
+
+pyinstaller --clean specs/linux-64-terminservice.spec
+
+```
+
+
+#### Resources
+- [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
+
 ## Das könnte noch kommen
 
 Es gibt noch ein paar Features, die cool wären. Die Ideen werden hier mal gesammelt und
@@ -264,7 +316,7 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 - [ ] Github Pages
 - [ ] Macosx Build / Pipeline (Mac currently blocks the app: [Branch](https://github.com/iamnotturner/vaccipy/tree/mac-intel-build))
 - [ ] Code Zertifikate für Windows (gegen Virusmeldung)
-- [ ] Artifacts, Packages und Releases
+- [x] Artifacts, Packages und Releases
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
 

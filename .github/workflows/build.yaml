@@ -1,0 +1,38 @@
+# Build Windows workflow
+name: build
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+      - name: Setup Python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Build Windows
+        run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec --add-data "tools/cloudscraper;./cloudscraper/"
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+      - name: Setup Python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Build Linux
+        run: pyinstaller --clean --noconfirm specs/linux-64-terminservice.spec --add-data "tools/cloudscraper:./cloudscraper/"
