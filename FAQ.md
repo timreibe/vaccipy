@@ -3,6 +3,9 @@
 ## Was bedeutet "Einloggen mit Code nicht möglich"?
 Das einloggen mit dem Code ist optional. Die Terminabfrage und Buchung wird dennoch durchgeführt. 
 
+## Was kann ich machen, wenn ich keine SMS beim Code generieren erhalte?
+Der Impfterminservice blockiert temporär E-mail Adressen und Telefonnummern. Um den Block zu umgehen muss eine alternative E-Mail Adresse und Telefonnummer verwenden werden oder bis zu 24 Stunden abgewartet werden.   
+
 ## Wie erzeuge ich manuelle Cookies die für das Code generieren benötigt werden?  
 
 1. Skript läuft in Botprotecion Fehler:
@@ -24,6 +27,5 @@ Cookies sind nur valide, wenn der Impfterminservice mindestens eine halbe Stunde
 
 ![image](https://user-images.githubusercontent.com/48892674/119195883-9ea59300-ba85-11eb-982d-e00eb55de313.png)
   
-## Was kann ich machen, wenn ich keine SMS beim Code generieren erhalte?
-Der Impfterminservice blockiert temporär E-mail Adressen und Telefonnummern. Um den Block zu umgehen muss eine alternative E-Mail Adresse und Telefonnummer verwenden werden oder bis zu 24 Stunden abgewartet werden.   
+
 
