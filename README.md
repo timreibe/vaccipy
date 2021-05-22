@@ -99,21 +99,44 @@ und anschließend rechts-oben auf "Buchung verwalten" klicken.
 
 ## Requirements
 
-* Python 3 (getestet mit Python 3.9)
+* Python 3 (getestet mit Python 3.8 und 3.9)
 * pip (zur Installation der Python-Module, getestet mit pip3)
-* Google Chrome
+* Google Chrome oder Chromium
 
 Die notwendigen Python-Module können mittels pip installiert werden.
 
-```shell    
+```shell
 pip3 install -r requirements.txt
 ```
 
-`vaccipy` kann über die Kommandozeile oder in einer beliebigen python-Entwicklungsumgebung
-ausgeführt werden:
+## Verwendung
+
+`vaccipy` kannst du über die Kommandozeile oder in einer beliebigen python-Entwicklungsumgebung
+ausgeführen.
+Nach dem Programmstart kannst du interaktiv auswählen, ob du einen Impf-Code generieren möchtest,
+oder einen Termin suchen möchtest.
 
 ```shell
 python3 main.py
+```
+
+Alternativ kannst du Subkommandos verwenden, um deine Auswahl zu treffen:
+
+```bash
+# Impf-Code generieren:
+python3 main.py code
+
+# Kontaktdaten eingeben und in kontaktdaten.json speichern:
+python3 main.py configure
+
+# Kontaktdaten eingeben und in beliebiger Datei speichern:
+python3 main.py configure --file max-mustermann.json
+
+# Termin suchen
+python3 main.py search
+
+# Termin suchen und dafür die Kontaktdaten aus beliebiger Datei verwenden:
+python3 main.py search --file max-mustermann.json
 ```
 
 ### Optionale Umgebungsvariablen
