@@ -471,12 +471,16 @@ class ImpfterminService():
         }
 
         res = self.s.post(self.domain + path, json=data, timeout=15)
+
         if res.status_code == 201:
             msg = "Termin erfolgreich gebucht!"
             self.log.success(msg)
             self._desktop_notification("Terminbuchung:", msg)
             return True
-        else:
+
+        if res.statuscode == 429:
+            msg = "Anfrage wurde von der Botprotection geblockt."
+        elif res.status_code >= 400:
             data = res.json()
             try:
                 error = data['errors']['status']
@@ -484,13 +488,14 @@ class ImpfterminService():
                 error = ''
             if 'nicht mehr verfügbar' in error:
                 msg = f"Diesen Termin gibts nicht mehr: {error}"
-                self.log.error(msg)
-                self._desktop_notification("Terminbuchung:", msg)
             else:
                 msg = f"Termin konnte nicht gebucht werden: {data}"
-                self.log.error(msg)
-                self._desktop_notification("Terminbuchung:", msg)
-            return False
+        else:
+            msg = f"Unbekannter Statuscode: {res.status_code}"
+
+        self.log.error(msg)
+        self._desktop_notification("Terminbuchung:", msg)
+        return False
 
     @retry_on_failure()
     def code_anfordern(self, mail, telefonnummer, plz_impfzentrum, leistungsmerkmal):
