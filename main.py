@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import copy
 import json
 import os
 import platform
@@ -625,76 +626,92 @@ class ImpfterminService():
                            + traceback.format_exc())
 
 
-def get_kontaktdaten_interactive(filepath=None):
+def update_kontaktdaten_interactive(
+        known_kontaktdaten,
+        command,
+        filepath=None):
     """
     Interaktive Eingabe und anschließendes Abspeichern der Kontaktdaten.
 
-    :param filepath: Pfad zur JSON-Datei zum Abspeichern der Kontaktdaten. Default: kontaktdaten.json im aktuellen Ordner
+    :param known_kontaktdaten: Bereits bekannte Kontaktdaten, die nicht mehr
+        abgefragt werden sollen.
+    :param command: Entweder "code" oder "search". Bestimmt, welche
+        Kontaktdaten überhaupt benötigt werden.
+    :param filepath: Pfad zur JSON-Datei zum Abspeichern der Kontaktdaten.
+        Default: kontaktdaten.json im aktuellen Ordner
     :return: Dictionary mit Kontaktdaten
     """
+
+    assert(command in ["code", "search"])
 
     if filepath is None:
         filepath = os.path.join(PATH, "kontaktdaten.json")
 
+    kontaktdaten = copy.deepcopy(known_kontaktdaten)
+
     with open(filepath, 'w', encoding='utf-8') as file:
-        print(
-            "\nBitte trage zunächst deinen Impfcode und deine Kontaktdaten ein.\n"
-            "Die Daten werden anschließend lokal in der Datei 'kontaktdaten.json' abgelegt.\n"
-            "Du musst sie zukünftig nicht mehr eintragen.\n")
-        code = input("> Code: ")
-        print(
-            "\nMit einem Code kann in mehreren Impfzentren gleichzeitig nach einem Termin gesucht werden.\n"
-            "Eine Übersicht über die Gruppierung der Impfzentren findest du hier:\n"
-            "https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren\n\n"
-            "Trage nun die PLZ deines Impfzentrums ein. Für mehrere Impfzentren die PLZ's kommagetrennt nacheinander.\n"
-            "Beispiel: 68163, 69124, 69469\n")
-        plz_impfzentren = input("> PLZ's der Impfzentren: ")
-        plz_impfzentren = list(set([plz.strip() for plz in plz_impfzentren.split(",")]))
+        if "plz_impfzentren" not in kontaktdaten:
+            print(
+                "Mit einem Code kann in mehreren Impfzentren gleichzeitig nach einem Termin gesucht werden.\n"
+                "Eine Übersicht über die Gruppierung der Impfzentren findest du hier:\n"
+                "https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren\n\n"
+                "Trage nun die PLZ deines Impfzentrums ein. Für mehrere Impfzentren die PLZ's kommagetrennt nacheinander.\n"
+                "Beispiel: 68163, 69124, 69469\n")
+            plz_impfzentren = input("> PLZ's der Impfzentren: ")
+            kontaktdaten["plz_impfzentren"] = list(
+                set([plz.strip() for plz in plz_impfzentren.split(",")]))
 
-        anrede = input("\n> Anrede (Frau/Herr/...): ")
-        vorname = input("> Vorname: ")
-        nachname = input("> Nachname: ")
-        strasse = input("> Strasse: ")
-        hausnummer = input("> Hausnummer: ")
+        if "code" not in kontaktdaten and command == "search":
+            kontaktdaten["code"] = input("> Code: ")
 
-        # Sicherstellen, dass die PLZ ein valides Format hat.
-        _wohnort_plz_valid = False
-        while not _wohnort_plz_valid:
-            wohnort_plz = input("> PLZ des Wohnorts: ")
-            wohnort_plz = wohnort_plz.strip()
-            if len(wohnort_plz) == 5 and wohnort_plz.isdigit():
-                _wohnort_plz_valid = True
-            else:
-                print(
-                    f"Die eingegebene PLZ {wohnort_plz} scheint ungültig. Genau 5 Stellen und nur Ziffern sind erlaubt.")
+        if "kontakt" not in kontaktdaten:
+            kontaktdaten["kontakt"] = {}
 
-        wohnort = input("> Wohnort: ")
-        telefonnummer = input("> Telefonnummer: +49")
-        mail = input("> Mail: ")
+        if "anrede" not in kontaktdaten["kontakt"] and command == "search":
+            kontaktdaten["kontakt"]["anrede"] = input(
+                "> Anrede (Frau/Herr/...): ")
 
-        # Anführende Zahlen und Leerzeichen entfernen
-        telefonnummer = telefonnummer.strip()
-        telefonnummer = remove_prefix(telefonnummer, "+49")
-        telefonnummer = remove_prefix(telefonnummer, "0")
+        if "vorname" not in kontaktdaten["kontakt"] and command == "search":
+            kontaktdaten["kontakt"]["vorname"] = input("> Vorname: ")
 
-        kontakt = {
-            "anrede": anrede,
-            "vorname": vorname,
-            "nachname": nachname,
-            "strasse": strasse,
-            "hausnummer": hausnummer,
-            "plz": wohnort_plz,
-            "ort": wohnort,
-            "phone": f"+49{telefonnummer}",
-            "notificationChannel": "email",
-            "notificationReceiver": mail,
-        }
+        if "nachname" not in kontaktdaten["kontakt"] and command == "search":
+            kontaktdaten["kontakt"]["nachname"] = input("> Nachname: ")
 
-        kontaktdaten = {
-            "code": code,
-            "plz_impfzentren": plz_impfzentren,
-            "kontakt": kontakt
-        }
+        if "strasse" not in kontaktdaten["kontakt"] and command == "search":
+            kontaktdaten["kontakt"]["strasse"] = input("> Strasse: ")
+
+        if "hausnummer" not in kontaktdaten["kontakt"] and command == "search":
+            kontaktdaten["kontakt"]["hausnummer"] = input("> Hausnummer: ")
+
+        if "plz" not in kontaktdaten["kontakt"] and command == "search":
+            # Sicherstellen, dass die PLZ ein valides Format hat.
+            _wohnort_plz_valid = False
+            while not _wohnort_plz_valid:
+                wohnort_plz = input("> PLZ des Wohnorts: ")
+                wohnort_plz = wohnort_plz.strip()
+                if len(wohnort_plz) == 5 and wohnort_plz.isdigit():
+                    _wohnort_plz_valid = True
+                else:
+                    print(
+                        f"Die eingegebene PLZ {wohnort_plz} scheint ungültig. Genau 5 Stellen und nur Ziffern sind erlaubt.")
+            kontaktdaten["kontakt"]["plz"] = wohnort_plz
+
+        if "ort" not in kontaktdaten["kontakt"] and command == "search":
+            kontaktdaten["kontakt"]["ort"] = input("> Wohnort: ")
+
+        if "phone" not in kontaktdaten["kontakt"]:
+            telefonnummer = input("> Telefonnummer: +49")
+            # Anführende Zahlen und Leerzeichen entfernen
+            telefonnummer = telefonnummer.strip()
+            telefonnummer = remove_prefix(telefonnummer, "+49")
+            telefonnummer = remove_prefix(telefonnummer, "0")
+            kontaktdaten["kontakt"]["phone"] = f"+49{telefonnummer}"
+
+        if "notificationChannel" not in kontaktdaten["kontakt"]:
+            kontaktdaten["kontakt"]["notificationChannel"] = "email"
+
+        if "notificationReceiver" not in kontaktdaten["kontakt"]:
+            kontaktdaten["kontakt"]["notificationReceiver"] = input("> Mail: ")
 
         json.dump(kontaktdaten, file, ensure_ascii=False, indent=4)
 
@@ -713,32 +730,42 @@ def get_kontaktdaten(filepath=None):
         filepath = os.path.join(PATH, "kontaktdaten.json")
 
     with open(filepath) as f:
-        return json.load(f)
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return {}
 
 
 def run_search_interactive():
     """
     Interaktives Setup für die Terminsuche:
-    1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen werden sollen.
-    2. Laden der Kontaktdaten aus kontaktdaten.json, oder interaktive Eingabe.
-    3. Terminsuche
+    1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen
+       werden sollen.
+    2. Laden der Kontaktdaten aus kontaktdaten.json.
+    3. Bei unvollständigen Kontaktdaten: Interaktive Eingabe der fehlenden
+       Kontaktdaten.
+    4. Terminsuche
     """
 
+    print(
+        "Bitte trage zunächst deinen Impfcode und deine Kontaktdaten ein.\n"
+        "Die Daten werden anschließend lokal in der Datei 'kontaktdaten.json' abgelegt.\n"
+        "Du musst sie zukünftig nicht mehr eintragen.\n")
+
+    kontaktdaten = {}
+
     kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
-    kontaktdaten_erstellen = True
     if os.path.isfile(kontaktdaten_path):
         daten_laden = input(
-            "\n> Sollen die vorhandene Daten aus 'kontaktdaten.json' "
-            "geladen werden (y/n)?: ").lower()
+            "> Sollen die vorhandenen Daten aus 'kontaktdaten.json' geladen werden (y/n)?: ").lower()
         if daten_laden.lower() != "n":
-            kontaktdaten_erstellen = False
+            kontaktdaten = get_kontaktdaten(kontaktdaten_path)
 
-    if kontaktdaten_erstellen:
-        kontaktdaten = get_kontaktdaten_interactive(kontaktdaten_path)
-    else:
-        kontaktdaten = get_kontaktdaten(kontaktdaten_path)
-
-    run_search(kontaktdaten)
+    print()
+    kontaktdaten = update_kontaktdaten_interactive(
+        kontaktdaten, "search", kontaktdaten_path)
+    print()
+    return run_search(kontaktdaten)
 
 
 def run_search(kontaktdaten):
@@ -753,18 +780,21 @@ def run_search(kontaktdaten):
 
         # Hinweis, wenn noch alte Version der Kontaktdaten.json verwendet wird
         if kontaktdaten.get("plz"):
-            print("\nACHTUNG: Du verwendest noch die alte Version der 'Kontaktdaten.json'!\n"
-                  "Lösche vor dem nächsten Ausführen die Datei und fülle die Kontaktdaten bitte erneut aus.")
+            print(
+                "ACHTUNG: Du verwendest noch die alte Version der 'Kontaktdaten.json'!\n"
+                "Lösche vor dem nächsten Ausführen die Datei und fülle die Kontaktdaten bitte erneut aus.\n")
             plz_impfzentren = [kontaktdaten.get("plz")]
         else:
             plz_impfzentren = kontaktdaten["plz_impfzentren"]
 
         kontakt = kontaktdaten["kontakt"]
-        print(f"\nKontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
+        print(
+            f"Kontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
     except KeyError as exc:
-        print("Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
-              "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
-              "deine Daten beim Programmstart erneut ein.")
+        print(
+            "Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
+            "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
+            "deine Daten beim Programmstart erneut ein.\n")
         raise exc
 
     ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
@@ -773,26 +803,59 @@ def run_search(kontaktdaten):
 
 def gen_code_interactive():
     """
-    Setup für die Codegenerierung.
-    Eingabe aller notwendigen Daten und ausführen der Methoden.
+    Interaktives Setup für die Codegenerierung:
+    1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen
+       werden sollen.
+    2. Laden der Kontaktdaten aus kontaktdaten.json.
+    3. Bei unvollständigen Kontaktdaten: Interaktive Eingabe derjenigen
+       fehlenden Kontaktdaten, die für die Codegenerierung benötigt werden.
+    4. Codegenerierung
 
     :return:
     """
 
-    print("Du kannst dir jetzt direkt einen Impf-Code erstellen.\n"
-          "Dazu benötigst du eine Mailadresse, Telefonnummer und die PLZ deines Impfzentrums.\n")
+    print(
+        "Du kannst dir jetzt direkt einen Impf-Code erstellen.\n"
+        "Dazu benötigst du eine Mailadresse, Telefonnummer und die PLZ deines Impfzentrums.\n"
+        "Die Daten werden anschließend lokal in der Datei 'kontaktdaten.json' abgelegt.\n"
+        "Du musst sie zukünftig nicht mehr eintragen.\n")
 
-    mail = input("> Mail: ")
-    telefonnummer = input("> Telefonnummer: +49")
-    while True:
-        plz_impfzentrum = input("> PLZ des Impfzentrums: ")
-        if len(plz_impfzentrum) == 5 and plz_impfzentrum.isdigit():
-            break
-        else:
-            print(
-                f"Die eingegebene PLZ {plz_impfzentrum} scheint ungültig. Genau 5 Stellen und nur Ziffern sind erlaubt.")
+    kontaktdaten = {}
 
-    print("")
+    kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
+    if os.path.isfile(kontaktdaten_path):
+        daten_laden = input(
+            "> Sollen die vorhandenen Daten aus 'kontaktdaten.json' geladen werden (y/n)?: ").lower()
+        if daten_laden.lower() != "n":
+            kontaktdaten = get_kontaktdaten(kontaktdaten_path)
+
+    print()
+    kontaktdaten = update_kontaktdaten_interactive(
+        kontaktdaten, "code", kontaktdaten_path)
+    print()
+    return gen_code(kontaktdaten)
+
+
+def gen_code(kontaktdaten):
+    """
+    Codegenerierung ohne interaktive Eingabe der Kontaktdaten
+
+    :param kontaktdaten: Dictionary mit Kontaktdaten
+    """
+
+    try:
+        plz_impfzentrum = kontaktdaten["plz_impfzentren"][0]
+        mail = kontaktdaten["kontakt"]["notificationReceiver"]
+        telefonnummer = kontaktdaten["kontakt"]["phone"]
+        telefonnummer = telefonnummer.strip()
+        telefonnummer = remove_prefix(telefonnummer, "+49")
+        telefonnummer = remove_prefix(telefonnummer, "0")
+    except KeyError as exc:
+        print(
+            "Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
+            "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
+            "deine Daten beim Programmstart erneut ein.\n")
+        raise exc
 
     its = ImpfterminService("PLAT-ZHAL-TER1", [plz_impfzentrum], {})
 
@@ -807,8 +870,6 @@ def gen_code_interactive():
         if leistungsmerkmal in ["L920", "L921", "L922", "L923"]:
             break
         print("Falscheingabe! Bitte erneut versuchen:")
-
-    print()
 
     # cookies erneuern und code anfordern
     its.cookies_erneuern()
@@ -827,8 +888,8 @@ def gen_code_interactive():
                 print("\nDu kannst jetzt mit der Terminsuche fortfahren.\n")
                 return True
 
-    print("\n\nDie Code-Generierung war leider nicht erfolgreich. Der Prozess wird neugestartet.")
-    gen_code_interactive()
+    print("\nDie Code-Generierung war leider nicht erfolgreich.\n")
+    return False
 
 
 def main():
@@ -837,32 +898,42 @@ def main():
 
     parser_search = subparsers.add_parser("search", help="Termin suchen")
     parser_search.add_argument(
-        "-f", "--file", help="Lade Kontaktdaten aus dieser JSON-Datei")
+        "-f", "--file", help="Pfad zur JSON-Datei für Kontaktdaten")
+    parser_search.add_argument(
+        "--configure-only",
+        action='store_true',
+        help="Nur Kontaktdaten erfassen und in JSON-Datei abspeichern")
 
-    parser_configure = subparsers.add_parser(
-        "configure", help="JSON-Datei mit Kontaktdaten generieren")
-    parser_configure.add_argument(
-        "-f", "--file", help="Schreibe Kontaktdaten in diese JSON-Datei")
-
-    parser_generate = subparsers.add_parser(
-        "code", help="Impf-Code generieren")
+    parser_code = subparsers.add_parser("code", help="Impf-Code generieren")
+    parser_code.add_argument(
+        "-f",
+        "--file",
+        help="Pfad zur JSON-Datei für Kontaktdaten")
+    parser_code.add_argument(
+        "--configure-only",
+        action='store_true',
+        help="Nur Kontaktdaten erfassen und in JSON-Datei abspeichern")
 
     args = parser.parse_args()
 
     if args.command == "search":
-        if args.file:
+        if args.configure_only:
+            update_kontaktdaten_interactive({}, "search", args.file)
+        elif args.file:
             run_search(get_kontaktdaten(args.file))
         else:
             run_search_interactive()
 
-    elif args.command == "configure":
-        get_kontaktdaten_interactive(args.file)
-
     elif args.command == "code":
-        gen_code_interactive()
+        if args.configure_only:
+            update_kontaktdaten_interactive({}, "code", args.file)
+        elif args.file:
+            gen_code(get_kontaktdaten(args.file))
+        else:
+            gen_code_interactive()
 
     else:
-        print("\nWas möchtest du tun?\n"
+        print("Was möchtest du tun?\n"
               "[1] Termin suchen\n"
               "[2] Impf-Code generieren\n")
 
@@ -883,5 +954,5 @@ def main():
 
 
 if __name__ == "__main__":
-    print("vaccipy - Automatische Terminbuchung für den Corona Impfterminservice")
+    print("vaccipy - Automatische Terminbuchung für den Corona Impfterminservice\n")
     main()
