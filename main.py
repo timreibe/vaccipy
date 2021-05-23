@@ -768,7 +768,7 @@ def run_search_interactive():
     return run_search(kontaktdaten)
 
 
-def run_search(kontaktdaten):
+def run_search(kontaktdaten, check_delay=30):
     """
     Nicht-interaktive Terminsuche
 
@@ -798,7 +798,7 @@ def run_search(kontaktdaten):
         raise exc
 
     ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                  check_delay=30)
+                                  check_delay=check_delay)
 
 
 def gen_code_interactive():
@@ -903,6 +903,11 @@ def main():
         "--configure-only",
         action='store_true',
         help="Nur Kontaktdaten erfassen und in JSON-Datei abspeichern")
+    parser_search.add_argument(
+        "--retry-sec", "-r",
+        type=int,
+        default=30,
+        help="Wartezeit zwischen zwei Versuchen (in Sekunden)")
 
     parser_code = subparsers.add_parser("code", help="Impf-Code generieren")
     parser_code.add_argument(
@@ -920,7 +925,7 @@ def main():
         if args.configure_only:
             update_kontaktdaten_interactive({}, "search", args.file)
         elif args.file:
-            run_search(get_kontaktdaten(args.file))
+            run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec)
         else:
             run_search_interactive()
 
