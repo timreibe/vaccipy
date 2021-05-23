@@ -16,7 +16,13 @@ wo, egal für wen!
 <a href="https://cntr.click/9ypzBLb">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
 </a>
+<a href="https://cntr.click/xJDra3M">(Beta)
+<img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
+</a>
 <a href="https://cntr.click/6Q0PXkK">
+<img width="180" heigth="60"src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
+</a>
+<a href="https://cntr.click/R83AXwY">(Beta)
 <img width="180" heigth="60"src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
 </a>
 
