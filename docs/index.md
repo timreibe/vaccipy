@@ -2,7 +2,7 @@
 [![build-windows](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
 [![build-linux-64](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml/badge.svg)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml)
 
-Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).</br>
+Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).
 
 > **Disclaimer**
 > 
@@ -23,7 +23,7 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 <img width="100" height="90" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
 </a>
 <a href="https://cntr.click/6Q0PXkK">
-<img width="180" heigth="60"src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
+<img width="180" heigth="60" src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
 </a>
 
 
@@ -93,7 +93,7 @@ Beim nächsten Start kannst du deine Daten direkt laden und musst sie nicht erne
 
 ## Workflow
 
-![workflow](https://github.com/iamnotturner/vaccipy/blob/master/images/workflow.png)
+<img src="https://github.com/iamnotturner/vaccipy/blob/master/images/workflow.png">
 
 > `vaccipy` nutzt die selben Endpunkte zur Terminbuchung wie dein Browser.
 
@@ -147,7 +147,8 @@ Du kannst alternativ deine Buchung auch im Browser einsehen. Dazu musst du dich 
 und anschließend rechts-oben auf "Buchung verwalten" klicken.
 
 ## Programmdurchlauf
-![Beispiel Programmdurchlauf](https://github.com/iamnotturner/vaccipy/blob/master/images/beispiel_programmdurchlauf.png)
+
+<img src="https://github.com/iamnotturner/vaccipy/blob/master/images/beispiel_programmdurchlauf.png">
 
 
 ## Requirements
