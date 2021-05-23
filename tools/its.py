@@ -30,7 +30,7 @@ class ImpfterminService():
         self.s = cloudscraper.create_scraper()
         self.s.headers.update({
             'Authorization': f'Basic {self.authorization}',
-            # 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0',
         })
 
         # Ausgewähltes Impfzentrum prüfen

@@ -146,12 +146,18 @@ def cookies_erneuern(
 
     path = "impftermine/service?plz={}".format(choice(session.plz_impfzentren))
 
-    # deaktiviere Selenium Logging
     chrome_options = Options()
+
+    # deaktiviere Selenium Logging
     chrome_options.add_argument('disable-infobars')
     chrome_options.add_experimental_option('useAutomationExtension', False)
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
     chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+
+    # Chrome head is only required for the backup booking process.
+    # User-Agent is required for headless, because otherwise the server lets us hang.
+    chrome_options.add_argument("user-agent=Mozilla/5.0")
+    chrome_options.headless = not terminbuchung
 
     with Chrome(chromedriver, options=chrome_options) as driver:
         driver.get(session.domain + path)
