@@ -187,7 +187,11 @@ class ImpfterminService():
 
         # deaktiviere Selenium Logging
         chrome_options = Options()
+        chrome_options.add_argument('disable-infobars')
+        chrome_options.add_experimental_option('useAutomationExtension', False)
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+
 
         with Chrome(chromedriver, options=chrome_options) as driver:
             driver.get(self.domain + path)
@@ -247,107 +251,139 @@ class ImpfterminService():
             # Backup Prozess, wenn die Terminbuchung mit dem Bot nicht klappt
             # wird das Browserfenster geöffnet und die Buchung im Browser beendet
             if terminbuchung:
-                # Klick auf "Termin suchen"
-                button_xpath = "/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[1]/div[2]/div[2]/button"
-                button = WebDriverWait(driver, 1).until(
-                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
-                action = ActionChains(driver)
-                action.move_to_element(button).click().perform()
-                time.sleep(.5)
+                try:
+                    # Klick auf "Termin suchen"
+                    button_xpath = "/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[1]/div[2]/div[2]/button"
+                    button = WebDriverWait(driver, 1).until(
+                        EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                    action = ActionChains(driver)
+                    action.move_to_element(button).click().perform()
+                    time.sleep(.5)
+                except:
+                    self.log.error("Termine können nicht gesucht werden")
+                    pass
 
                 # Termin auswählen
-                button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[1]/div[2]/label/div[2]/div'
-                button = WebDriverWait(driver, 1).until(
-                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
-                action = ActionChains(driver)
-                action.move_to_element(button).click().perform()
-                time.sleep(.5)
+                try:
+                    button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[1]/div[2]/label/div[2]/div'
+                    button = WebDriverWait(driver, 1).until(
+                        EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                    action = ActionChains(driver)
+                    action.move_to_element(button).click().perform()
+                    time.sleep(.5)
+                except:
+                    self.log.error("Termine können nicht ausgewählt werden")
+                    pass
+
 
                 # Klick Button "AUSWÄHLEN"
-                button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[2]/button[1]'
-                button = WebDriverWait(driver, 1).until(
-                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
-                action = ActionChains(driver)
-                action.move_to_element(button).click().perform()
-                time.sleep(.5)
+                try:
+                    button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[2]/button[1]'
+                    button = WebDriverWait(driver, 1).until(
+                        EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                    action = ActionChains(driver)
+                    action.move_to_element(button).click().perform()
+                    time.sleep(.5)
+                except:
+                    self.log.error("Termine können nicht ausgewählt werden (Button)")
+                    pass
 
                 # Klick Daten erfassen
-                button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[2]/div[2]/div[2]/button'
-                button = WebDriverWait(driver, 1).until(
-                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
-                action = ActionChains(driver)
-                action.move_to_element(button).click().perform()
-                time.sleep(.5)
+                try:
+                    button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[2]/div[2]/div[2]/button'
+                    button = WebDriverWait(driver, 1).until(
+                        EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                    action = ActionChains(driver)
+                    action.move_to_element(button).click().perform()
+                    time.sleep(.5)
+                except:
+                    self.log.error("1. Daten können nicht erfasst werden")
+                    pass
+                try:
+                    # Klick Anrede
+                    button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div[1]/label[2]/span'
+                    button = WebDriverWait(driver, 1).until(
+                        EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                    action = ActionChains(driver)
+                    action.move_to_element(button).click().perform()
 
-                # Klick Anrede
-                button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div[1]/label[2]/span'
-                button = WebDriverWait(driver, 1).until(
-                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
-                action = ActionChains(driver)
-                action.move_to_element(button).click().perform()
+                    # Input Vorname
+                    input_xpath = '/html/body/app-root/div/app-page-its-search/app-its-search-contact-modal/div/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[2]/div[1]/div/label/input'
+                    input_field = WebDriverWait(driver, 1).until(
+                        EC.element_to_be_clickable((By.XPATH, input_xpath)))
+                    action.move_to_element(input_field).click().perform()
+                    input_field.send_keys(self.kontakt['vorname'])
 
-                # Input Vorname
-                input_xpath = '/html/body/app-root/div/app-page-its-search/app-its-search-contact-modal/div/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[2]/div[1]/div/label/input'
-                input_field = WebDriverWait(driver, 1).until(
-                    EC.element_to_be_clickable((By.XPATH, input_xpath)))
-                action.move_to_element(input_field).click().perform()
-                input_field.send_keys(self.kontakt['vorname'])
+                    # Input Nachname
+                    input_field = driver.find_element_by_xpath(
+                        '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[2]/div[2]/div/label/input')
+                    input_field.send_keys(self.kontakt['nachname'])
 
-                # Input Nachname
-                input_field = driver.find_element_by_xpath(
-                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[2]/div[2]/div/label/input')
-                input_field.send_keys(self.kontakt['nachname'])
+                    # Input PLZ
+                    input_field = driver.find_element_by_xpath(
+                        '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[3]/div[1]/div/label/input')
+                    input_field.send_keys(self.kontakt['plz'])
 
-                # Input PLZ
-                input_field = driver.find_element_by_xpath(
-                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[3]/div[1]/div/label/input')
-                input_field.send_keys(self.kontakt['plz'])
+                    # Input City
+                    input_field = driver.find_element_by_xpath(
+                        '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[3]/div[2]/div/label/input')
+                    input_field.send_keys(self.kontakt['ort'])
 
-                # Input City
-                input_field = driver.find_element_by_xpath(
-                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[3]/div[2]/div/label/input')
-                input_field.send_keys(self.kontakt['ort'])
+                    # Input Strasse
+                    input_field = driver.find_element_by_xpath(
+                        '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[1]/div/label/input')
+                    input_field.send_keys(self.kontakt['strasse'])
 
-                # Input Strasse
-                input_field = driver.find_element_by_xpath(
-                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[1]/div/label/input')
-                input_field.send_keys(self.kontakt['strasse'])
+                    # Input Hasunummer
+                    input_field = driver.find_element_by_xpath(
+                        '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[2]/div/label/input')
+                    input_field.send_keys(self.kontakt['hausnummer'])
 
-                # Input Hasunummer
-                input_field = driver.find_element_by_xpath(
-                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[2]/div/label/input')
-                input_field.send_keys(self.kontakt['hausnummer'])
+                    # Input Telefonnummer
+                    input_field = driver.find_element_by_xpath(
+                        '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[3]/div/label/div/input')
+                    input_field.send_keys(self.kontakt['phone'].replace("+49", ""))
 
-                # Input Telefonnummer
-                input_field = driver.find_element_by_xpath(
-                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[3]/div/label/div/input')
-                input_field.send_keys(self.kontakt['phone'].replace("+49", ""))
-
-                # Input Mail
-                input_field = driver.find_element_by_xpath(
-                    '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[5]/div/div/label/input')
-                input_field.send_keys(self.kontakt['notificationReceiver'])
+                    # Input Mail
+                    input_field = driver.find_element_by_xpath(
+                        '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[5]/div/div/label/input')
+                    input_field.send_keys(self.kontakt['notificationReceiver'])
+                except:
+                    self.log.error("Kontaktdaten können nicht eingegeben werden")
+                    pass
 
                 # Klick Button "ÜBERNEHMEN"
-                button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[2]/button[1]'
-                button = WebDriverWait(driver, 1).until(
-                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
-                action = ActionChains(driver)
-                action.move_to_element(button).click().perform()
-                time.sleep(.7)
+                try:
+                    button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[2]/button[1]'
+                    button = WebDriverWait(driver, 1).until(
+                        EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                    action = ActionChains(driver)
+                    action.move_to_element(button).click().perform()
+                    time.sleep(.7)
+                except:
+                    self.log.error("Button ÜBERNEHMEN kann nicht gedrückt werden")
+                    pass
 
                 # Termin buchen
-                button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[3]/div[2]/div[2]/button'
-                button = WebDriverWait(driver, 1).until(
-                    EC.element_to_be_clickable((By.XPATH, button_xpath)))
-                action = ActionChains(driver)
-                action.move_to_element(button).click().perform()
+                try:
+                    button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[3]/div[2]/div[2]/button'
+                    button = WebDriverWait(driver, 1).until(
+                        EC.element_to_be_clickable((By.XPATH, button_xpath)))
+                    action = ActionChains(driver)
+                    action.move_to_element(button).click().perform()
+                except:
+                    self.log.error("Button Termin buchen kann nicht gedrückt werden")
+                    pass
                 time.sleep(3)
                 if "Ihr Termin am" in str(driver.page_source):
                     msg = "Termin erfolgreich gebucht!"
                     self.log.success(msg)
                     self._desktop_notification("Terminbuchung:", msg)
                     return True
+                else:
+                    self.log.error("Automatisierte Terminbuchung fehlgeschlagen. Termin manuell im Fenster oder im Browser buchen.")
+                    print("Link für manuelle Buchung im Browser:", self.domain + path)
+                    time.sleep(10*60)
 
             # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
             try:
@@ -394,9 +430,8 @@ class ImpfterminService():
             else:
                 self.log.warn("Keine qualifizierten Impfstoffe verfügbar")
         else:
-            self.log.warn("Einloggen mit Code nicht möglich")
-        print(" ")
-        return False
+            return False
+
 
     @retry_on_failure()
     def termin_suchen(self, plz):
