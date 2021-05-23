@@ -163,9 +163,7 @@ class ImpfterminService():
                 return True
             else:
                 self.log.warn("Keine qualifizierten Impfstoffe verfügbar")
-        else:
-            self.log.warn("Einloggen mit Code nicht möglich")
-        print(" ")
+        print()
         return False
 
     @retry_on_failure()
