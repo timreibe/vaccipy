@@ -1,8 +1,20 @@
+import os
+import platform
+import sys
 import time
 import traceback
 from json import JSONDecodeError
+from random import choice
+from threading import Thread
 
+from plyer import notification
 from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
+from selenium.webdriver import ActionChains
+from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 def retry_on_failure(retries=10):
@@ -78,3 +90,236 @@ def remove_prefix(text, prefix):
     if text.startswith(prefix):
         return text[len(prefix):]
     return text
+
+
+def desktop_notification(session, title: str, message: str):
+    """
+    Starts a thread and creates a desktop notification using plyer.notification
+    """
+
+    if 'windows' not in session.operating_system:
+        return
+
+    try:
+        Thread(target=notification.notify(
+            app_name=session.app_name,
+            title=title,
+            message=message)
+        ).start()
+    except Exception as exc:
+        session.log.error("Error in _desktop_notification: " + str(exc.__class__.__name__)
+                          + traceback.format_exc())
+
+
+def cookies_erneuern(
+        session,
+        basepath,
+        terminbuchung=False):
+    """
+    Cookies der Session erneuern, wenn sie abgelaufen sind.
+    Inklusive Backup-Prozess für die Terminbuchung, wenn diese im Bot fehlschlägt.
+
+    :param terminbuchung: Startet den Backup-Prozess der Terminbuchung
+    :return:
+    """
+
+    if terminbuchung == False:
+        session.log.info("Browser-Cookies generieren")
+    else:
+        session.log.info("Termin über Selenium buchen")
+    # Chromedriver anhand des OS auswählen
+    chromedriver = os.getenv("VACCIPY_CHROMEDRIVER")
+    if not chromedriver:
+        if 'linux' in session.operating_system:
+            if "64" in platform.architecture() or sys.maxsize > 2 ** 32:
+                chromedriver = os.path.join(basepath, "tools/chromedriver/chromedriver-linux-64")
+
+            else:
+                chromedriver = os.path.join(basepath, "tools/chromedriver/chromedriver-linux-32")
+        elif 'windows' in session.operating_system:
+            chromedriver = os.path.join(basepath, "tools/chromedriver/chromedriver-windows.exe")
+        elif 'darwin' in session.operating_system:
+            if "arm" in platform.processor().lower():
+                chromedriver = os.path.join(basepath, "tools/chromedriver/chromedriver-mac-m1")
+            else:
+                chromedriver = os.path.join(basepath, "tools/chromedriver/chromedriver-mac-intel")
+
+    path = "impftermine/service?plz={}".format(choice(session.plz_impfzentren))
+
+    # deaktiviere Selenium Logging
+    chrome_options = Options()
+    chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+
+    with Chrome(chromedriver, options=chrome_options) as driver:
+        driver.get(session.domain + path)
+
+        # Queue Bypass
+        queue_cookie = driver.get_cookie("akavpwr_User_allowed")
+        if queue_cookie:
+            session.log.info("Im Warteraum, Seite neuladen")
+            queue_cookie["name"] = "akavpau_User_allowed"
+            driver.add_cookie(queue_cookie)
+
+            # Seite neu laden
+            driver.get(session.domain + path)
+            driver.refresh()
+
+        # Klick auf "Auswahl bestätigen" im Cookies-Banner
+        # Warteraum-Support: Timeout auf 1 Stunde
+        button_xpath = ".//html/body/app-root/div/div/div/div[2]/div[2]/div/div[1]/a"
+        button = WebDriverWait(driver, 60 * 60).until(
+            EC.element_to_be_clickable((By.XPATH, button_xpath)))
+        action = ActionChains(driver)
+        action.move_to_element(button).click().perform()
+
+        # Klick auf "Vermittlungscode bereits vorhanden"
+        button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
+                       "div/div/app-corona-vaccination/div[2]/div/div/label[1]/span"
+        button = WebDriverWait(driver, 1).until(
+            EC.element_to_be_clickable((By.XPATH, button_xpath)))
+        action = ActionChains(driver)
+        action.move_to_element(button).click().perform()
+
+        # Auswahl des ersten Code-Input-Feldes
+        input_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
+                      "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
+                      "form[1]/div[1]/label/app-ets-input-code/div/div[1]/label/input"
+        input_field = WebDriverWait(driver, 1).until(
+            EC.element_to_be_clickable((By.XPATH, input_xpath)))
+        action = ActionChains(driver)
+        action.move_to_element(input_field).click().perform()
+
+        # Code eintragen
+        input_field.send_keys(session.code)
+        time.sleep(.1)
+
+        # Klick auf "Termin suchen"
+        button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
+                       "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
+                       "form[1]/div[2]/button"
+        button = WebDriverWait(driver, 1).until(
+            EC.element_to_be_clickable((By.XPATH, button_xpath)))
+        action = ActionChains(driver)
+        action.move_to_element(button).click().perform()
+
+        # Maus-Bewegung hinzufügen (nicht sichtbar)
+        action.move_by_offset(10, 20).perform()
+
+        # Backup Prozess, wenn die Terminbuchung mit dem Bot nicht klappt
+        # wird das Browserfenster geöffnet und die Buchung im Browser beendet
+        if terminbuchung:
+            # Klick auf "Termin suchen"
+            button_xpath = "/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[1]/div[2]/div[2]/button"
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(button).click().perform()
+            time.sleep(.5)
+
+            # Termin auswählen
+            button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[1]/div[2]/label/div[2]/div'
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(button).click().perform()
+            time.sleep(.5)
+
+            # Klick Button "AUSWÄHLEN"
+            button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[2]/button[1]'
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(button).click().perform()
+            time.sleep(.5)
+
+            # Klick Daten erfassen
+            button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[2]/div[2]/div[2]/button'
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(button).click().perform()
+            time.sleep(.5)
+
+            # Klick Anrede
+            button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div[1]/label[2]/span'
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(button).click().perform()
+
+            # Input Vorname
+            input_xpath = '/html/body/app-root/div/app-page-its-search/app-its-search-contact-modal/div/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[2]/div[1]/div/label/input'
+            input_field = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, input_xpath)))
+            action.move_to_element(input_field).click().perform()
+            input_field.send_keys(session.kontakt['vorname'])
+
+            # Input Nachname
+            input_field = driver.find_element_by_xpath(
+                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[2]/div[2]/div/label/input')
+            input_field.send_keys(session.kontakt['nachname'])
+
+            # Input PLZ
+            input_field = driver.find_element_by_xpath(
+                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[3]/div[1]/div/label/input')
+            input_field.send_keys(session.kontakt['plz'])
+
+            # Input City
+            input_field = driver.find_element_by_xpath(
+                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[3]/div[2]/div/label/input')
+            input_field.send_keys(session.kontakt['ort'])
+
+            # Input Strasse
+            input_field = driver.find_element_by_xpath(
+                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[1]/div/label/input')
+            input_field.send_keys(session.kontakt['strasse'])
+
+            # Input Hasunummer
+            input_field = driver.find_element_by_xpath(
+                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[2]/div/label/input')
+            input_field.send_keys(session.kontakt['hausnummer'])
+
+            # Input Telefonnummer
+            input_field = driver.find_element_by_xpath(
+                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[3]/div/label/div/input')
+            input_field.send_keys(session.kontakt['phone'].replace("+49", ""))
+
+            # Input Mail
+            input_field = driver.find_element_by_xpath(
+                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[5]/div/div/label/input')
+            input_field.send_keys(session.kontakt['notificationReceiver'])
+
+            # Klick Button "ÜBERNEHMEN"
+            button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[2]/button[1]'
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(button).click().perform()
+            time.sleep(.7)
+
+            # Termin buchen
+            button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[3]/div[2]/div[2]/button'
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(button).click().perform()
+            time.sleep(3)
+            if "Ihr Termin am" in str(driver.page_source):
+                msg = "Termin erfolgreich gebucht!"
+                session.log.success(msg)
+                session._desktop_notification("Terminbuchung:", msg)
+                return True
+
+        # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
+        try:
+            cookie = driver.get_cookie("bm_sz")
+            if cookie:
+                session.s.cookies.clear()
+                session.s.cookies.update({c['name']: c['value'] for c in driver.get_cookies()})
+                session.log.info("Browser-Cookie generiert: *{}".format(cookie.get("value")[-6:]))
+                return True
+            else:
+                session.log.error("Cookies können nicht erstellt werden!")
+                return False
+        except:
+            return False
