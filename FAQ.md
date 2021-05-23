@@ -6,6 +6,9 @@ Das einloggen mit dem Code ist optional. Die Terminabfrage und Buchung wird denn
 ## Was kann ich machen, wenn ich keine SMS beim Code generieren erhalte?
 Der Impfterminservice blockiert temporär E-mail Adressen und Telefonnummern. Um den Block zu umgehen muss eine alternative E-Mail Adresse und Telefonnummer verwenden werden oder bis zu 24 Stunden abgewartet werden.   
 
+## Was kann ich machen, wenn vaccipy mit dem Suchen aufhört ohne Fehlermeldung?
+Durch einen Klick in das Konsolenfenster stoppt das Programm automatisch. Mit einem Klick in die Konsole und Enter wird der Programmablauf fortgeführt.   
+
 ## Wie erzeuge ich manuelle Cookies die für das Code generieren benötigt werden?  
 
 1. Skript läuft in Botprotecion Fehler:
