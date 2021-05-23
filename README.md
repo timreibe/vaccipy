@@ -26,6 +26,8 @@ Windows Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Windows Beta Version: &nbsp;
 <img width="180" heigth="60"src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
 </a>
 
+⚠️ Google Chrome muss auf dem PC installiert sein (Windows, Mac und Linux) ⚠️
+
 ## Shoutout an:
 
 - DASDING: Danke für das [Feature](https://www.dasding.de/update/wie-impftermin-einfacher-bekommen-100.html) an Dani Rapp!</br>
