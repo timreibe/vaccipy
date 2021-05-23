@@ -26,6 +26,8 @@ wo, egal für wen!
 <img width="180" heigth="60"src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
 </a>
 
+⚠️ Google Chrome muss auf dem PC installiert sein (Windows, Mac und Linux) ⚠️
+
 ## Shoutout an:
 
 - DASDING: Danke für das [Feature](https://www.dasding.de/update/wie-impftermin-einfacher-bekommen-100.html) an Dani Rapp!</br>
@@ -193,6 +195,7 @@ Die pipelines sind im `.github/workflows` Ordner zu finden.
 
 Aktuelle Pipelines:
 - [x] [Windows Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
+- [x] [Linux 64 Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml)
 
 #### Generell
 
@@ -220,7 +223,7 @@ pyinstaller --clean specs/windows-terminservice.spec
 
 #### Linux
 ```shell 
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64;tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64:tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper
 
 pyinstaller --clean specs/linux-64-terminservice.spec
 
