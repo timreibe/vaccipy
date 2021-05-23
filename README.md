@@ -145,7 +145,7 @@ python3 main.py search --configure-only -f max-mustermann.json
 python3 main.py search
 
 # Termin suchen und dafür die Kontaktdaten aus beliebiger Datei verwenden:
-python3 main.py search --file max-mustermann.json
+python3 main.py search -f max-mustermann.json
 ```
 
 ### Optionale Umgebungsvariablen
