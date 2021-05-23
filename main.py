@@ -179,11 +179,10 @@ def run_search(kontaktdaten, check_delay):
         print(
             f"Kontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
     except KeyError as exc:
-        print(
+        raise ValueError(
             "Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
             "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
-            "deine Daten beim Programmstart erneut ein.\n")
-        raise exc
+            "deine Daten beim Programmstart erneut ein.\n") from exc
 
     ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
                                   check_delay=check_delay,PATH=PATH)
@@ -301,6 +300,15 @@ def subcommand_code(args):
         gen_code_interactive(args.file)
 
 
+def validate_args(args):
+    """
+    Raises ValueError if args contain invalid settings.
+    """
+
+    if args.configure_only and args.read_only:
+        raise ValueError("Kann nicht --configure-only und --read-only gleichzeitig verwenden")
+
+
 def main():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(help="commands", dest="command")
@@ -346,8 +354,10 @@ def main():
     if not hasattr(args, "retry_sec"):
         args.retry_sec = 60
 
-    if args.configure_only and args.read_only:
-        parser.error("Can not use both --configure-only and --read-only")
+    try:
+        validate_args(args)
+    except ValueError as exc:
+        parser.error(str(exc))
         # parser.error terminates the program with status code 2.
 
     if args.command == "search":
@@ -383,11 +393,17 @@ def main():
                 elif option == "x":
                     extended_settings = not extended_settings
                 elif extended_settings and option == "c":
-                    args.configure_only = not args.configure_only
+                    new_args = copy.copy(args)
+                    new_args.configure_only = not new_args.configure_only
+                    validate_args(new_args)
+                    args = new_args
                     print(
                         f"--configure-only {'de' if not args.configure_only else ''}aktiviert.")
                 elif extended_settings and option == "r":
-                    args.read_only = not args.read_only
+                    new_args = copy.copy(args)
+                    new_args.read_only = not new_args.read_only
+                    validate_args(new_args)
+                    args = new_args
                     print(
                         f"--read-only {'de' if not args.read_only else ''}aktiviert.")
                 elif extended_settings and option == "s":
