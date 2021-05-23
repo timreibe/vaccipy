@@ -20,6 +20,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from tools.clog import CLogger
 from tools.utils import retry_on_failure, desktop_notification
 
+try:
+    import beepy
+    ENABLE_BEEPY = True
+except ImportError:
+    ENABLE_BEEPY = False
+
 class ImpfterminService():
     def __init__(self, code: str, plz_impfzentren: list, kontakt: dict,PATH:str):
         self.code = str(code).upper()
@@ -476,6 +482,8 @@ class ImpfterminService():
                     ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                         '%d.%m.%Y um %H:%M Uhr')
                     self.log.success(f"{num}. Termin: {ts}")
+                if ENABLE_BEEPY:
+                    beepy.beep('coin')
                 return True, 200
             else:
                 self.log.info(f"Keine Termine verfügbar in {plz}")
