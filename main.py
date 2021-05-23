@@ -479,7 +479,7 @@ class ImpfterminService():
             self._desktop_notification("Terminbuchung:", msg)
             return True
 
-        if res.statuscode == 429:
+        elif res.status_code == 429:
             msg = "Anfrage wurde von der Botprotection geblockt."
         elif res.status_code >= 400:
             data = res.json()
@@ -642,7 +642,7 @@ def update_kontaktdaten_interactive(
     :return: Dictionary mit Kontaktdaten
     """
 
-    assert(command in ["code", "search"])
+    assert (command in ["code", "search"])
 
     if filepath is None:
         filepath = os.path.join(PATH, "kontaktdaten.json")
