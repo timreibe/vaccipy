@@ -926,10 +926,12 @@ def main():
         "--file",
         help="Pfad zur JSON-Datei für Kontaktdaten")
     base_subparser.add_argument(
+        "-c",
         "--configure-only",
         action='store_true',
         help="Nur Kontaktdaten erfassen und in JSON-Datei abspeichern")
     base_subparser.add_argument(
+        "-r",
         "--read-only",
         action='store_true',
         help="Es wird nicht nach fehlenden Kontaktdaten gefragt. Stattdessen wird ein Fehler angezeigt, falls benötigte Kontaktdaten in der JSON-Datei fehlen.")
@@ -937,7 +939,8 @@ def main():
     parser_search = subparsers.add_parser(
         "search", parents=[base_subparser], help="Termin suchen")
     parser_search.add_argument(
-        "--retry-sec", "-r",
+        "-s",
+        "--retry-sec",
         type=int,
         default=60,
         help="Wartezeit zwischen zwei Versuchen (in Sekunden)")
@@ -969,12 +972,22 @@ def main():
         subcommand_code(args)
 
     else:
-        while True:
-            print("Was möchtest du tun?\n"
-                  "[1] Termin suchen\n"
-                  "[2] Impf-Code generieren\n")
+        extended_settings = False
 
-            option = input("> Option: ")
+        while True:
+            print(
+                "Was möchtest du tun?\n"
+                "[1] Termin suchen\n"
+                "[2] Impf-Code generieren\n"
+                f"[x] Erweiterte Einstellungen {'verbergen' if extended_settings else 'anzeigen'}\n")
+
+            if extended_settings:
+                print(
+                    f"[c] --configure-only {'de' if args.configure_only else ''}aktivieren\n"
+                    f"[r] --read-only {'de' if args.read_only else ''}aktivieren\n"
+                    "[s] --retry-sec setzen\n")
+
+            option = input("> Option: ").lower()
             print()
 
             try:
@@ -982,6 +995,18 @@ def main():
                     subcommand_search(args)
                 elif option == "2":
                     subcommand_code(args)
+                elif option == "x":
+                    extended_settings = not extended_settings
+                elif extended_settings and option == "c":
+                    args.configure_only = not args.configure_only
+                    print(
+                        f"--configure-only {'de' if not args.configure_only else ''}aktiviert.")
+                elif extended_settings and option == "r":
+                    args.read_only = not args.read_only
+                    print(
+                        f"--read-only {'de' if not args.read_only else ''}aktiviert.")
+                elif extended_settings and option == "s":
+                    args.retry_sec = int(input("> --retry-sec="))
                 else:
                     print("Falscheingabe! Bitte erneut versuchen.")
                 print()
