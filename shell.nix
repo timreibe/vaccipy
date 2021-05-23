@@ -15,6 +15,19 @@ let
 
   my-python = python3.override {
     packageOverrides = self: super: {
+      beepy = buildPythonPackage rec {
+        pname = "beepy";
+        version = "1.0.7";
+        src = fetchPypi {
+          inherit pname version;
+          sha256 = "0psv1na3cygarh7h42nc1zigsqmpj99c2yyys6lar6607kzlhww1";
+        };
+        doCheck = false;
+        propagatedBuildInputs = [
+          super.simpleaudio
+        ];
+      };
+
       cloudscraper = buildPythonPackage rec {
         pname = "cloudscraper";
         version = "1.2.58";
@@ -58,6 +71,7 @@ mkShell {
   buildInputs = [
     chromium
     (my-python.withPackages (p: [
+      p.beepy
       p.certifi
       p.chardet
       p.cloudscraper

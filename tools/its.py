@@ -1,3 +1,4 @@
+import beepy
 import platform
 import time
 from base64 import b64encode
@@ -216,6 +217,7 @@ class ImpfterminService():
                     ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                         '%d.%m.%Y um %H:%M Uhr')
                     self.log.success(f"{num}. Termin: {ts}")
+                beepy.beep('coin')
                 return True, 200
             else:
                 self.log.info(f"Keine Termine verfügbar in {plz}")
