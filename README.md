@@ -12,7 +12,7 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 wo, egal für wen!
 * **🌟 NEU:** [Beta Branch (neue, aber noch nicht final getestete Features)](https://github.com/iamnotturner/vaccipy/tree/beta)
 </br></br>
-  Windows Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Windwos Beta Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Linux Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;   &nbsp;Linux Beta Version:
+  Windows Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Windows Beta Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Linux Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;   &nbsp;Linux Beta Version:
 <a href="https://cntr.click/9ypzBLb">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
 </a>
