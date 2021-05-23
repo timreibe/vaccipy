@@ -123,16 +123,25 @@ python3 main.py
 Alternativ kannst du Subkommandos verwenden, um deine Auswahl zu treffen:
 
 ```bash
+# Kontaktdaten (für Impf-Code) eingeben und in kontaktdaten.json speichern:
+python3 main.py code --configure-only
+
+# Kontaktdaten (für Impf-Code) eingeben und in beliebiger Datei speichern:
+python3 main.py code --configure-only -f max-mustermann.json
+
 # Impf-Code generieren:
 python3 main.py code
 
-# Kontaktdaten eingeben und in kontaktdaten.json speichern:
-python3 main.py configure
+# Impf-Code generieren und dafür die Kontaktdaten aus beliebiger Datei verwenden:
+python3 main.py code -f max-mustermann.json
 
-# Kontaktdaten eingeben und in beliebiger Datei speichern:
-python3 main.py configure --file max-mustermann.json
+# Kontaktdaten (für Terminsuche) eingeben und in kontaktdaten.json speichern:
+python3 main.py search --configure-only
 
-# Termin suchen
+# Kontaktdaten (für Terminsuche) eingeben und in beliebiger Datei speichern:
+python3 main.py search --configure-only -f max-mustermann.json
+
+# Termin suchen:
 python3 main.py search
 
 # Termin suchen und dafür die Kontaktdaten aus beliebiger Datei verwenden:
