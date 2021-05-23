@@ -1,4 +1,7 @@
 import time
+from threading import Thread
+from plyer import notification
+from tools.exceptions import DesktopNotificationError
 import traceback
 from json import JSONDecodeError
 
@@ -78,3 +81,26 @@ def remove_prefix(text, prefix):
     if text.startswith(prefix):
         return text[len(prefix):]
     return text
+
+
+def desktop_notification(operating_system:str, title: str, message: str):
+        """
+        Starts a thread and creates a desktop notification using plyer.notification
+        """
+
+        if 'windows' not in operating_system:
+            return
+
+        try:
+            Thread(target=notification.notify(
+                app_name="Impfterminservice",
+                title=title,
+                message=message)
+            ).start()
+        except Exception as exc:
+            raise DesktopNotificationError(
+                "Error in _desktop_notification: " + str(exc.__class__.__name__)
+                + traceback.format_exc()
+                           ) from exc
+            
+        
