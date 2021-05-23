@@ -57,7 +57,7 @@ class ImpfterminService():
         self.impfzentrum = {}
         self.domain = None
         if not self.impfzentren_laden():
-            main()
+            raise ValueError("Impfzentren laden fehlgeschlagen")
 
         # Verfügbare Impfstoffe laden
         self.verfuegbare_qualifikationen: List[Dict] = []
@@ -736,7 +736,7 @@ def get_kontaktdaten(filepath=None):
             return {}
 
 
-def run_search_interactive():
+def run_search_interactive(kontaktdaten_path, check_delay):
     """
     Interaktives Setup für die Terminsuche:
     1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen
@@ -745,19 +745,22 @@ def run_search_interactive():
     3. Bei unvollständigen Kontaktdaten: Interaktive Eingabe der fehlenden
        Kontaktdaten.
     4. Terminsuche
+
+    :param kontaktdaten_path: Pfad zur JSON-Datei mit Kontaktdaten. Default: kontaktdaten.json im aktuellen Ordner
     """
+
+    if kontaktdaten_path is None:
+        kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
 
     print(
         "Bitte trage zunächst deinen Impfcode und deine Kontaktdaten ein.\n"
-        "Die Daten werden anschließend lokal in der Datei 'kontaktdaten.json' abgelegt.\n"
+        f"Die Daten werden anschließend lokal in der Datei '{os.path.basename(kontaktdaten_path)}' abgelegt.\n"
         "Du musst sie zukünftig nicht mehr eintragen.\n")
 
     kontaktdaten = {}
-
-    kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
     if os.path.isfile(kontaktdaten_path):
         daten_laden = input(
-            "> Sollen die vorhandenen Daten aus 'kontaktdaten.json' geladen werden (y/n)?: ").lower()
+            f"> Sollen die vorhandenen Daten aus '{os.path.basename(kontaktdaten_path)}' geladen werden (y/n)?: ").lower()
         if daten_laden.lower() != "n":
             kontaktdaten = get_kontaktdaten(kontaktdaten_path)
 
@@ -765,10 +768,10 @@ def run_search_interactive():
     kontaktdaten = update_kontaktdaten_interactive(
         kontaktdaten, "search", kontaktdaten_path)
     print()
-    return run_search(kontaktdaten)
+    return run_search(kontaktdaten, check_delay)
 
 
-def run_search(kontaktdaten, check_delay=60):
+def run_search(kontaktdaten, check_delay):
     """
     Nicht-interaktive Terminsuche
 
@@ -801,7 +804,7 @@ def run_search(kontaktdaten, check_delay=60):
                                   check_delay=check_delay)
 
 
-def gen_code_interactive():
+def gen_code_interactive(kontaktdaten_path):
     """
     Interaktives Setup für die Codegenerierung:
     1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen
@@ -811,21 +814,22 @@ def gen_code_interactive():
        fehlenden Kontaktdaten, die für die Codegenerierung benötigt werden.
     4. Codegenerierung
 
-    :return:
+    :param kontaktdaten_path: Pfad zur JSON-Datei mit Kontaktdaten. Default: kontaktdaten.json im aktuellen Ordner
     """
+
+    if kontaktdaten_path is None:
+        kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
 
     print(
         "Du kannst dir jetzt direkt einen Impf-Code erstellen.\n"
         "Dazu benötigst du eine Mailadresse, Telefonnummer und die PLZ deines Impfzentrums.\n"
-        "Die Daten werden anschließend lokal in der Datei 'kontaktdaten.json' abgelegt.\n"
+        f"Die Daten werden anschließend lokal in der Datei '{os.path.basename(kontaktdaten_path)}' abgelegt.\n"
         "Du musst sie zukünftig nicht mehr eintragen.\n")
 
     kontaktdaten = {}
-
-    kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
     if os.path.isfile(kontaktdaten_path):
         daten_laden = input(
-            "> Sollen die vorhandenen Daten aus 'kontaktdaten.json' geladen werden (y/n)?: ").lower()
+            f"> Sollen die vorhandenen Daten aus '{os.path.basename(kontaktdaten_path)}' geladen werden (y/n)?: ").lower()
         if daten_laden.lower() != "n":
             kontaktdaten = get_kontaktdaten(kontaktdaten_path)
 
@@ -877,7 +881,7 @@ def gen_code(kontaktdaten):
 
     if token is not None:
         # code bestätigen
-        print("Du erhälst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
+        print("\nDu erhälst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
               "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
               "Beispiel: 123-456\n")
 
@@ -892,70 +896,97 @@ def gen_code(kontaktdaten):
     return False
 
 
+def subcommand_search(args):
+    if args.configure_only:
+        update_kontaktdaten_interactive(
+            get_kontaktdaten(args.file), "search", args.file)
+    elif args.read_only:
+        run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec)
+    else:
+        run_search_interactive(args.file, check_delay=args.retry_sec)
+
+
+def subcommand_code(args):
+    if args.configure_only:
+        update_kontaktdaten_interactive(
+            get_kontaktdaten(args.file), "code", args.file)
+    elif args.read_only:
+        gen_code(get_kontaktdaten(args.file))
+    else:
+        gen_code_interactive(args.file)
+
+
 def main():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(help="commands", dest="command")
 
-    parser_search = subparsers.add_parser("search", help="Termin suchen")
-    parser_search.add_argument(
-        "-f", "--file", help="Pfad zur JSON-Datei für Kontaktdaten")
-    parser_search.add_argument(
+    base_subparser = argparse.ArgumentParser(add_help=False)
+    base_subparser.add_argument(
+        "-f",
+        "--file",
+        help="Pfad zur JSON-Datei für Kontaktdaten")
+    base_subparser.add_argument(
         "--configure-only",
         action='store_true',
         help="Nur Kontaktdaten erfassen und in JSON-Datei abspeichern")
+    base_subparser.add_argument(
+        "--read-only",
+        action='store_true',
+        help="Es wird nicht nach fehlenden Kontaktdaten gefragt. Stattdessen wird ein Fehler angezeigt, falls benötigte Kontaktdaten in der JSON-Datei fehlen.")
+
+    parser_search = subparsers.add_parser(
+        "search", parents=[base_subparser], help="Termin suchen")
     parser_search.add_argument(
         "--retry-sec", "-r",
         type=int,
         default=60,
         help="Wartezeit zwischen zwei Versuchen (in Sekunden)")
 
-    parser_code = subparsers.add_parser("code", help="Impf-Code generieren")
-    parser_code.add_argument(
-        "-f",
-        "--file",
-        help="Pfad zur JSON-Datei für Kontaktdaten")
-    parser_code.add_argument(
-        "--configure-only",
-        action='store_true',
-        help="Nur Kontaktdaten erfassen und in JSON-Datei abspeichern")
+    parser_code = subparsers.add_parser(
+        "code",
+        parents=[base_subparser],
+        help="Impf-Code generieren")
 
     args = parser.parse_args()
 
+    if not hasattr(args, "file"):
+        args.file = None
+    if not hasattr(args, "configure_only"):
+        args.configure_only = False
+    if not hasattr(args, "read_only"):
+        args.read_only = False
+    if not hasattr(args, "retry_sec"):
+        args.retry_sec = 60
+
+    if args.configure_only and args.read_only:
+        parser.error("Can not use both --configure-only and --read-only")
+        # parser.error terminates the program with status code 2.
+
     if args.command == "search":
-        if args.configure_only:
-            update_kontaktdaten_interactive({}, "search", args.file)
-        elif args.file:
-            run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec)
-        else:
-            run_search_interactive()
+        subcommand_search(args)
 
     elif args.command == "code":
-        if args.configure_only:
-            update_kontaktdaten_interactive({}, "code", args.file)
-        elif args.file:
-            gen_code(get_kontaktdaten(args.file))
-        else:
-            gen_code_interactive()
+        subcommand_code(args)
 
     else:
-        print("Was möchtest du tun?\n"
-              "[1] Termin suchen\n"
-              "[2] Impf-Code generieren\n")
+        while True:
+            print("Was möchtest du tun?\n"
+                  "[1] Termin suchen\n"
+                  "[2] Impf-Code generieren\n")
 
-        option = input("> Option: ")
-        print(" ")
+            option = input("> Option: ")
+            print()
 
-        if option == "1":
-            run_search_interactive()
-        elif option == "2":
-            gen_code_interactive()
-            main()
-        else:
-            print("Falscheingabe! Bitte erneut versuchen:")
-            main()
-
-        # Für Windows: Fenster 1 Stunde offen halten nach Ausführung
-        time.sleep(60 * 60)
+            try:
+                if option == "1":
+                    subcommand_search(args)
+                elif option == "2":
+                    subcommand_code(args)
+                else:
+                    print("Falscheingabe! Bitte erneut versuchen.")
+                print()
+            except Exception as exc:
+                print(f"\nFehler: {str(exc)}\n")
 
 
 if __name__ == "__main__":
