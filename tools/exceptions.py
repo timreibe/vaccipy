@@ -1,0 +1,2 @@
+class DesktopNotificationError(Exception):
+    pass

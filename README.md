@@ -12,7 +12,7 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 wo, egal für wen!
 * **🌟 NEU:** [Beta Branch (neue, aber noch nicht final getestete Features)](https://github.com/iamnotturner/vaccipy/tree/beta)
 </br></br>
-Windows Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Windows Beta Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Linux Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;   &nbsp;Linux Beta Version:
+  Windows Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Windows Beta Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Linux Version: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;   &nbsp;Linux Beta Version:
 <a href="https://cntr.click/9ypzBLb">
 <img width="180" height="60" src="https://www.laughingbirdsoftware.com/wp-content/uploads/2020/07/Download-for-Windows-Button.png">
 </a>
@@ -107,22 +107,62 @@ und anschließend rechts-oben auf "Buchung verwalten" klicken.
 
 ## Requirements
 
-* Python 3 (getestet mit Python 3.9)
+* Python 3 (getestet mit Python 3.8 und 3.9)
 * pip (zur Installation der Python-Module, getestet mit pip3)
-* Google Chrome
+* Google Chrome oder Chromium
 
 Die notwendigen Python-Module können mittels pip installiert werden.
 
-```shell    
+```shell
 pip3 install -r requirements.txt
 ```
 
-`vaccipy` kann über die Kommandozeile oder in einer beliebigen python-Entwicklungsumgebung
-ausgeführt werden:
+## Verwendung
+
+`vaccipy` kannst du über die Kommandozeile oder in einer beliebigen python-Entwicklungsumgebung
+ausgeführen.
+Nach dem Programmstart kannst du interaktiv auswählen, ob du einen Impf-Code generieren möchtest,
+oder einen Termin suchen möchtest.
 
 ```shell
 python3 main.py
 ```
+
+Alternativ kannst du Subkommandos verwenden, um deine Auswahl zu treffen:
+
+```bash
+# Kontaktdaten (für Impf-Code) eingeben und in kontaktdaten.json speichern:
+python3 main.py code --configure-only
+
+# Kontaktdaten (für Impf-Code) eingeben und in beliebiger Datei speichern:
+python3 main.py code --configure-only -f max-mustermann.json
+
+# Impf-Code generieren:
+python3 main.py code
+
+# Impf-Code generieren und dafür die Kontaktdaten aus beliebiger Datei verwenden:
+python3 main.py code -f max-mustermann.json
+
+# Kontaktdaten (für Terminsuche) eingeben und in kontaktdaten.json speichern:
+python3 main.py search --configure-only
+
+# Kontaktdaten (für Terminsuche) eingeben und in beliebiger Datei speichern:
+python3 main.py search --configure-only -f max-mustermann.json
+
+# Termin suchen:
+python3 main.py search
+
+# Termin suchen und dafür die Kontaktdaten aus beliebiger Datei verwenden:
+python3 main.py search -f max-mustermann.json
+```
+
+### Optionale Umgebungsvariablen
+
+* `VACCIPY_CHROMEDRIVER`:
+  Name oder relativer Pfad der chromedriver Programmdatei, die du verwenden möchtest.
+  Dies kann verwendet werden, falls du deine eigene chromedriver-Installation verwenden möchtest
+  und wird z. B. auf NixOS benötigt.
+  Beispiel: `chromedriver`
 
 ## Distributionen
 
