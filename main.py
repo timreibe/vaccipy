@@ -768,7 +768,7 @@ def run_search_interactive():
     return run_search(kontaktdaten)
 
 
-def run_search(kontaktdaten, check_delay=30):
+def run_search(kontaktdaten, check_delay=60):
     """
     Nicht-interaktive Terminsuche
 
@@ -906,7 +906,7 @@ def main():
     parser_search.add_argument(
         "--retry-sec", "-r",
         type=int,
-        default=30,
+        default=60,
         help="Wartezeit zwischen zwei Versuchen (in Sekunden)")
 
     parser_code = subparsers.add_parser("code", help="Impf-Code generieren")
