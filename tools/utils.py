@@ -33,8 +33,8 @@ def retry_on_failure(retries=10):
 
                     self.log.error("Timeout exception raised", prefix=function.__name__)
 
-                    if function.__name__ != "cookies_erneuern":
-                        self.cookies_erneuern()
+                    if function.__name__ != "renew_cookies":
+                        self.renew_cookies()
 
                 except (ConnectTimeout, ConnectionError):
                     # Keine Internetverbindung
@@ -55,7 +55,7 @@ def retry_on_failure(retries=10):
 
                     # Cookies erneuern bei der Terminsuche
                     if function.__name__ == "terminsuche":
-                        self.cookies_erneuern(False)
+                        self.renew_cookies()
 
                 except Exception as e:
                     exc = type(e).__name__
