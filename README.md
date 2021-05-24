@@ -216,14 +216,14 @@ Schritte zum Erstellen einer Distribution:
 .spec Datei erstellen und anschließend Distribution erstellen:  
 ⚠️ACHTUNG⚠️: Beim erstellen der .spec den python code für `cloudscraper` nicht löschen! 
 ```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/"
+pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --icon "..\images\spritze.ico" --name windows-terminservice --hidden-import plyer.platforms.win.notification --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/"
 
 pyinstaller --clean specs/windows-terminservice.spec
 ```     
 
 #### Linux
 ```shell 
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64:tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/"
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64:tools/chromedriver/" --icon "../images/spritze.ico" --name linux-64-terminservice --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/"
 
 pyinstaller --clean specs/linux-64-terminservice.spec
 
