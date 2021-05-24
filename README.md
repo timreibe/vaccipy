@@ -223,7 +223,7 @@ pyinstaller --clean specs/windows-terminservice.spec
 
 #### Linux
 ```shell 
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64:tools/chromedriver/" --icon "../images/spritze.ico" --name linux-64-terminservice --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/"
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64:tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/"
 
 pyinstaller --clean specs/linux-64-terminservice.spec
 
