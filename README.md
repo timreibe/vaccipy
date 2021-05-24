@@ -25,7 +25,7 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 > ⚠️ Google Chrome muss auf dem PC installiert sein (Windows, Mac und Linux) 
 
 
-<a href="https://cntr.click/9ypzBLb">
+<a href="https://cntr.click/pz01KSQ">
 <img width="100" height="90" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
 </a>
 <a href="https://cntr.click/6Q0PXkK">
@@ -37,7 +37,7 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 Der BETA-Branch enthält neue, noch nicht final getestete Features. [Sollten Fehler auftreten könnt ihr hier ein Issue erstellen.](https://github.com/iamnotturner/vaccipy/issues)
 
 
-<a href="https://cntr.click/xJDra3M">
+<a href="https://cntr.click/C476snF">
 <img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
 </a>
 <a href="https://cntr.click/R83AXwY">
