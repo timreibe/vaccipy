@@ -53,7 +53,11 @@ andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Co
 
 ## Wie funktioniert vaccipy?
 
-`vaccipy` imitiert die manuelle Terminsuche und -buchung im Browser und führt die Anfragen automatisch aus. 
+`vaccipy` imitiert die manuelle Terminsuche und -buchung im Browser und führt die Anfragen automatisch aus.  
+Zunächst trägst du deinen "Impf-Code" (*Beispiel: A1B2-C3D4-E5F6*), die PLZ deines Impfzentrums 
+und deine Daten (Anschrift, Telefon, Mail) ein, die bei der Terminbuchung angegeben werden sollen.
+Du wirst zur Eingabe aufgefordert und deine Daten werden in der Datei `./data/kontaktdaten.json` gespeichert.
+
 
 Nachfolgend werden die zwei Grundfunktionalitäten von `vaccipy` kurz beschrieben.
 

@@ -1,10 +1,11 @@
 import time
+import traceback
+from pathlib import Path
+
 from threading import Thread
 from plyer import notification
 from tools.exceptions import DesktopNotificationError
-import traceback
 from json import JSONDecodeError
-
 from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
 
 
@@ -33,8 +34,8 @@ def retry_on_failure(retries=10):
 
                     self.log.error("Timeout exception raised", prefix=function.__name__)
 
-                    if function.__name__ != "cookies_erneuern":
-                        self.cookies_erneuern()
+                    if function.__name__ != "renew_cookies":
+                        self.renew_cookies()
 
                 except (ConnectTimeout, ConnectionError):
                     # Keine Internetverbindung
@@ -55,7 +56,7 @@ def retry_on_failure(retries=10):
 
                     # Cookies erneuern bei der Terminsuche
                     if function.__name__ == "terminsuche":
-                        self.cookies_erneuern(False)
+                        self.renew_cookies()
 
                 except Exception as e:
                     exc = type(e).__name__
@@ -102,5 +103,13 @@ def desktop_notification(operating_system:str, title: str, message: str):
                 "Error in _desktop_notification: " + str(exc.__class__.__name__)
                 + traceback.format_exc()
                            ) from exc
-            
+    
+def create_missing_dirs():
+    """
+    Erstellt benötigte Ordner, falls sie fehlen:
+
+    - ./data
+    """
+    Path("./data").mkdir(parents=True, exist_ok=True)
+
         

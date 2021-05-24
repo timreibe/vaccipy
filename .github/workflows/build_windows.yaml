@@ -44,22 +44,21 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build Windows
-        run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec --add-data "tools/cloudscraper;./cloudscraper/"
+        run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec
       
+      - name: Chocolatey install innosetup
+        uses: crazy-max/ghaction-chocolatey@v1.5.0
+        with:
+          # Arguments to pass to Chocolatey
+          args: install innosetup --install-arguments="'/DIR=../innosetup'" --force
+      - name: Run innosetup
+        run: ../innosetup/ISCC.exe specs/windows-terminservice.iss
+
       - name: Commit changes
         uses: EndBug/add-and-commit@v7 # You can change this to use a specific version
         with:
-          # The arguments for the `git add` command (see the paragraph below for more info)
-          # Default: '.'
-          add: 'dist/windows-terminservice --force'
-
-          # The name of the user that will be displayed as the author of the commit
-          # Default: depends on the default_author input
+          add: '["dist/windows-terminservice --force","installers --force"]'
           author_name: build_windows-workflow
-
-          # The local path to the directory where your repository is located. You should use actions/checkout first to set it up
-          # Default: '.'
-          # cwd: '.'
 
           # The message for the commit
           # Default: 'Commit from GitHub Actions (name of the workflow)'

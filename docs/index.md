@@ -112,7 +112,7 @@ anschließend per Mail zugesendet.
 
 ## Was passiert mit meinen Daten?
 
-Deine Daten werden **lokal**, also nur bei dir auf dem Computer, in der Datei `./kontaktdaten.json` gespeichert.
+Deine Daten werden **lokal**, also nur bei dir auf dem Computer, in der Datei `./data/kontaktdaten.json` gespeichert.
 Beim nächsten Start kannst du deine Daten direkt laden und musst sie nicht erneut eintragen.
 
 

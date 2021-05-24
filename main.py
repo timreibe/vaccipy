@@ -5,7 +5,12 @@ import copy
 import json
 import os
 
-from tools.utils import remove_prefix
+try:
+    import readline
+except:
+    pass
+
+from tools.utils import create_missing_dirs, remove_prefix
 from tools.its import ImpfterminService
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -23,14 +28,14 @@ def update_kontaktdaten_interactive(
     :param command: Entweder "code" oder "search". Bestimmt, welche
         Kontaktdaten überhaupt benötigt werden.
     :param filepath: Pfad zur JSON-Datei zum Abspeichern der Kontaktdaten.
-        Default: kontaktdaten.json im aktuellen Ordner
+        Default: data/kontaktdaten.json im aktuellen Ordner
     :return: Dictionary mit Kontaktdaten
     """
 
     assert (command in ["code", "search"])
 
     if filepath is None:
-        filepath = os.path.join(PATH, "kontaktdaten.json")
+        filepath = os.path.join(PATH, "data/kontaktdaten.json")
 
     kontaktdaten = copy.deepcopy(known_kontaktdaten)
 
@@ -107,18 +112,21 @@ def get_kontaktdaten(filepath=None):
     """
     Lade Kontaktdaten aus Datei.
 
-    :param filepath: Pfad zur JSON-Datei mit Kontaktdaten. Default: kontaktdaten.json im aktuellen Ordner
+    :param filepath: Pfad zur JSON-Datei mit Kontaktdaten. Default: data/kontaktdaten.json im aktuellen Ordner
     :return: Dictionary mit Kontaktdaten
     """
 
     if filepath is None:
-        filepath = os.path.join(PATH, "kontaktdaten.json")
+        filepath = os.path.join(PATH, "data/kontaktdaten.json")
 
-    with open(filepath) as f:
-        try:
-            return json.load(f)
-        except json.JSONDecodeError:
-            return {}
+    try:
+        with open(filepath, encoding='utf-8') as f:
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return {}
+    except FileNotFoundError:
+        return {}
 
 
 def run_search_interactive(kontaktdaten_path, check_delay):
@@ -131,11 +139,11 @@ def run_search_interactive(kontaktdaten_path, check_delay):
        Kontaktdaten.
     4. Terminsuche
 
-    :param kontaktdaten_path: Pfad zur JSON-Datei mit Kontaktdaten. Default: kontaktdaten.json im aktuellen Ordner
+    :param kontaktdaten_path: Pfad zur JSON-Datei mit Kontaktdaten. Default: data/kontaktdaten.json im aktuellen Ordner
     """
 
     if kontaktdaten_path is None:
-        kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
+        kontaktdaten_path = os.path.join(PATH, "data/kontaktdaten.json")
 
     print(
         "Bitte trage zunächst deinen Impfcode und deine Kontaktdaten ein.\n"
@@ -179,11 +187,10 @@ def run_search(kontaktdaten, check_delay):
         print(
             f"Kontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
     except KeyError as exc:
-        print(
+        raise ValueError(
             "Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
             "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
-            "deine Daten beim Programmstart erneut ein.\n")
-        raise exc
+            "deine Daten beim Programmstart erneut ein.\n") from exc
 
     ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
                                   check_delay=check_delay,PATH=PATH)
@@ -203,7 +210,7 @@ def gen_code_interactive(kontaktdaten_path):
     """
 
     if kontaktdaten_path is None:
-        kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
+        kontaktdaten_path = os.path.join(PATH, "data/kontaktdaten.json")
 
     print(
         "Du kannst dir jetzt direkt einen Impf-Code erstellen.\n"
@@ -261,7 +268,7 @@ def gen_code(kontaktdaten):
         print("Falscheingabe! Bitte erneut versuchen:")
 
     # cookies erneuern und code anfordern
-    its.cookies_erneuern()
+    its.renew_cookies()
     token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, leistungsmerkmal)
 
     if token is not None:
@@ -301,7 +308,18 @@ def subcommand_code(args):
         gen_code_interactive(args.file)
 
 
+def validate_args(args):
+    """
+    Raises ValueError if args contain invalid settings.
+    """
+
+    if args.configure_only and args.read_only:
+        raise ValueError("--configure-only und --read-only kann nicht gleichzeitig verwendet werden")
+
+
 def main():
+    create_missing_dirs()
+
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(help="commands", dest="command")
 
@@ -346,8 +364,10 @@ def main():
     if not hasattr(args, "retry_sec"):
         args.retry_sec = 60
 
-    if args.configure_only and args.read_only:
-        parser.error("Can not use both --configure-only and --read-only")
+    try:
+        validate_args(args)
+    except ValueError as exc:
+        parser.error(str(exc))
         # parser.error terminates the program with status code 2.
 
     if args.command == "search":
@@ -383,11 +403,17 @@ def main():
                 elif option == "x":
                     extended_settings = not extended_settings
                 elif extended_settings and option == "c":
-                    args.configure_only = not args.configure_only
+                    new_args = copy.copy(args)
+                    new_args.configure_only = not new_args.configure_only
+                    validate_args(new_args)
+                    args = new_args
                     print(
                         f"--configure-only {'de' if not args.configure_only else ''}aktiviert.")
                 elif extended_settings and option == "r":
-                    args.read_only = not args.read_only
+                    new_args = copy.copy(args)
+                    new_args.read_only = not new_args.read_only
+                    validate_args(new_args)
+                    args = new_args
                     print(
                         f"--read-only {'de' if not args.read_only else ''}aktiviert.")
                 elif extended_settings and option == "s":
@@ -400,5 +426,15 @@ def main():
 
 
 if __name__ == "__main__":
-    print("vaccipy - Automatische Terminbuchung für den Corona Impfterminservice\n")
+    print("""
+                                _                 
+                               (_)                
+ __   __   __ _    ___    ___   _   _ __    _   _ 
+ \ \ / /  / _` |  / __|  / __| | | | '_ \  | | | |
+  \ V /  | (_| | | (__  | (__  | | | |_) | | |_| |
+   \_/    \__,_|  \___|  \___| |_| | .__/   \__, |
+                                   | |       __/ |
+                                   |_|      |___/ 
+""")
+    print("Automatische Terminbuchung für den Corona Impfterminservice\n")
     main()

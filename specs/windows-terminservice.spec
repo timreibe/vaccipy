@@ -3,17 +3,11 @@
 
 block_cipher = None
 
-# cloudscraper setup:
-import os 
-import cloudscraper
-user_agent_path = os.path.join(os.path.dirname(cloudscraper.__file__),"user_agent") 
-
-
 
 a = Analysis(['..\\main.py'],
              pathex=['specs//'],
              binaries=[('..\\tools\\chromedriver\\chromedriver-windows.exe', 'tools\\chromedriver\\')],
-             datas=[(user_agent_path, 'cloudscraper\\user_agent')],
+             datas=[('../tools/cloudscraper', './cloudscraper/')],
              hiddenimports=['plyer.platforms.win.notification', 'cloudscraper'],
              hookspath=[],
              runtime_hooks=[],
@@ -33,7 +27,7 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=True )
+          console=True , icon='..\\images\\spritze.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
