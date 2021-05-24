@@ -5,7 +5,7 @@ import copy
 import json
 import os
 
-from tools.utils import remove_prefix
+from tools.utils import create_missing_dirs, remove_prefix
 from tools.its import ImpfterminService
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -23,14 +23,14 @@ def update_kontaktdaten_interactive(
     :param command: Entweder "code" oder "search". Bestimmt, welche
         Kontaktdaten überhaupt benötigt werden.
     :param filepath: Pfad zur JSON-Datei zum Abspeichern der Kontaktdaten.
-        Default: kontaktdaten.json im aktuellen Ordner
+        Default: data/kontaktdaten.json im aktuellen Ordner
     :return: Dictionary mit Kontaktdaten
     """
 
     assert (command in ["code", "search"])
 
     if filepath is None:
-        filepath = os.path.join(PATH, "kontaktdaten.json")
+        filepath = os.path.join(PATH, "data/kontaktdaten.json")
 
     kontaktdaten = copy.deepcopy(known_kontaktdaten)
 
@@ -107,12 +107,12 @@ def get_kontaktdaten(filepath=None):
     """
     Lade Kontaktdaten aus Datei.
 
-    :param filepath: Pfad zur JSON-Datei mit Kontaktdaten. Default: kontaktdaten.json im aktuellen Ordner
+    :param filepath: Pfad zur JSON-Datei mit Kontaktdaten. Default: data/kontaktdaten.json im aktuellen Ordner
     :return: Dictionary mit Kontaktdaten
     """
 
     if filepath is None:
-        filepath = os.path.join(PATH, "kontaktdaten.json")
+        filepath = os.path.join(PATH, "data/kontaktdaten.json")
 
     with open(filepath) as f:
         try:
@@ -131,11 +131,11 @@ def run_search_interactive(kontaktdaten_path, check_delay):
        Kontaktdaten.
     4. Terminsuche
 
-    :param kontaktdaten_path: Pfad zur JSON-Datei mit Kontaktdaten. Default: kontaktdaten.json im aktuellen Ordner
+    :param kontaktdaten_path: Pfad zur JSON-Datei mit Kontaktdaten. Default: data/kontaktdaten.json im aktuellen Ordner
     """
 
     if kontaktdaten_path is None:
-        kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
+        kontaktdaten_path = os.path.join(PATH, "data/kontaktdaten.json")
 
     print(
         "Bitte trage zunächst deinen Impfcode und deine Kontaktdaten ein.\n"
@@ -202,7 +202,7 @@ def gen_code_interactive(kontaktdaten_path):
     """
 
     if kontaktdaten_path is None:
-        kontaktdaten_path = os.path.join(PATH, "kontaktdaten.json")
+        kontaktdaten_path = os.path.join(PATH, "data/kontaktdaten.json")
 
     print(
         "Du kannst dir jetzt direkt einen Impf-Code erstellen.\n"
@@ -310,6 +310,8 @@ def validate_args(args):
 
 
 def main():
+    create_missing_dirs()
+
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(help="commands", dest="command")
 

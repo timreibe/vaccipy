@@ -1,10 +1,11 @@
 import time
+import traceback
+from pathlib import Path
+
 from threading import Thread
 from plyer import notification
 from tools.exceptions import DesktopNotificationError
-import traceback
 from json import JSONDecodeError
-
 from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
 
 
@@ -102,5 +103,13 @@ def desktop_notification(operating_system:str, title: str, message: str):
                 "Error in _desktop_notification: " + str(exc.__class__.__name__)
                 + traceback.format_exc()
                            ) from exc
-            
+    
+def create_missing_dirs():
+    """
+    Erstellt benötigte Ordner, falls sie fehlen:
+
+    - ./data
+    """
+    Path("./data").mkdir(parents=True, exist_ok=True)
+
         
