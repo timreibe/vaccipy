@@ -34,4 +34,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='linux-64-terminservice')
+               name='linux-64-terminservice', icon='..\\images\\spritze.ico')
