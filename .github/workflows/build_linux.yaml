@@ -35,7 +35,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build Linux
-        run: pyinstaller --clean --noconfirm specs/linux-64-terminservice.spec --add-data "tools/cloudscraper:./cloudscraper/"
+        run: pyinstaller --clean --noconfirm specs/linux-64-terminservice.spec
       
       - name: Commit changes
         uses: EndBug/add-and-commit@v7 
