@@ -249,6 +249,7 @@ python3 main.py search -f max-mustermann.json
 <img src="https://github.com/iamnotturner/vaccipy/blob/master/images/beispiel_programmdurchlauf.png">
 
 
+## [Informationen zu den Distributionen und Shipping findest du hier.](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md)
 
 ## Das könnte noch kommen
 
