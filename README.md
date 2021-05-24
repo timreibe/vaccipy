@@ -184,7 +184,7 @@ pip3 install -r requirements.txt
 ```
 
 ## Ausführung unter Windows
-1) [`vaccipy` downloaden](##Downloads)
+1) [`vaccipy` downloaden](#Downloads)
 2) .zip Ordner entpacken
 3) Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
 
