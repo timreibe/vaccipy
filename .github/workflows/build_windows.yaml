@@ -52,7 +52,7 @@ jobs:
           # Arguments to pass to Chocolatey
           args: install innosetup --install-arguments="'/DIR=../innosetup'" --force
       - name: Run innosetup
-        run: ../innosetup/ISCC.exe windows-terminservice.iss
+        run: ../innosetup/ISCC.exe dist/windows-terminservice.iss
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v7 # You can change this to use a specific version
