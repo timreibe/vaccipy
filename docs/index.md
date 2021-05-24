@@ -7,23 +7,41 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 > **Disclaimer**
 > 
 > `vaccipy` garantiert dir keinen Impftermin, sondern dient lediglich als Unterstützung bei der Suche und Buchung.
+> 
 > Ebenso stellt ein Termin keine Berechtigung zur Impfung dar. Bitte die aktuellen Impfbestimmungen beachten.
 
 ## Features
-* Automatisches suchen und buchen von verfügbaren Impfterminen
+* Automatisches Suchen und Buchen von Impfterminen
 * Suche bei mehreren Impfzentren gleichzeitig
 * Warteschlange umgehen
 * Dauerhaft Impf-Code's generieren - egal wo, egal für wen!
-* [Beta Branch (neue, aber noch nicht final getestete Features)](https://github.com/iamnotturner/vaccipy/tree/beta)
+* [BETA Branch (neue, aber noch nicht final getestete Features)](https://github.com/iamnotturner/vaccipy/tree/beta)
 
 **[Wusstest du: Du kannst mit einem Impf-Code in mehreren Impfzentren gleichzeitig nach freien Terminen suchen!](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)**
 
+
 ## Downloads
+
+> ⚠️ Google Chrome muss auf dem PC installiert sein (Windows, Mac und Linux) 
+
+
 <a href="https://cntr.click/9ypzBLb">
 <img width="100" height="90" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
 </a>
 <a href="https://cntr.click/6Q0PXkK">
 <img width="180" heigth="60" src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
+</a>
+
+#### BETA Version
+
+Der BETA-Branch enthält neue, noch nicht final getestete Features. [Sollten Fehler auftreten könnt ihr hier ein Issue erstellen.](https://github.com/iamnotturner/vaccipy/issues)
+
+
+<a href="https://cntr.click/xJDra3M">
+<img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
+</a>
+<a href="https://cntr.click/R83AXwY">
+<img width="90" heigth="30" src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
 </a>
 
 
@@ -35,13 +53,17 @@ andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Co
 
 ## Wie funktioniert vaccipy?
 
+`vaccipy` imitiert die manuelle Terminsuche und -buchung im Browser und führt die Anfragen automatisch aus. 
+
 Nachfolgend werden die zwei Grundfunktionalitäten von `vaccipy` kurz beschrieben.
 
 ### [1] Automatisierte Terminbuchung
 
 #### Du benötigst
 
-* Einen Impf-Code
+Die folgenden Daten werden beim Programmstart benötigt:
+
+* Ein Impf-Code
 * [PLZ's eines oderer mehrerer Impfzentren](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)
 * Kontaktdaten
    *  Anrede
@@ -57,8 +79,8 @@ Nachfolgend werden die zwei Grundfunktionalitäten von `vaccipy` kurz beschriebe
 #### Ablauf
 
 `vaccipy` übernimmt für dich die Suche und Buchung eines Impftermin auf [www.impfterminservice.de](https://www.impfterminservice.de/).
-Dazu musst du deinen "Impf-Code", die PLZ's deiner gewählten Impfzentren und deine Daten beim Start des Tools eintragen. Anschließend beginnt `vaccipy` 
-die Suche und frägt in regelmäßigen Abständen (alle 30 Sekunden) verfügbare Termine in den gewählten Impfzentren ab.
+Dazu musst du deinen Impf-Code, die PLZ's deiner gewählten Impfzentren und deine Daten beim Start des Tools eintragen. Anschließend beginnt `vaccipy` 
+die Suche und frägt in regelmäßigen Abständen (alle 60 Sekunden) verfügbare Termine in den gewählten Impfzentren ab.
 
 Sobald ein Termin verfügbar ist, wird dieser direkt mit den Anfangs eingegeben Daten gebucht und die Suche beendet.
 Nach erfolgreicher Buchung erhälst du eine Bestätigungsmail vom Impfterminservice und kannst die Termine auch direkt unter [www.impfterminservice.de](https://www.impfterminservice.de/) einsehen (Bundesland wählen > Impfzentrum wählen > Buchung verwalten).
@@ -71,9 +93,11 @@ Eine genauere Beschreibung des Prozesses findest du im Abschnitt Workflow.
 
 #### Du benötigst
 
+Die folgenden Daten werden beim Programmstart benötigt:
+
 * Mailadresse
 * Telefonnummer
-* PLZ des gewünschten Impfzentrums
+* [PLZ des gewünschten Impfzentrums](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)
 
 #### Ablauf
 
@@ -90,6 +114,7 @@ anschließend per Mail zugesendet.
 
 Deine Daten werden **lokal**, also nur bei dir auf dem Computer, in der Datei `./data/kontaktdaten.json` gespeichert.
 Beim nächsten Start kannst du deine Daten direkt laden und musst sie nicht erneut eintragen.
+
 
 ## Workflow
 
@@ -115,7 +140,7 @@ Beim nächsten Start kannst du deine Daten direkt laden und musst sie nicht erne
 
 
 
-> Die nachkommenden Schritte erfolgen im Loop. Alle 30 Sekunden werden verfügbare Termine abgerufen und, 
+> Die nachkommenden Schritte erfolgen im Loop. Alle 60 Sekunden werden verfügbare Termine abgerufen und, 
 > sollten Termine verfügbar sein, ~~der erstbeste~~ ein zufälliger ausgewählt. 
 > 
 > Dieser Prozess kann eine längere Zeit. Sobald die Cookies abgelaufen sind, 
@@ -146,11 +171,6 @@ Du kannst alternativ deine Buchung auch im Browser einsehen. Dazu musst du dich 
 [www.impfterminservice.de](https://www.impfterminservice.de/) begeben, dein Impfzentrum auswählen
 und anschließend rechts-oben auf "Buchung verwalten" klicken.
 
-## Programmdurchlauf
-
-<img src="https://github.com/iamnotturner/vaccipy/blob/master/images/beispiel_programmdurchlauf.png">
-
-
 ## Requirements
 
 * Python 3 (getestet mit Python 3.8 und 3.9)
@@ -163,9 +183,10 @@ Die notwendigen Python-Module können mittels pip installiert werden.
 pip3 install -r requirements.txt
 ```
 
-### Ausführung unter Windows
-1) .zip Ordner entpacken
-2) Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
+## Ausführung unter Windows
+1) [`vaccipy` downloaden](##Downloads)
+2) .zip Ordner entpacken
+3) Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
 
 > Es kann sein, dass Virenprogramme beim Download oder der Ausführung anschlagen. Wir wissen davon, haben aktuell aber keine Lösung dafür. 
 > **Grundsätzlich ist richtig und wichtig, dass Windows vor der Ausführung von unbekannten Programmen warnt.**
@@ -175,10 +196,11 @@ pip3 install -r requirements.txt
 > 
 > "[...] Um das Tool dann zum Laufen zu bringen, könntest du zum Beispiel eine [Ausnahme in den Windows-Sicherheiteinstellungen hinzufügen.](https://support.microsoft.com/de-de/windows/hinzufügen-eines-ausschlusses-zu-windows-sicherheit-811816c0-4dfd-af4a-47e4-c301afe13b26)"
 
-### Ausführung in der Kommandozeile
+## Ausführung in der Kommandozeile
 
-`vaccipy` kannst du über die Kommandozeile (CMD, Powershell, Terminal, ...) oder in einer beliebigen python-Entwicklungsumgebung
-ausgeführen. Nach dem Programmstart kannst du interaktiv auswählen, ob du einen Impf-Code generieren möchtest,
+`vaccipy` kannst du über die Kommandozeile oder in einer beliebigen python-Entwicklungsumgebung
+ausgeführen.
+Nach dem Programmstart kannst du interaktiv auswählen, ob du einen Impf-Code generieren möchtest,
 oder einen Termin suchen möchtest.
 
 ```shell
@@ -210,16 +232,22 @@ python3 main.py search --configure-only -f max-mustermann.json
 python3 main.py search
 
 # Termin suchen und dafür die Kontaktdaten aus beliebiger Datei verwenden:
-python3 main.py search --file max-mustermann.json
+python3 main.py search -f max-mustermann.json
 ```
 
-#### Optionale Umgebungsvariablen
+### Optionale Umgebungsvariablen
 
 * `VACCIPY_CHROMEDRIVER`:
   Name oder relativer Pfad der chromedriver Programmdatei, die du verwenden möchtest.
   Dies kann verwendet werden, falls du deine eigene chromedriver-Installation verwenden möchtest
   und wird z. B. auf NixOS benötigt.
   Beispiel: `chromedriver`
+
+
+## Programmdurchlauf
+
+<img src="https://github.com/iamnotturner/vaccipy/blob/master/images/beispiel_programmdurchlauf.png">
+
 
 
 ## Das könnte noch kommen
@@ -241,6 +269,8 @@ weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 * Möglichkeit zum Eintragen mehrerer Impf-Codes und Kontaktdaten
 * Headless Selenium Support
 
+
+
 ## Bedanken?
 
 <a href="https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m">
@@ -252,13 +282,22 @@ Für den Fall, dass du dein Dank gerne in Geld ausdrücken möchtest, haben wir 
 
 Es wäre mega cool, wenn du dich daran beteiligst - ist aber vollkommen freiwillig, also no pressure 😉
 
-## Shoutouts
-
-- DASDING: Danke für das [Feature](https://www.dasding.de/update/wie-impftermin-einfacher-bekommen-100.html) an Dani Rapp!</br>
-<a href="https://www.dasding.de/update/wie-impftermin-einfacher-bekommen-100.html">
-<img width=150
- heigth=10 src=https://github.com/iamnotturner/vaccipy/blob/master/images/2000px-Das_Ding_(2008).svg.png>
-</a>
-
 # Seid vernünftig und missbraucht das Tool nicht.
 save da world. my final message. goodbye.
+
+### Shoutouts
+
+- [DASDING: HOW TO IMPFTERMIN - DIESE TOOLS HELFEN DIR](https://www.dasding.de/update/wie-impftermin-einfacher-bekommen-100.html) - Danke an Dani Rapp!
+- [Deutschlandfunk: Portale und Tools sollen bei Suche nach Impfterminen helfen](https://www.deutschlandfunk.de/corona-pandemie-portale-und-tools-sollen-bei-suche-nach.1939.de.html?drn:news_id=1261638)
+- [WDR: Per Klick zum Impftermin](https://www1.wdr.de/nachrichten/themen/coronavirus/impftermine-online-buchen-100.html)
+
+<a href="https://www.dasding.de/update/wie-impftermin-einfacher-bekommen-100.html">
+<img width=100 src=https://github.com/iamnotturner/vaccipy/blob/master/images/2000px-Das_Ding_(2008).svg.png>
+</a>
+<a href="https://www.deutschlandfunk.de/corona-pandemie-portale-und-tools-sollen-bei-suche-nach.1939.de.html?drn:news_id=1261638">
+<img width=100 src=https://www.deutschlandradio.de/themes/dradio/dlr2018/icons/dlf_logo.svg>
+</a>
+<a href="https://www1.wdr.de/nachrichten/themen/coronavirus/impftermine-online-buchen-100.html">
+<img width=100 src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/WDR_Dachmarke.svg/2000px-WDR_Dachmarke.svg.png>
+</a>
+
