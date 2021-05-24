@@ -62,13 +62,13 @@ def update_kontaktdaten_interactive(
                 "> Anrede (Frau/Herr/...): ")
 
         if "vorname" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["vorname"] = input("> Vorname: ").replace("ß","ss").replace("ä","ae").replace("ö","oe").replace("ü","ue")
+            kontaktdaten["kontakt"]["vorname"] = input("> Vorname: ")
 
         if "nachname" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["nachname"] = input("> Nachname: ").replace("ß","ss").replace("ä","ae").replace("ö","oe").replace("ü","ue")
+            kontaktdaten["kontakt"]["nachname"] = input("> Nachname: ")
 
         if "strasse" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["strasse"] = input("> Strasse: ").replace("ß","ss").replace("ä","ae").replace("ö","oe").replace("ü","ue")
+            kontaktdaten["kontakt"]["strasse"] = input("> Strasse: ")
 
         if "hausnummer" not in kontaktdaten["kontakt"] and command == "search":
             kontaktdaten["kontakt"]["hausnummer"] = input("> Hausnummer: ")
@@ -87,7 +87,7 @@ def update_kontaktdaten_interactive(
             kontaktdaten["kontakt"]["plz"] = wohnort_plz
 
         if "ort" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["ort"] = input("> Wohnort: ").replace("ß","ss").replace("ä","ae").replace("ö","oe").replace("ü","ue")
+            kontaktdaten["kontakt"]["ort"] = input("> Wohnort: ")
 
         if "phone" not in kontaktdaten["kontakt"]:
             telefonnummer = input("> Telefonnummer: +49")
@@ -101,7 +101,7 @@ def update_kontaktdaten_interactive(
             kontaktdaten["kontakt"]["notificationChannel"] = "email"
 
         if "notificationReceiver" not in kontaktdaten["kontakt"]:
-            kontaktdaten["kontakt"]["notificationReceiver"] = input("> Mail: ").replace("ß","ss").replace("ä","ae").replace("ö","oe").replace("ü","ue")
+            kontaktdaten["kontakt"]["notificationReceiver"] = input("> Mail: ")
 
         json.dump(kontaktdaten, file, ensure_ascii=False, indent=4)
 
@@ -119,11 +119,14 @@ def get_kontaktdaten(filepath=None):
     if filepath is None:
         filepath = os.path.join(PATH, "data/kontaktdaten.json")
 
-    with open(filepath) as f:
-        try:
-            return json.load(f)
-        except json.JSONDecodeError:
-            return {}
+    try:
+        with open(filepath, encoding='utf-8') as f:
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return {}
+    except FileNotFoundError:
+        return {}
 
 
 def run_search_interactive(kontaktdaten_path, check_delay):
