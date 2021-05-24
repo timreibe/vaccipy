@@ -33,8 +33,8 @@ Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "dist\windows-terminservice\windows-terminservice.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\windows-terminservice\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\dist\windows-terminservice\windows-terminservice.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\windows-terminservice\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
