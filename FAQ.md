@@ -23,7 +23,7 @@ Durch einen Klick in das Konsolenfenster stoppt das Programm automatisch. Mit ei
 5. Erster Request auswählen und unter **Request Headers** den Wert "**Cookie**" kopieren. (Ohne **"Cookie:"** lediglich der **Wert nach dem Doppeltpunkt**)
 ![image](https://user-images.githubusercontent.com/48892674/119194979-2e4a4200-ba84-11eb-8391-bfa52aaa74d6.png)
 
-6. Wert in die Konsole kopieren und mit Enter bestätigen. (Bei Mac ist die Terminaleingabe auf 1024 Zeichen limitiert. Workaround= Skript direkt in der IDLE ausführen.)
+6. Wert in die Konsole kopieren und mit Enter bestätigen.
 
 ### **ACHTUNG!!!**
 Cookies sind nur valide, wenn der Impfterminservice mindestens eine halbe Stunde oder länger im Browser geöffnet ist und ein normales Verhalten (Klicks, Seitenaufrufe, Eingaben) ausgeführt wurde. Nachdem Cookies gelöscht wurden oder wenn der Impfterminservice das erste Mal im Browser geöffnet wird muss abgewartet werden bis die Cookies valide sind und im Skript funktionieren:
