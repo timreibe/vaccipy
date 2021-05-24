@@ -189,6 +189,7 @@ class ImpfterminService():
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
         chrome_options.add_argument("user-agent=Mozilla/5.0")
+
         chrome_options.headless = headless
 
         return Chrome(self.get_chromedriver_path(), options=chrome_options)

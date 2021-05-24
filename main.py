@@ -5,6 +5,11 @@ import copy
 import json
 import os
 
+try:
+    import readline
+except:
+    pass
+
 from tools.utils import create_missing_dirs, remove_prefix
 from tools.its import ImpfterminService
 
@@ -57,13 +62,13 @@ def update_kontaktdaten_interactive(
                 "> Anrede (Frau/Herr/...): ")
 
         if "vorname" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["vorname"] = input("> Vorname: ")
+            kontaktdaten["kontakt"]["vorname"] = input("> Vorname: ").replace("ß","ss").replace("ä","ae").replace("ö","oe").replace("ü","ue")
 
         if "nachname" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["nachname"] = input("> Nachname: ")
+            kontaktdaten["kontakt"]["nachname"] = input("> Nachname: ").replace("ß","ss").replace("ä","ae").replace("ö","oe").replace("ü","ue")
 
         if "strasse" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["strasse"] = input("> Strasse: ")
+            kontaktdaten["kontakt"]["strasse"] = input("> Strasse: ").replace("ß","ss").replace("ä","ae").replace("ö","oe").replace("ü","ue")
 
         if "hausnummer" not in kontaktdaten["kontakt"] and command == "search":
             kontaktdaten["kontakt"]["hausnummer"] = input("> Hausnummer: ")
@@ -82,7 +87,7 @@ def update_kontaktdaten_interactive(
             kontaktdaten["kontakt"]["plz"] = wohnort_plz
 
         if "ort" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["ort"] = input("> Wohnort: ")
+            kontaktdaten["kontakt"]["ort"] = input("> Wohnort: ").replace("ß","ss").replace("ä","ae").replace("ö","oe").replace("ü","ue")
 
         if "phone" not in kontaktdaten["kontakt"]:
             telefonnummer = input("> Telefonnummer: +49")
@@ -96,7 +101,7 @@ def update_kontaktdaten_interactive(
             kontaktdaten["kontakt"]["notificationChannel"] = "email"
 
         if "notificationReceiver" not in kontaktdaten["kontakt"]:
-            kontaktdaten["kontakt"]["notificationReceiver"] = input("> Mail: ")
+            kontaktdaten["kontakt"]["notificationReceiver"] = input("> Mail: ").replace("ß","ss").replace("ä","ae").replace("ö","oe").replace("ü","ue")
 
         json.dump(kontaktdaten, file, ensure_ascii=False, indent=4)
 
@@ -306,7 +311,7 @@ def validate_args(args):
     """
 
     if args.configure_only and args.read_only:
-        raise ValueError("Kann nicht --configure-only und --read-only gleichzeitig verwenden")
+        raise ValueError("--configure-only und --read-only kann nicht gleichzeitig verwendet werden")
 
 
 def main():
