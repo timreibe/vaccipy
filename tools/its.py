@@ -304,7 +304,6 @@ class ImpfterminService():
             self.log.error("Termine können nicht ausgewählt werden")
             pass
 
-
         # Klick Button "AUSWÄHLEN"
         try:
             button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[2]/button[1]'
@@ -328,6 +327,7 @@ class ImpfterminService():
         except:
             self.log.error("1. Daten können nicht erfasst werden")
             pass
+
         try:
             # Klick Anrede
             button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div[1]/label[2]/span'
@@ -403,18 +403,9 @@ class ImpfterminService():
         except:
             self.log.error("Button Termin buchen kann nicht gedrückt werden")
             pass
-        time.sleep(3)
-        if "Ihr Termin am" in str(driver.page_source):
-            msg = "Termin erfolgreich gebucht!"
-            self.log.success(msg)
-            desktop_notification(operating_system=self.operating_system,title="Terminbuchung:",message=msg)
-            return True
-        else:
-            self.log.error("Automatisierte Terminbuchung fehlgeschlagen. Termin manuell im Fenster oder im Browser buchen.")
-            print("Link für manuelle Buchung im Browser:", url)
-            time.sleep(10*60)
-            return False
 
+        if "Ihr Termin am" not in str(driver.page_source):
+            raise RuntimeError("Es ist ein Fehler aufgetreten")
 
     @retry_on_failure()
     def renew_cookies(self):
@@ -425,11 +416,10 @@ class ImpfterminService():
 
         self.log.info("Browser-Cookies generieren")
         with self.get_chromedriver(headless=True) as driver:
-            return self.driver_renew_cookies(driver, choice(self.plz_impfzentren))
-
+            self.driver_renew_cookies(driver, choice(self.plz_impfzentren))
 
     @retry_on_failure()
-    def book_appointment(self):
+    def backup_termin_buchen(self):
         """
         Backup Prozess:
         Wenn die Terminbuchung mit dem Bot nicht klappt, wird das
@@ -437,9 +427,20 @@ class ImpfterminService():
         :return:
         """
 
-        self.log.info("Termin über Selenium buchen")
         with self.get_chromedriver(headless=False) as driver:
-            return self.driver_book_appointment(driver, self.plz_termin)
+            try:
+                self.driver_book_appointment(driver, self.plz_termin)
+            except BaseException as exc:
+                msg = f"Fehler bei Buchung über Selenium: {str(exc)}\n"
+                "Termin manuell im geöffneten Fenster oder im Browser buchen.\n"
+                self.log.error(msg)
+                desktop_notification(
+                    operating_system=self.operating_system,
+                    title="Terminbuchung:",
+                    message=msg)
+                time.sleep(10 * 60)
+                raise RuntimeError(
+                    "Die Reservierungszeit von 10 Minuten ist inzwischen abgelaufen")
 
     @retry_on_failure()
     def login(self):
@@ -553,11 +554,7 @@ class ImpfterminService():
         res = self.s.post(self.domain + path, json=data, timeout=15)
 
         if res.status_code == 201:
-            msg = "Termin erfolgreich gebucht!"
-            self.log.success(msg)
-            desktop_notification(operating_system=self.operating_system,title="Terminbuchung:",message=msg)
-            return True
-
+            return
         elif res.status_code == 429:
             msg = "Anfrage wurde von der Botprotection geblockt."
         elif res.status_code >= 400:
@@ -573,9 +570,7 @@ class ImpfterminService():
         else:
             msg = f"Unbekannter Statuscode: {res.status_code}"
 
-        self.log.error(msg)
-        desktop_notification(operating_system=self.operating_system,title="Terminbuchung:", message=msg)
-        return False
+        raise RuntimeError(msg)
 
     @retry_on_failure()
     def code_anfordern(self, mail, telefonnummer, plz_impfzentrum, leistungsmerkmal):
@@ -680,11 +675,40 @@ class ImpfterminService():
                     if not termin_gefunden:
                         time.sleep(check_delay)
 
-            # Programm beenden, wenn Termin gefunden wurde
-            if its.termin_buchen():
-                return True
+            its.log.info(
+                "Schaue dir den Termin manuell im Browser an.\n"
+                f"Link: {its.domain}impftermine/service?plz={its.plz_termin}\n"
+                f"Impf-Code: {its.code}")
 
-            # Cookies erneuern und pausieren, wenn Terminbuchung nicht möglich war
-            # Anschließend nach neuem Termin suchen
-            if its.book_appointment():
-                return True
+            try:
+                its.termin_buchen()
+                # Programm beenden, wenn Termin gefunden wurde
+                break
+            except BaseException as exc:
+                msg = f"Fehler bei Buchung über API: {str(exc)}"
+                its.log.error(msg)
+                desktop_notification(
+                    operating_system=its.operating_system,
+                    title="Terminbuchung:",
+                    message=msg)
+
+            # Backup Prozess:
+            its.log.info("Termin über Selenium buchen")
+            try:
+                its.backup_termin_buchen()
+                # Programm beenden, wenn Termin gefunden wurde
+                break
+            except:
+                msg = f"Fehler bei Buchung über Selenium: {str(exc)}"
+                its.log.error(msg)
+                desktop_notification(
+                    operating_system=its.operating_system,
+                    title="Terminbuchung:",
+                    message=msg)
+
+        msg = "Termin erfolgreich gebucht!"
+        its.log.success(msg)
+        desktop_notification(
+            operating_system=its.operating_system,
+            title="Terminbuchung:",
+            message=msg)
