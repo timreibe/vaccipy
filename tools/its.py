@@ -332,7 +332,6 @@ class ImpfterminService():
             # Klick Anrede
             if self.kontakt['anrede'] == "Herr":
                 button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div/label[1]/span'
-
             elif self.kontakt['anrede'] == "Frau":
                 button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div/label[2]/span'
             else:
