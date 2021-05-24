@@ -26,7 +26,7 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=True )
+          console=True , icon='..\\images\\spritze.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
@@ -34,4 +34,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='linux-64-terminservice', icon='..\\images\\spritze.ico')
+               name='linux-64-terminservice')
