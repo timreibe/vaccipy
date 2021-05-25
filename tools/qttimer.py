@@ -2,6 +2,7 @@ import os
 import json
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QTime
+from PyQt5.QtGui import QCloseEvent
 
 # Folgende Widgets stehen zur Verfügung:
 
@@ -34,7 +35,7 @@ from PyQt5.QtCore import QTime
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
-# TODO: [ ] Wenn das Fenster geschlossen wir soll was passieren...? nicht speichern, aber Programm fortfahren
+# TODO: [X] Beim Schließen vom Fenster werden die Daten gespeichert, falls sie noch nicht vorhanden sind
 # TODO: [ ] .icon adden
 # TODO: [X] Fenstergröße sollte man nicht verändern können
 # TODO: [X] Fenster in den Vordergund bringen
@@ -149,7 +150,7 @@ class QtTimer(QtWidgets.QMainWindow):
         self.aktive_wochentage.clear()
 
         # Alle Checkboxen der GUI selektieren und durchgehen
-        # BUG: Wenn die reihenfolge im Layout geändert wird, stimmen die Wochentage nicht mehr 0 = Mo ... 6 = So
+        # Improvement: Wenn die reihenfolge im Layout geändert wird, stimmen die Wochentage nicht mehr 0 = Mo ... 6 = So
         checkboxes = self.mo_check_box.parent().findChildren(QtWidgets.QCheckBox)
         for num, checkboxe in enumerate(checkboxes, 0):
             if checkboxe.isChecked():
@@ -180,6 +181,22 @@ class QtTimer(QtWidgets.QMainWindow):
             self.aktive_termine.append(1)
         if self.zweiter_termin_check_box.isChecked():
             self.aktive_termine.append(2)
+
+    def closeEvent(self, event: QCloseEvent):
+        """
+        Wird automatisch aufgerufen, wenn das Fenster geschlossen wird
+
+        Args:
+            event (QCloseEvent): Close events are sent to widgets that the user wants to close, usually by choosing “Close” 
+                                from the window menu, or by clicking the X title bar button. They are also sent when you 
+                                call close() to close a widget programmatically.
+        """
+        # Erst fenster Speichern, wenn Daten gespeichert / schon vorhanden sind
+        if os.path.isfile(self.speicherpfad):
+            event.accept()
+        else:
+            self.bestaetigt()
+            event.accept()
 
 
 if __name__ == "__main__":
