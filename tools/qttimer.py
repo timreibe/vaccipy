@@ -35,13 +35,6 @@ from PyQt5.QtGui import QCloseEvent
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
-# TODO: [X] Beim Schließen vom Fenster werden die Daten gespeichert, falls sie noch nicht vorhanden sind
-# TODO: [ ] .icon adden
-# TODO: [X] Fenstergröße sollte man nicht verändern können
-# TODO: [X] Fenster in den Vordergund bringen
-# TODO: [X] Docstrings
-# TODO: [X] Rückmeldung für erfolgreiches speichern
-
 
 class QtTimer(QtWidgets.QMainWindow):
     """
