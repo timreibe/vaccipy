@@ -108,6 +108,17 @@ def update_kontaktdaten_interactive(
 
     return kontaktdaten
 
+def update_zeitspanne_interactive(filepath=None):
+    """
+    Startet die GUI um die entsprechende Zeitspanne einzustellen
+
+    :param filepath: Pfad zur JSON-Datei mit Zeitspanne. Default: data/zeitspanne.json im aktuellen Ordner
+    """
+
+    if filepath is None:
+        filepath = os.path.join(PATH, "data/zeitspanne.json")
+
+    QtTimer.start(filepath)
 
 def get_kontaktdaten(filepath=None):
     """
@@ -129,8 +140,27 @@ def get_kontaktdaten(filepath=None):
     except FileNotFoundError:
         return {}
 
+def get_zeitpanne(filepath=None) -> dict:
+    """
+    Lade Zeitspanne aus aus Datei.
 
-def run_search_interactive(kontaktdaten_path, check_delay):
+    :param filepath: Pfad zur JSON-Datei mit Zeitspannen. Default: data/zeitspanne.json im aktuellen Ordner
+    :return: Dictionary mit Zeitspannen
+    """
+
+    if filepath is None:
+        filepath = os.path.join(PATH, "data/zeitspanne.json")
+
+    try:
+        with open(filepath, encoding='utf-8') as f:
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return {}
+    except FileNotFoundError:
+        return {}
+
+def run_search_interactive(kontaktdaten_path, check_delay, zeitspanne_path=None):
     """
     Interaktives Setup für die Terminsuche:
     1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen
@@ -143,6 +173,7 @@ def run_search_interactive(kontaktdaten_path, check_delay):
     :param kontaktdaten_path: Pfad zur JSON-Datei mit Kontaktdaten. Default: data/kontaktdaten.json im aktuellen Ordner
     """
 
+    ### Laden der Daten fuer Kontaktdaten ###
     if kontaktdaten_path is None:
         kontaktdaten_path = os.path.join(PATH, "data/kontaktdaten.json")
 
@@ -162,28 +193,34 @@ def run_search_interactive(kontaktdaten_path, check_delay):
     kontaktdaten = update_kontaktdaten_interactive(
         kontaktdaten, "search", kontaktdaten_path)
     print()
-    return run_search(kontaktdaten, check_delay)
+
+    ### Laden der Daten fuer Zeitspanne ###
+    if zeitspanne_path is None:
+        zeitspanne_path = os.path.join(PATH, "data/zeitspanne.json")
+
+    print("Bitte konfiguriere noch einen Zeitraum, welche die Termine erfüllen sollen\n")
+
+    if os.path.isfile(zeitspanne_path):
+        daten_laden = input(
+            f"> Sollen die vorhandenen Daten aus '{os.path.basename(zeitspanne_path)}' geladen werden (y/n)?: ").lower()
+        if daten_laden.lower() == "n":
+            update_zeitspanne_interactive()
+    else:
+        update_zeitspanne_interactive()
+        
+    zeitspanne = get_zeitpanne()
+
+    return run_search(kontaktdaten, zeitspanne, check_delay)
 
 
-def run_search(kontaktdaten, check_delay):
+def run_search(kontaktdaten, zeitspanne, check_delay):
     """
     Nicht-interaktive Terminsuche
 
     :param kontaktdaten: Dictionary mit Kontaktdaten
+    :param zeitspanne: Dictionary mit Zeitspanne
     """
 
-    zeitspanne_path = os.path.join(PATH, "zeitspanne.json")
-    zeiten_erstellen = True
-    if os.path.isfile(zeitspanne_path):
-        daten_laden = input("\n> Soll die vorhandene Zeitspanne aus \"zeitspann.json\" geladen werden (y/n)?: ").lower()
-        if daten_laden.lower() != "n":
-            zeiten_erstellen = False
-
-    if zeiten_erstellen:
-        QtTimer.start(zeitspanne_path)
-    
-    with open(zeitspanne_path, 'r', encoding='utf-8') as f:
-        zeitspanne = json.load(f)
     try:
         code = kontaktdaten["code"]
 
@@ -303,10 +340,10 @@ def gen_code(kontaktdaten):
 
 def subcommand_search(args):
     if args.configure_only:
-        update_kontaktdaten_interactive(
-            get_kontaktdaten(args.file), "search", args.file)
+        update_kontaktdaten_interactive(get_kontaktdaten(args.file), "search", args.file)
+        update_zeitspanne_interactive()
     elif args.read_only:
-        run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec)
+        run_search(get_kontaktdaten(args.file), get_zeitpanne(),check_delay=args.retry_sec)
     else:
         run_search_interactive(args.file, check_delay=args.retry_sec)
 
