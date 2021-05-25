@@ -6,7 +6,7 @@ block_cipher = None
 
 a = Analysis(['..\\main.py'],
              pathex=['specs//'],
-             binaries=[('..\\tools\\chromedriver\\chromedriver-windows.exe', 'tools\\chromedriver\\')],
+             binaries=[('..\\tools\\chromedriver\\chromedriver-windows.exe', 'tools\\chromedriver\\'), ('..\\tools\\qttimer.ui', 'tools\\')],
              datas=[('../tools/cloudscraper', './cloudscraper/')],
              hiddenimports=['plyer.platforms.win.notification', 'cloudscraper'],
              hookspath=[],

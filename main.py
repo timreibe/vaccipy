@@ -12,6 +12,7 @@ except:
 
 from tools.utils import create_missing_dirs, remove_prefix
 from tools.its import ImpfterminService
+from tools.qttimer import QtTimer
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -171,6 +172,18 @@ def run_search(kontaktdaten, check_delay):
     :param kontaktdaten: Dictionary mit Kontaktdaten
     """
 
+    zeitspanne_path = os.path.join(PATH, "zeitspanne.json")
+    zeiten_erstellen = True
+    if os.path.isfile(zeitspanne_path):
+        daten_laden = input("\n> Soll die vorhandene Zeitspanne aus \"zeitspann.json\" geladen werden (y/n)?: ").lower()
+        if daten_laden.lower() != "n":
+            zeiten_erstellen = False
+
+    if zeiten_erstellen:
+        QtTimer.start(zeitspanne_path)
+    
+    with open(zeitspanne_path, 'r', encoding='utf-8') as f:
+        zeitspanne = json.load(f)
     try:
         code = kontaktdaten["code"]
 
@@ -193,7 +206,7 @@ def run_search(kontaktdaten, check_delay):
             "deine Daten beim Programmstart erneut ein.\n") from exc
 
     ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                  check_delay=check_delay,PATH=PATH)
+                                  check_delay=check_delay, PATH=PATH, zeitspanne=zeitspanne)
 
 
 def gen_code_interactive(kontaktdaten_path):
