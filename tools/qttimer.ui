@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>506</width>
-    <height>306</height>
+    <width>553</width>
+    <height>345</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,8 +22,8 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>290</x>
-      <y>240</y>
+      <x>320</x>
+      <y>250</y>
       <width>91</width>
       <height>31</height>
      </rect>
@@ -36,12 +36,15 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>20</y>
-      <width>461</width>
+      <y>30</y>
+      <width>501</width>
       <height>41</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="header_layout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetFixedSize</enum>
+     </property>
      <item>
       <widget class="QLabel" name="header_label">
        <property name="text">
@@ -64,9 +67,9 @@
    <widget class="QFrame" name="uhr_frame">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>70</y>
-      <width>281</width>
+      <x>220</x>
+      <y>80</y>
+      <width>301</width>
       <height>80</height>
      </rect>
     </property>
@@ -88,7 +91,7 @@
     <widget class="QWidget" name="verticalLayoutWidget_3">
      <property name="geometry">
       <rect>
-       <x>0</x>
+       <x>10</x>
        <y>0</y>
        <width>281</width>
        <height>81</height>
@@ -202,8 +205,8 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>70</y>
-      <width>161</width>
+      <y>80</y>
+      <width>181</width>
       <height>221</height>
      </rect>
     </property>
@@ -216,7 +219,7 @@
     <widget class="QWidget" name="verticalLayoutWidget">
      <property name="geometry">
       <rect>
-       <x>0</x>
+       <x>10</x>
        <y>0</y>
        <width>161</width>
        <height>217</height>
@@ -325,9 +328,9 @@
    <widget class="QFrame" name="termine_frame">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>160</y>
-      <width>281</width>
+      <x>220</x>
+      <y>170</y>
+      <width>301</width>
       <height>61</height>
      </rect>
     </property>
@@ -340,7 +343,7 @@
     <widget class="QWidget" name="verticalLayoutWidget_2">
      <property name="geometry">
       <rect>
-       <x>0</x>
+       <x>10</x>
        <y>0</y>
        <width>281</width>
        <height>61</height>
