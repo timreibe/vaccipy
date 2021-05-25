@@ -13,6 +13,11 @@
   <property name="windowTitle">
    <string>vaccipy</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normalon>../images/spritze.ico</normalon>
+   </iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
