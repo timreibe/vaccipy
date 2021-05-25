@@ -1,6 +1,6 @@
 # vaccipy
 [![build](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml)
-[![build-linux-64](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml/badge.svg)](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml)
+[![deploy](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml/badge.svg)](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml)
 
 Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).
 
@@ -23,7 +23,9 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 ## Downloads
 
 > ⚠️ Google Chrome muss auf dem PC installiert sein (Windows, Mac und Linux) 
-[Letzten Build herunterladen](https://github.com/iamnotturner/vaccipy/releases/latest)
+
+
+[Lade die neuste Version der Anwendung runter](https://github.com/iamnotturner/vaccipy/releases/latest)
 
 #### BETA Version
 
@@ -241,71 +243,15 @@ python3 main.py search -f max-mustermann.json
   Beispiel: `chromedriver`
 
 
+Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne Installation von Python direkt ausgeführt werden können. 
+Die Distributionen können im [neusten Release heruntergeladen werden](https://github.com/iamnotturner/vaccipy/releases/latest).
+
 ## Programmdurchlauf
 
 <img src="https://github.com/iamnotturner/vaccipy/blob/master/images/beispiel_programmdurchlauf.png">
 
 
 ## [Informationen zu den Distributionen und Shipping findest du hier.](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md)
-
-### Download 
-Verfügbare Distributionen:
-- [x] [Windows](https://cntr.click/9ypzBLb)  
-- [x] [Linux](https://cntr.click/6Q0PXkK) 
-- [ ] MacOS Intel
-- [ ] MacOS M1
-
-**Ausführung Windows:** 
-- .zip Ordner entpacken
-- Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
-
-
-Für mehr Info zum Verteilen und Erstellen der Distributionen: [Shipping](#Shipping)
-
-### Shipping
-#### Workflows
-Um den Buildprozess zu vereinfachen gibt es verschiedene Buildpipelines, welche bei push Events in den Masterbranch ausgeführt werden.   
-Die pipelines sind im `.github/workflows` Ordner zu finden. 
-
-Aktuelle Pipelines:
-- [x] [Windows Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
-- [x] [Linux 64 Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml)
-
-#### Generell
-
-Zum Erstellen der Distributionen wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
-Schritte zum Erstellen einer Distribution: 
-- Erstelle eine .spec Datei für die main.py (einmalig)  
-    ⚠️ACHTUNG⚠️: Beim erstellen der .spec den python code für `cloudscraper` nicht löschen! 
-
-- Erstelle die Distribution basierend auf der erstellten .spec Datei:
-    ```shell
-    pyinstaller --clean specs/SPECNAME.spec
-    ```
-    Nachdem mit pyinstaller die Distribution erstellt wurde, ist diese in im `dist/` folder zu finden.  
-
-
-#### Windows
-
-.spec Datei erstellen und anschließend Distribution erstellen:  
-⚠️ACHTUNG⚠️: Beim erstellen der .spec den python code für `cloudscraper` nicht löschen! 
-```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification --hidden-import cloudscraper
-
-pyinstaller --clean specs/windows-terminservice.spec
-```     
-
-#### Linux
-```shell 
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64:tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper
-
-pyinstaller --clean specs/linux-64-terminservice.spec
-
-```
-
-
-#### Resources
-- [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
 
 ## Das könnte noch kommen
 

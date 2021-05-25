@@ -1,4 +1,7 @@
-# Build Windows workflow
+# Deploy workflow
+# Builds the application for windows and ubuntu and creates distributable. Then creates a new
+#   Github release with the tag name and uploads the distributables to the release.
+#   Runs only on "v*" tags like "v1.0.0".
 name: deploy
 
 on:

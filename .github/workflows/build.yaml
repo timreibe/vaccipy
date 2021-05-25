@@ -1,4 +1,5 @@
-# Build Windows workflow
+# Build workflow
+# Builds the application for windows and ubuntu to test whether the latest commit builds or not.
 name: build
 
 on:
