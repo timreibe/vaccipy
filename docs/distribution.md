@@ -47,14 +47,14 @@ Schritte zum Erstellen einer Distribution:
 
 .spec Datei erstellen und anschließend Distribution erstellen:  
 ```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/" --icon "..images\spritze.ico"
+pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --add-binary "..\tools\qttimer.ui;tools\" --add-binary "..\images\spritze.ico;images\" --name windows-terminservice --hidden-import plyer.platforms.win.notification --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/" --icon "..\images\spritze.ico"
 
 pyinstaller --clean specs/windows-terminservice.spec
 ```
 
 #### Linux
 ```shell 
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64:tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/" --icon "..images\spritze.ico"
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64:tools/chromedriver/" --add-binary "..\tools\qttimer.ui;tools\" --add-binary "..\images\spritze.ico;images\" --name linux-64-terminservice --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/"
 
 pyinstaller --clean specs/linux-64-terminservice.spec
 
