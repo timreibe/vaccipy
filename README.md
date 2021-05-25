@@ -1,6 +1,6 @@
 # vaccipy
-[![build-windows](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
-[![build-linux-64](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml/badge.svg)](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml)
+[![build](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml)
+[![deploy](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml/badge.svg)](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml)
 
 Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).
 
@@ -25,12 +25,7 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 > ⚠️ Google Chrome muss auf dem PC installiert sein (Windows, Mac und Linux) 
 
 
-<a href="https://cntr.click/pz01KSQ">
-<img width="100" height="90" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
-</a>
-<a href="https://cntr.click/6Q0PXkK">
-<img width="180" heigth="60" src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
-</a>
+[Lade die neuste Version der Anwendung runter](https://github.com/iamnotturner/vaccipy/releases/latest)
 
 #### BETA Version
 
@@ -47,7 +42,7 @@ Der BETA-Branch enthält neue, noch nicht final getestete Features. [Sollten Feh
 
 ## Ausgangssituation
 
-Unsere Großeltern möchten sich gerne impfen lassen, aber telefonsich unter 116117 kommen sie nicht durch und das Internet
+Unsere Großeltern möchten sich gerne impfen lassen, aber telefonisch unter 116117 kommen sie nicht durch und das Internet
 ist auch noch immer irgendwie Neuland. Jetzt kommt es zum Konflikt: einerseits möchte man natürlich gerne bei der Terminbuchung helfen,
 andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Computer zu hocken und die Seite zu aktualisieren...
 
@@ -248,6 +243,9 @@ python3 main.py search -f max-mustermann.json
   Beispiel: `chromedriver`
 
 
+Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne Installation von Python direkt ausgeführt werden können. 
+Die Distributionen können im [neusten Release heruntergeladen werden](https://github.com/iamnotturner/vaccipy/releases/latest).
+
 ## Programmdurchlauf
 
 <img src="https://github.com/iamnotturner/vaccipy/blob/master/images/beispiel_programmdurchlauf.png">
@@ -264,7 +262,7 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 - [ ] Github Pages
 - [ ] Macosx Build / Pipeline (Mac currently blocks the app: [Branch](https://github.com/iamnotturner/vaccipy/tree/mac-intel-build))
 - [ ] Code Zertifikate für Windows (gegen Virusmeldung)
-- [ ] Artifacts, Packages und Releases
+- [x] Artifacts, Packages und Releases
 
 ## Das kann vaccipy NICHT - und wird es auch nie können
 
