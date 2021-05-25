@@ -25,17 +25,30 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Build Windows
-        run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec --add-data "tools/cloudscraper;./cloudscraper/"
+        run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec
+      - name: Chocolatey install innosetup
+        uses: crazy-max/ghaction-chocolatey@v1.5.0
+        with:
+          # Arguments to pass to Chocolatey
+          args: install innosetup --install-arguments="'/DIR=../innosetup'" --force
+      - name: Run innosetup
+        run: ../innosetup/ISCC.exe specs/windows-terminservice.iss
       - name: Zip
         uses: papeloto/action-zip@v1
         with:
           files: dist/
           dest: vaccipy-windows.zip
-      - name: Store windows build artifact
+      - name: Store windows zip as build artifact
         uses: actions/upload-artifact@v2
         with:
           name: vaccipy-windows
           path: vaccipy-windows.zip
+      - name: Store windows installer as build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: vaccipy-windows-installer
+          path: installers/vaccipy_installer.exe
+          
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -50,7 +63,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Build Linux
-        run: pyinstaller --clean --noconfirm specs/linux-64-terminservice.spec --add-data "tools/cloudscraper:./cloudscraper/"
+        run: pyinstaller --clean --noconfirm specs/linux-64-terminservice.spec
       - name: Zip
         uses: papeloto/action-zip@v1
         with:
@@ -61,6 +74,7 @@ jobs:
         with:
           name: vaccipy-ubuntu
           path: vaccipy-ubuntu.zip
+
   release:
     runs-on: ubuntu-latest
     needs: [build-windows, build-linux]
@@ -71,5 +85,6 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: |
+            vaccipy-windows-installer/vaccipy_installer.exe
             vaccipy-windows/vaccipy-windows.zip
             vaccipy-ubuntu/vaccipy-ubuntu.zip
