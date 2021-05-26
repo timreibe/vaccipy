@@ -38,7 +38,7 @@ class QtZeiten(QtWidgets.QDialog):
     Diese erbt von QtWidgets.QDialog
     """
 
-    def __init__(self, pfad_fenster_layout = os.path.join(PATH, "uhrzeiten.ui")):
+    def __init__(self, standard_speicherpfad:str, pfad_fenster_layout=os.path.join(PATH, "uhrzeiten.ui")):
         """
         Ladet das angegebene Layout (wurde mit QT Designer erstellt https://www.qt.io/download)
         Das Fenster wird automtaisch nach dem erstellen der Klasse geöffnet
@@ -49,58 +49,40 @@ class QtZeiten(QtWidgets.QDialog):
 
         super(QtZeiten, self).__init__()
 
+        self.standard_speicherpfad = standard_speicherpfad
+        self.pfad_fenster_layout = pfad_fenster_layout
+
         # Laden der .ui Datei und Anpassungen
-        uic.loadUi(pfad_fenster_layout, self)
+        uic.loadUi(self.pfad_fenster_layout, self)
         self.i_start_datum_qdate.setMinimumDateTime(QDateTime.currentDateTime())
 
-        # Funktionen den Buttons zuweisen
-        self.buttonBox.accepted
 
-        # Setzte leere Werte
-        self.aktive_wochentage = list()
-        self.start_uhrzeit: QTime = None
-        self.end_uhrzeit: QTime = None
-        self.aktive_termine = list()
-
+        # Funktionen für Buttonbox zuweisen
+        self.buttonBox.clicked.connect(self.__button_clicked)
 
     def bestaetigt(self):
         """
         Aktuallisiert alle Werte und Speichert gleichzeig die Aktuellen Werte
         """
 
-        # Alle Werte von aus der GUI aktuallisieren
-        self.__aktuallisiere_aktive_wochentage()
-        self.__aktuallisiere_aktive_termine()
-
-        if not self.__aktuallisiere_uhrzeiten():
+        try:
+            self.speicher_einstellungen()
+            self.close()
+        except ValueError as error:
             QtWidgets.QMessageBox.critical(self, "Ungültige Eingabe!", "Start-Uhrzeit ist später als End-Uhrzeit!")
-            return
-
-        # Speichert alle Werte ab
-        self.speicher_einstellungen()
-
-        self.close()
+        except (TypeError, IOError, FileNotFoundError) as error:
+            QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
+        
 
     def speicher_einstellungen(self):
         """
         Speichert alle Werte in der entsprechenden JSON-Formatierung
-        Speicherpfad wurde beim erstellen der Klasse mit übergeben
+        Speicherpfad wird vom User abgefragt
         """
 
         speicherpfad = self.__oeffne_file_dialog()
 
-        data = {
-            "wochentage": self.aktive_wochentage,
-            "startzeit": {
-                "h": self.start_uhrzeit.hour(),
-                "m": self.start_uhrzeit.minute()
-            },
-            "endzeit": {
-                "h": self.end_uhrzeit.hour(),
-                "m": self.end_uhrzeit.minute()
-            },
-            "einhalten_bei": self.aktive_termine
-        }
+        data = self.__get_alle_werte()
 
         with open(speicherpfad, 'w', encoding='utf-8') as f:
             try:
@@ -111,55 +93,119 @@ class QtZeiten(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.critical(self, "Fehler!", "Daten konnten nicht gespeichert werden.")
                 raise error
 
+    def __button_clicked(self, button):
+        clicked_button = self.buttonBox.standardButton(button)
+        if clicked_button == QtWidgets.QDialogButtonBox.Apply:
+           self.bestaetigt()
+        if clicked_button == QtWidgets.QDialogButtonBox.Reset:
+            self.__reset()
+        elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
+            self.close()
 
-    def __aktuallisiere_aktive_wochentage(self):
+    def __get_alle_werte(self) -> dict:
         """
-        Alle "checked" Wochentage in der GUI werden gesichert
+        Gibt alle nötigen Daten richtig formatiert zum abspeichern
+
+        Returns:
+            dict: alle Daten
         """
-        # Zur sicherheit alte Werte löschen
-        self.aktive_wochentage.clear()
+        
+        aktive_wochentage = self.__get_aktive_wochentage()
+        uhrzeiten = self.__get_uhrzeiten()
+        termine = self.__get_aktive_termine()
+
+        zeitspanne = {
+            "wochentage": aktive_wochentage,
+            "startzeit": uhrzeiten["startzeit"],
+            "endzeiten": uhrzeiten["endzeit"],
+            "einhalten_bei": termine
+        }
+        return zeitspanne
+
+    def __get_aktive_wochentage(self) -> list:
+        """
+        Alle "checked" Wochentage in der GUI
+
+        Returns:
+            list: Alle aktiven Wochentage
+        """
+
+        # Leere liste
+        aktive_wochentage = list()
 
         # Alle Checkboxen der GUI selektieren und durchgehen
         # BUG: Wenn die reihenfolge im Layout geändert wird, stimmen die Wochentage nicht mehr 0 = Mo ... 6 = So
         checkboxes = self.i_mo_check_box.parent().findChildren(QtWidgets.QCheckBox)
         for num, checkboxe in enumerate(checkboxes, 0):
             if checkboxe.isChecked():
-                self.aktive_wochentage.append(num)
+                aktive_wochentage.append(num)
 
-    def __aktuallisiere_uhrzeiten(self) -> bool:
-        """
-        Aktuallisert die eingegebenen Uhrzeiten der GUI
-        """
+        return aktive_wochentage
 
-        if self.start_time.time() < self.end_time.time():
-            self.start_uhrzeit = self.start_time.time()
-            self.end_uhrzeit = self.end_time.time()
+    def __get_uhrzeiten(self) -> dict:
+        """ 
+        Erstellt ein Dict mit ensprechenden start und endzeiten
 
-            return True
-        else:
-            return False
+        Raises:
+            ValueError: start uhrzeit < end uhrzeit
 
-    def __aktuallisiere_aktive_termine(self):
-        """
-        Aktuallisert die eingegebenen Uhrzeiten der GUI
+        Returns:
+            dict: fertiges dict zum speichern mit startzeit und endzeit
         """
 
-        # Zur sicherheit alte Werte löschen
-        self.aktive_termine.clear()
+        start_uhrzeit: QTime = self.i_start_time_qtime.time()
+        end_uhrzeit: QTime = self.i_end_time_qtime.time()
 
-        if self.erster_termin_check_box.isChecked():
-            self.aktive_termine.append(1)
-        if self.zweiter_termin_check_box.isChecked():
-            self.aktive_termine.append(2)
+        if start_uhrzeit >= end_uhrzeit:
+            raise ValueError
+
+        uhrzeiten = {
+            "startzeit": {
+                "h": start_uhrzeit.hour(),
+                "m": start_uhrzeit.minute()
+            },
+            "endzeit": {
+                "h": end_uhrzeit.hour(),
+                "m": end_uhrzeit.minute()
+            }
+        }
+        return uhrzeiten
+
+    def __get_aktive_termine(self) -> list:
+        """
+        Liste mit den aktiven Terminen 1 = 1. Termin 2 = 2. Termin
+
+        Returns:
+            list: Termine
+        """
+
+        aktive_termine = list()
+
+        if self.i_erster_termin_check_box.isChecked():
+            aktive_termine.append(1)
+        if self.i_zweiter_termin_check_box.isChecked():
+            aktive_termine.append(2)
+        return aktive_termine
 
     def __oeffne_file_dialog(self) -> str:
-        datei_data = QtWidgets.QFileDialog.saveFileContent(self, "Zeitspanne", os.path.join(PATH, "data"), "JSON Files (*.json)")
-        dateipfad = datei_data[0]
+        """
+        Öffnet einen File Dialog, der den Speicherort festlegt
+
+        Returns:
+            str: Speicherpfad
+        """
+
+        datei_data = QtWidgets.QFileDialog.getSaveFileName(self, "Zeitspanne", self.standard_speicherpfad, "JSON Files (*.json)")
+        dateipfad = datei_data[0]  # (Pfad, Dateityp)
         return dateipfad
+
+    def __reset(self):
+        #TODO: Reset
+        pass
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(list())
-    window = QtZeiten()
+    window = QtZeiten(".\\zeitspanne.json")
     window.show()
     app.exec_()
