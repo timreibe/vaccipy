@@ -530,8 +530,6 @@ class ImpfterminService():
                     self.log.success(f"{num}. Termin: {ts}")
                 if ENABLE_BEEPY:
                     beepy.beep('coin')
-                else:
-                    print("\a")
                 return True, 200
             else:
                 self.log.info(f"Keine Termine verfügbar in {plz}")
