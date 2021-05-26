@@ -18,6 +18,12 @@ Verfügbare Distributionen:
 - .zip Ordner entpacken
 - Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
 
+**Ausführung Linux:**
+- .zip Ordner entpacken
+- Eventuell notwendig: Die Terminservice- und Driver-Executable ausführbar machen.
+Dazu das Terminal zum `linux-64-terminservice`-Ordner navigieren und folgende Befehle ausführen:  
+  `sudo -- sh -c 'chmod +x ./linux-64-terminservice; chmod +x ./tools/chromedriver/chromedriver-linux-64'`
+- Im `linux-64-terminservice`-Ordner die `./linux-64-terminsvervice` executable per Terminal ausführen. 
 
 Für mehr Info zum Verteilen und Erstellen der Distributionen: [Shipping](#Shipping)
 
