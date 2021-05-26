@@ -28,7 +28,15 @@ class HauptGUI(QtWidgets.QMainWindow):
     # b_neue_kontaktdaten
     # b_neue_zeitspanne
 
-    def __init__(self, pfad_fenster_layout=os.path.join(PATH, "tools/gui/main.ui")):
+    # TODO: Ausgabe der cmd in der GUI wiederspiegelen - wenn sowas überhaupt geht
+    def __init__(self, pfad_fenster_layout: str = os.path.join(PATH, "tools/gui/main.ui")):
+        """
+        Main der GUI Anwendung
+
+        Args:
+            pfad_fenster_layout (str, optional): Ort der main.ui. Defaults to os.path.join(PATH, "tools/gui/main.ui").
+        """
+
         super().__init__()
 
         # Laden der .ui Datei und Anpassungen
@@ -60,8 +68,39 @@ class HauptGUI(QtWidgets.QMainWindow):
         # Workaround, damit das Fenster hoffentlich im Vordergrund ist
         self.activateWindow()
 
+    @staticmethod
+    def start_gui():
+        """
+        Startet die GUI Anwendung
+        """
+
+        app = QtWidgets.QApplication(list())
+        window = HauptGUI()
+        app.exec_()
+
+    def kontaktdaten_erstellen(self):
+        """
+        Ruft den Dialog für die Kontaktdaten auf
+        """
+
+        dialog = QtKontakt(self.pfad_kontaktdaten)
+        dialog.show()
+        dialog.exec_()
+
+    def zeitspanne_erstellen(self):
+        """
+        Ruft den Dialog für die Zeitspanne auf
+        """
+
+        dialog = QtZeiten(self.pfad_zeitspanne)
+        dialog.show()
+        dialog.exec_()
 
     def __termin_suchen(self):
+        """
+        Startet den Prozess der terminsuche mit Impfterminservice.terminsuche
+        """
+
         kontaktdaten = self.__get_kontaktdaten()
         zeitspanne = self.__get_zeitspanne()
 
@@ -69,15 +108,24 @@ class HauptGUI(QtWidgets.QMainWindow):
         code = kontaktdaten["code"]
         plz_impfzentren = kontaktdaten["plz_impfzentren"]
 
-        #TODO: starte es in einem extra thread, sonst hängt sich die GUI auf
+        # TODO: starte es in einem extra thread, sonst hängt sich die GUI auf
         ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt, zeitspanne=zeitspanne, PATH=PATH)
 
-
     def __code_generieren(self):
+        """
+        Startet den Prozess der Codegenerierung
+        """
+
+        # TODO: code generierung implementieren
         pass
 
-
     def __get_kontaktdaten(self) -> dict:
+        """
+        Ladet die Kontakdaten aus dem in der GUI hinterlegten Pfad
+
+        Returns:
+            dict: Kontakdaten
+        """
 
         if not os.path.isfile(self.pfad_kontaktdaten):
             self.kontaktdaten_erstellen()
@@ -87,8 +135,14 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         return kontaktdaten
 
-
     def __get_zeitspanne(self) -> dict:
+        """
+        Ladet die Zeitspanne aus dem in der GUI hinterlegtem Pfad
+
+        Returns:
+            dict: Zeitspanne
+        """
+
         if not os.path.isfile(self.pfad_zeitspanne):
             self.zeitspanne_erstellen()
 
@@ -97,42 +151,38 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         return zeitspanne
 
-
     def __oeffne_file_dialog(self, datei: str):
+        """
+        Öffnet einen "File-Picker", der entsprechende Werte für die kontaktdaten / zeitspanne einliest
+
+        Args:
+            datei (str): Startpfad vom File-Picker
+        """
+
+        # Öffnet den "File-Picker" vom System um ein bereits existierende Datei auszuwählen
         datei_data = QtWidgets.QFileDialog.getOpenFileName(self, datei, os.path.join(PATH, "data"), "JSON Files (*.json)")
-        dateipfad = datei_data[0]
+        dateipfad = datei_data[0]  # (pfad, typ)
 
-        if datei == "kontaktdaten":
-            self.i_kontaktdaten_pfad.setText(dateipfad)
-        else:
-            self.i_zeitspanne_pfad.setText(dateipfad)
-
+        if dateipfad:
+            if datei == "kontaktdaten":
+                self.i_kontaktdaten_pfad.setText(dateipfad)
+            else:
+                self.i_zeitspanne_pfad.setText(dateipfad)
 
     def __update_pfade(self):
+        """
+        Wird ein Pfad in der GUI verändert, so werden die entsprechende Attribute angepasst
+        """
+
         self.pfad_kontaktdaten = self.i_kontaktdaten_pfad.text()
         self.pfad_zeitspanne = self.i_zeitspanne_pfad.text()
 
-    @staticmethod
-    def start_gui():
-        app = QtWidgets.QApplication(list())
-        window = HauptGUI()
-        app.exec_()
-
-
-    def kontaktdaten_erstellen(self):
-        dialog = QtKontakt(self.pfad_kontaktdaten)
-        dialog.show()
-        dialog.exec_()
-
-
-    def zeitspanne_erstellen(self):
-        dialog = QtZeiten(self.pfad_zeitspanne)
-        dialog.show()
-        dialog.exec_()
-
-
 
 def main():
+    """
+    Startet die GUI-Anwendung
+    """
+
     HauptGUI.start_gui()
 
 
