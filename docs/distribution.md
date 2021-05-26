@@ -36,7 +36,7 @@ Es gibt aktuell zwei aktive Worklflows:
 
 ### Wie werden Releases erstellt ?
 
-Um ein neues Release zu erstellen, muss ein neues Tag (dessen Name mit `v` starten bsp. `v0.1`) zu dem neuesten Stand (Commit) erst hinzugefügt und dann gepushed werden. Das startet den [Deploy Workflow](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml).  
+Um ein neues Release zu erstellen, muss ein neues Tag (dessen Name mit `v` starten und im Format vx.y.z ist bsp. `v1.1.0`) zu dem neuesten Stand (Commit) erst hinzugefügt und dann gepushed werden. Das startet den [Deploy Workflow](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml).  
 </br>
 
 ### Wie werden Distributionen erstellt ? 
