@@ -3,7 +3,7 @@ import platform
 import sys
 import time
 from base64 import b64encode
-from datetime import datetime
+from datetime import datetime, date
 from datetime import time as dtime
 from random import choice
 
@@ -485,7 +485,7 @@ class ImpfterminService():
     @retry_on_failure()
     def termin_suchen(self, plz: int, zeitspanne: dict):
         """Es wird nach einen verfügbaren Termin in der gewünschten PLZ gesucht.
-        Ausgewählt wird der erstbeste Termin (!).
+        Ausgewählt wird der erstbeste Termin, welcher im entsprechenden Zeitraum liegt (!).
         Zurückgegeben wird das Ergebnis der Abfrage und der Status-Code.
         Bei Status-Code > 400 müssen die Cookies erneuert werden.
 
@@ -518,7 +518,8 @@ class ImpfterminService():
             terminpaare = res_json.get("termine")
             if terminpaare:
                 # Checken ob verfügbare terminpaare in angegebener Zeitspanne liegt
-                if zeitspanne["einhalten_bei"]:
+                # Falls daten nicht vorhanden - einfach alle aktzeptieren
+                if zeitspanne.get("einhalten_bei"):
                     terminpaare_in_zeitspanne = list()
 
                     # Alle Terminpaare durchgehen
@@ -530,6 +531,7 @@ class ImpfterminService():
 
                             # Soll einer der Beiden Termine überprüft werden
                             if num in zeitspanne["einhalten_bei"]:
+                                startdatum = date(zeitspanne["startdatum"]["jahr"], zeitspanne["startdatum"]["monat"], zeitspanne["startdatum"]["tag"])
                                 startzeit = dtime(zeitspanne["startzeit"]["h"], zeitspanne["startzeit"]["m"])
                                 endzeit = dtime(zeitspanne["endzeit"]["h"], zeitspanne["endzeit"]["m"])
                                 wochentage = zeitspanne["wochentage"]
@@ -537,7 +539,7 @@ class ImpfterminService():
                                 termin_zeit = datetime.fromtimestamp(int(termin["begin"])/1000)
 
                                 # Termin inherhalb der Zeitspanne und im Wochentag
-                                if not ((startzeit <= termin_zeit.time() <= endzeit) and (termin_zeit.weekday() in wochentage)):
+                                if not ((startzeit <= termin_zeit.time() <= endzeit) and termin_zeit.date() >= startdatum and (termin_zeit.weekday() in wochentage)):
                                     termine_in_zeitspanne = False
 
                         # Beide Termine sind in der Zeitspanne
@@ -689,7 +691,7 @@ class ImpfterminService():
             return False
 
     @staticmethod
-    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH:str, zeitspanne: dict, check_delay: int = 30):
+    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH:str, zeitspanne: dict = dict(), check_delay: int = 30):
         """
         Workflow für die Terminbuchung.
 

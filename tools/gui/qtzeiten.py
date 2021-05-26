@@ -1,7 +1,7 @@
 import os
 import json
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QTime, QDateTime
+from PyQt5.QtCore import QTime, QDate ,QDateTime
 
 # Folgende Widgets stehen zur Verfügung:
 
@@ -118,12 +118,18 @@ class QtZeiten(QtWidgets.QDialog):
         aktive_wochentage = self.__get_aktive_wochentage()
         uhrzeiten = self.__get_uhrzeiten()
         termine = self.__get_aktive_termine()
+        start_datum = self.__get_start_datum()
 
         zeitspanne = {
             "wochentage": aktive_wochentage,
             "startzeit": uhrzeiten["startzeit"],
-            "endzeiten": uhrzeiten["endzeit"],
-            "einhalten_bei": termine
+            "endzeit": uhrzeiten["endzeit"],
+            "einhalten_bei": termine,
+            "startdatum": {
+                "jahr": start_datum.year(),
+                "monat": start_datum.month(),
+                "tag": start_datum.day()
+            },
         }
         return zeitspanne
 
@@ -175,6 +181,12 @@ class QtZeiten(QtWidgets.QDialog):
             }
         }
         return uhrzeiten
+
+    def __get_start_datum(self) -> QDate:
+        """
+        Aktuallisiert das Startdatum
+        """
+        return self.i_start_datum_qdate.date()
 
     def __get_aktive_termine(self) -> list:
         """
