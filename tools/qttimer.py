@@ -1,7 +1,7 @@
 import os
 import json
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QTime
+from PyQt5.QtCore import QTime, QDate, QDateTime
 from PyQt5.QtGui import QCloseEvent
 
 # Folgende Widgets stehen zur Verfügung:
@@ -21,11 +21,15 @@ from PyQt5.QtGui import QCloseEvent
 # start_time
 # end_time
 
+### QDateEdit ###
+# start_datum_date
+
 ### Buttons ###
 # pushButton
 
 ### Labels ###
 # header_label
+# start_datum_label
 # wochentage_label
 # termine_anwenden_label
 # uhr_header_label
@@ -57,12 +61,14 @@ class QtTimer(QtWidgets.QMainWindow):
         # Laden der .ui Datei und Anpassungen
         uic.loadUi(pfad_fenster_layout, self)
         self.setFixedSize(self.size())
+        self.start_datum_date.setMinimumDateTime(QDateTime.currentDateTime())
 
         # self.bestaetigen() soll beim Klicken auf Bestätigen aufgerufen werden
         self.pushButton.clicked.connect(self.bestaetigt)
 
-        # Setzte leere Werte
+        # Setzte Startwerte
         self.aktive_wochentage = list()
+        self.start_datum: QDate = QDateTime.currentDateTime().date()
         self.start_uhrzeit: QTime = None
         self.end_uhrzeit: QTime = None
         self.aktive_termine = list()
@@ -95,7 +101,9 @@ class QtTimer(QtWidgets.QMainWindow):
         """
 
         # Alle Werte von aus der GUI aktuallisieren
+        self.__aktuallisiere_uhrzeiten()
         self.__aktuallisiere_aktive_wochentage()
+        self.__aktuallisiere_start_datum()
         self.__aktuallisiere_aktive_termine()
 
         if not self.__aktuallisiere_uhrzeiten():
@@ -122,6 +130,11 @@ class QtTimer(QtWidgets.QMainWindow):
             "endzeit": {
                 "h": self.end_uhrzeit.hour(),
                 "m": self.end_uhrzeit.minute()
+            },
+            "startdatum": {
+                "jahr": self.start_datum.year(),
+                "monat": self.start_datum.month(),
+                "tag": self.start_datum.day()
             },
             "einhalten_bei": self.aktive_termine
         }
@@ -174,6 +187,12 @@ class QtTimer(QtWidgets.QMainWindow):
             self.aktive_termine.append(1)
         if self.zweiter_termin_check_box.isChecked():
             self.aktive_termine.append(2)
+
+    def __aktuallisiere_start_datum(self):
+        """
+        Aktuallisiert das Startdatum
+        """
+        self.start_datum = self.start_datum_date.date()
 
     def closeEvent(self, event: QCloseEvent):
         """

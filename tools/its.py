@@ -3,7 +3,7 @@ import platform
 import sys
 import time
 from base64 import b64encode
-from datetime import datetime
+from datetime import datetime, date
 from datetime import time as dtime
 from random import choice
 
@@ -532,12 +532,13 @@ class ImpfterminService():
                             if num in zeitspanne["einhalten_bei"]:
                                 startzeit = dtime(zeitspanne["startzeit"]["h"], zeitspanne["startzeit"]["m"])
                                 endzeit = dtime(zeitspanne["endzeit"]["h"], zeitspanne["endzeit"]["m"])
+                                startdatum = date(zeitspanne["startdatum"]["jahr"], zeitspanne["startdatum"]["monat"], zeitspanne["startdatum"]["tag"])
                                 wochentage = zeitspanne["wochentage"]
 
                                 termin_zeit = datetime.fromtimestamp(int(termin["begin"])/1000)
 
                                 # Termin inherhalb der Zeitspanne und im Wochentag
-                                if not ((startzeit <= termin_zeit.time() <= endzeit) and (termin_zeit.weekday() in wochentage)):
+                                if not ((startzeit <= termin_zeit.time() <= endzeit) and termin_zeit.date() >= startdatum and (termin_zeit.weekday() in wochentage)):
                                     termine_in_zeitspanne = False
 
                         # Beide Termine sind in der Zeitspanne
