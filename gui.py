@@ -6,6 +6,7 @@ import json
 
 from PyQt5 import QtWidgets, uic
 from tools.gui.qtzeiten import QtZeiten
+from tools.gui.qtkontakt import QtKontakt
 from tools.its import ImpfterminService
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -68,6 +69,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         code = kontaktdaten["code"]
         plz_impfzentren = kontaktdaten["plz_impfzentren"]
 
+        #TODO: starte es in einem extra thread, sonst hängt sich die GUI auf
         ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt, zeitspanne=zeitspanne, PATH=PATH)
 
 
@@ -79,7 +81,6 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         if not os.path.isfile(self.pfad_kontaktdaten):
             self.kontaktdaten_erstellen()
-            pass
 
         with open(self.pfad_kontaktdaten, "r", encoding='utf-8') as f:
             kontaktdaten = json.load(f)
@@ -119,11 +120,13 @@ class HauptGUI(QtWidgets.QMainWindow):
 
 
     def kontaktdaten_erstellen(self):
-        pass
+        dialog = QtKontakt(self.pfad_kontaktdaten)
+        dialog.show()
+        dialog.exec_()
 
 
     def zeitspanne_erstellen(self):
-        dialog = QtZeiten()
+        dialog = QtZeiten(self.pfad_zeitspanne)
         dialog.show()
         dialog.exec_()
 

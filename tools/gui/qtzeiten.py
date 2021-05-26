@@ -62,7 +62,7 @@ class QtZeiten(QtWidgets.QDialog):
 
     def bestaetigt(self):
         """
-        Aktuallisiert alle Werte und Speichert gleichzeig die Aktuellen Werte
+        Speichert die aktuellen Werte
         """
 
         try:
@@ -95,7 +95,7 @@ class QtZeiten(QtWidgets.QDialog):
 
     def __button_clicked(self, button):
         clicked_button = self.buttonBox.standardButton(button)
-        if clicked_button == QtWidgets.QDialogButtonBox.Apply:
+        if clicked_button == QtWidgets.QDialogButtonBox.Save:
            self.bestaetigt()
         if clicked_button == QtWidgets.QDialogButtonBox.Reset:
             self.__reset()
