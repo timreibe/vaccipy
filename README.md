@@ -15,7 +15,6 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 * Suche bei mehreren Impfzentren gleichzeitig
 * Warteschlange umgehen
 * Dauerhaft Impf-Code's generieren - egal wo, egal für wen!
-* [BETA Branch (neue, aber noch nicht final getestete Features)](https://github.com/iamnotturner/vaccipy/tree/beta)
 
 **[Wusstest du: Du kannst mit einem Impf-Code in mehreren Impfzentren gleichzeitig nach freien Terminen suchen!](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)**
 
@@ -37,14 +36,6 @@ Download neuste Version:
 #### BETA Version
 
 Der BETA-Branch enthält neue, noch nicht final getestete Features. [Sollten Fehler auftreten könnt ihr hier ein Issue erstellen.](https://github.com/iamnotturner/vaccipy/issues)  
-Download Beta:
-
-<a href="https://cntr.click/C476snF">
-<img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
-</a>
-<a href="https://cntr.click/R83AXwY">
-<img width="90" heigth="30" src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
-</a>
 
 ## Releases
 [Link zum neusten Release](https://github.com/iamnotturner/vaccipy/releases/latest)  
@@ -287,7 +278,6 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 
 * Möglichkeit zum Eintragen mehrerer Impf-Codes und Kontaktdaten
-* Headless Selenium Support
 
 
 
