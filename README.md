@@ -15,7 +15,6 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 * Suche bei mehreren Impfzentren gleichzeitig
 * Warteschlange umgehen
 * Dauerhaft Impf-Code's generieren - egal wo, egal für wen!
-* [BETA Branch (neue, aber noch nicht final getestete Features)](https://github.com/iamnotturner/vaccipy/tree/beta)
 
 **[Wusstest du: Du kannst mit einem Impf-Code in mehreren Impfzentren gleichzeitig nach freien Terminen suchen!](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)**
 
@@ -287,7 +286,6 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 
 * Möglichkeit zum Eintragen mehrerer Impf-Codes und Kontaktdaten
-* Headless Selenium Support
 
 
 
