@@ -18,11 +18,16 @@ Verfügbare Distributionen:
 - vaccipy ausführen
 - (INFO: Vaccipy kann später auch wieder deinstalliert werden)
 
+**Ausführung Linux:**
+- .zip Ordner entpacken
+- Eventuell notwendig: Die Terminservice- und Driver-Executable ausführbar machen.
+Dazu das Terminal zum `linux-64-terminservice`-Ordner navigieren und folgende Befehle ausführen:  
+  `sudo -- sh -c 'chmod +x ./linux-64-terminservice; chmod +x ./tools/chromedriver/chromedriver-linux-64'`
+- Im `linux-64-terminservice`-Ordner die `./linux-64-terminsvervice` executable per Terminal ausführen. 
+
 Für mehr Info zum Verteilen und Erstellen der Distributionen: [Shipping und Releases](#Shipping-und-releases)
 
 ## Shipping und Releases
-
-### Workflows
 
 Es gibt aktuell zwei aktive Worklflows: 
 * der [Build Workflow](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml) wird bei jedem push gestartet und überprüft ob die aktuellen Änderungen auch in ein Build gebaut werden können.
