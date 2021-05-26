@@ -21,7 +21,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Build Windows
-        run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec --add-data "tools/cloudscraper;./cloudscraper/"
+        run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -36,4 +36,4 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Build Linux
-        run: pyinstaller --clean --noconfirm specs/linux-64-terminservice.spec --add-data "tools/cloudscraper:./cloudscraper/"
+        run: pyinstaller --clean --noconfirm specs/linux-64-terminservice.spec
