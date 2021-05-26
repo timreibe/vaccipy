@@ -1,99 +1,67 @@
 import os
 import json
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QTime
+from PyQt5.QtCore import QTime, QDateTime
 
 # Folgende Widgets stehen zur Verfügung:
 
 ### Checkboxes ###
-# mo_check_box
-# di_check_box
-# mi_check_box
-# do_check_box
-# fr_check_box
-# so_check_box
-# sa_check_box
-# erster_termin_check_box
-# zweiter_termin_check_box
+# i_mo_check_box
+# i_di_check_box
+# i_mi_check_box
+# i_do_check_box
+# i_fr_check_box
+# i_so_check_box
+# i_sa_check_box
+# i_erster_termin_check_box
+# i_zweiter_termin_check_box
 
 ### QTimeEdit ###
-# start_time
-# end_time
+# i_start_time_qtime
+# i_end_time_qtime
 
-### Buttons ###
-# pushButton
+### QDateEdit ###
+# i_start_datum_qdate
 
-### Labels ###
-# header_label
-# wochentage_label
-# termine_anwenden_label
-# uhr_header_label
-# uhr_start_label
-# uhr_end_label
-# und_label
+### QDialogButtonBox ###
+# buttonBox
+# Apply
+# Cancel
+# Reset
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
-# TODO: [ ] Wenn das Fenster geschlossen wir soll was passieren...? nicht speichern, aber Programm fortfahren
-# TODO: [ ] .icon adden
-# TODO: [X] Fenstergröße sollte man nicht verändern können
-# TODO: [X] Fenster in den Vordergund bringen
-# TODO: [X] Docstrings
-# TODO: [X] Rückmeldung für erfolgreiches speichern
 
-
-class QtTimer(QtWidgets.QMainWindow):
+class QtZeiten(QtWidgets.QDialog):
     """
     Klasse für das erstellen einer zeitspanne.json mithilfe einer GUI / PyQt5
-    Diese erbt von QtWidgets.QMainWindow
+    Diese erbt von QtWidgets.QDialog
     """
 
-    def __init__(self, pfad_zeitspanne: str, pfad_fenster_layout: str):
+    def __init__(self, pfad_fenster_layout = os.path.join(PATH, "uhrzeiten.ui")):
         """
         Ladet das angegebene Layout (wurde mit QT Designer erstellt https://www.qt.io/download)
         Das Fenster wird automtaisch nach dem erstellen der Klasse geöffnet
 
         Args:
-            pfad_zeitspanne (str): Speicherpfad für zeitspanne.json
             pfad_fester_layout (str): Speicherort der .ui - Datei
         """
 
-        super(QtTimer, self).__init__()
+        super(QtZeiten, self).__init__()
 
         # Laden der .ui Datei und Anpassungen
         uic.loadUi(pfad_fenster_layout, self)
-        self.setFixedSize(self.size())
+        self.i_start_datum_qdate.setMinimumDateTime(QDateTime.currentDateTime())
 
-        # self.bestaetigen() soll beim Klicken auf Bestätigen aufgerufen werden
-        self.pushButton.clicked.connect(self.bestaetigt)
+        # Funktionen den Buttons zuweisen
+        self.buttonBox.accepted
 
         # Setzte leere Werte
         self.aktive_wochentage = list()
         self.start_uhrzeit: QTime = None
         self.end_uhrzeit: QTime = None
         self.aktive_termine = list()
-        self.speicherpfad = pfad_zeitspanne
 
-        # GUI anzeigen
-        self.show()
-        # Workaround, damit das Fenster hoffentlich im Vordergrund ist
-        self.activateWindow()
-
-    @staticmethod
-    def start(pfad_zeitspanne: str, pfad_fenster_layout=os.path.join(PATH, "qttimer.ui")):
-        """
-        Öffnet eine GUI in dem der User seine Parameter angeben kann
-        Diese werden bei Bestätigung direkt in den mit übergebenen Pfad gespeichert
-        Anschließend schließt sich das Fenster
-
-        Args:
-            pfad_zeitspanne (str): Speicherpfad für zeitspanne.json
-            pfad_fester_layout (str): Speicherort der .ui - Datei. Default: .\\qttimer.ui
-        """
-
-        app = QtWidgets.QApplication(list())
-        window = QtTimer(pfad_zeitspanne, pfad_fenster_layout)
-        app.exec_()
 
     def bestaetigt(self):
         """
@@ -119,6 +87,8 @@ class QtTimer(QtWidgets.QMainWindow):
         Speicherpfad wurde beim erstellen der Klasse mit übergeben
         """
 
+        speicherpfad = self.__oeffne_file_dialog()
+
         data = {
             "wochentage": self.aktive_wochentage,
             "startzeit": {
@@ -132,7 +102,7 @@ class QtTimer(QtWidgets.QMainWindow):
             "einhalten_bei": self.aktive_termine
         }
 
-        with open(self.speicherpfad, 'w', encoding='utf-8') as f:
+        with open(speicherpfad, 'w', encoding='utf-8') as f:
             try:
                 json.dump(data, f, ensure_ascii=False, indent=4)
                 QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
@@ -140,6 +110,7 @@ class QtTimer(QtWidgets.QMainWindow):
             except (TypeError, IOError, FileNotFoundError) as error:
                 QtWidgets.QMessageBox.critical(self, "Fehler!", "Daten konnten nicht gespeichert werden.")
                 raise error
+
 
     def __aktuallisiere_aktive_wochentage(self):
         """
@@ -150,7 +121,7 @@ class QtTimer(QtWidgets.QMainWindow):
 
         # Alle Checkboxen der GUI selektieren und durchgehen
         # BUG: Wenn die reihenfolge im Layout geändert wird, stimmen die Wochentage nicht mehr 0 = Mo ... 6 = So
-        checkboxes = self.mo_check_box.parent().findChildren(QtWidgets.QCheckBox)
+        checkboxes = self.i_mo_check_box.parent().findChildren(QtWidgets.QCheckBox)
         for num, checkboxe in enumerate(checkboxes, 0):
             if checkboxe.isChecked():
                 self.aktive_wochentage.append(num)
@@ -181,6 +152,14 @@ class QtTimer(QtWidgets.QMainWindow):
         if self.zweiter_termin_check_box.isChecked():
             self.aktive_termine.append(2)
 
+    def __oeffne_file_dialog(self) -> str:
+        datei_data = QtWidgets.QFileDialog.saveFileContent(self, "Zeitspanne", os.path.join(PATH, "data"), "JSON Files (*.json)")
+        dateipfad = datei_data[0]
+        return dateipfad
+
 
 if __name__ == "__main__":
-    QtTimer.start(f"{PATH}\\..\\zeitspanne.json")
+    app = QtWidgets.QApplication(list())
+    window = QtZeiten()
+    window.show()
+    app.exec_()
