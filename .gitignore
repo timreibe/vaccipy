@@ -10,7 +10,6 @@ log/
 # data
 kontaktdaten.json
 
-tools/
 
 # pyinstaller 
 # temporary building files:
