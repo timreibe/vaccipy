@@ -289,7 +289,6 @@ class ImpfterminService():
         except:
             self.log.error("Termine können nicht gesucht werden")
             try:
-                timestamp = str(datetime.datetime.now()).replace(":", "").split(".")[0]
                 driver.get_screenshot_as_file(filepath + "errorterminsuche" + timestamp + ".jpg")
             except:
                 self.log.error("Screenshot konnte nicht gespeichert werden")
