@@ -34,7 +34,8 @@ class HauptGUI(QtWidgets.QMainWindow):
         Main der GUI Anwendung
 
         Args:
-            pfad_fenster_layout (str, optional): Ort der main.ui. Defaults to os.path.join(PATH, "tools/gui/main.ui").
+            pfad_fenster_layout (str, optional): Ladet das angegebene Layout (wurde mit QT Designer erstellt https://www.qt.io/download).
+            Defaults to os.path.join(PATH, "tools/gui/main.ui").
         """
 
         super().__init__()

@@ -44,6 +44,10 @@ class QtKontakt(QtWidgets.QDialog):
         self.buttonBox.clicked.connect(self.__button_clicked)
 
     def bestaetigt(self):
+        """
+        Versucht die Daten zu speichern und schließt sich anschließend selbst
+        """
+
         try:
             self.speicher_einstellungen()
             self.close()
@@ -71,6 +75,13 @@ class QtKontakt(QtWidgets.QDialog):
                 raise error
 
     def __button_clicked(self, button):
+        """
+        Zuweisung der einzelnen Funktionen der Buttons in der ButtonBox
+
+        Args:
+            button (PyQt5.QtWidgets.QPushButton): Button welcher gedrückt wurde
+        """
+
         clicked_button = self.buttonBox.standardButton(button)
         if clicked_button == QtWidgets.QDialogButtonBox.Save:
             self.bestaetigt()
@@ -80,6 +91,13 @@ class QtKontakt(QtWidgets.QDialog):
             self.close()
 
     def __get_alle_werte(self) -> dict:
+        """
+        Holt sich alle Werte aus der GUI und gibt diese fertig zum speichern zurück
+
+        Returns:
+            dict: User eingaben
+        """
+
         plz_zentrum_raw = self.i_plz_impfzentren.text()
         code = self.i_code_impfzentren.text().strip()
         anrede = self.i_anrede_combo_box.currentText().strip()
@@ -118,18 +136,30 @@ class QtKontakt(QtWidgets.QDialog):
         """
         Öffnet einen File Dialog, der den Speicherort festlegt
 
+        Raises:
+            FileNotFoundError: Wird geworfen, wenn kein Pfad angegeben wurde
+
         Returns:
-            str: Speicherpfad
+            str: speicherpfad
         """
 
         datei_data = QtWidgets.QFileDialog.getSaveFileName(self, "Kontaktdaten", self.standard_speicherpfad, "JSON Files (*.json)")
         dateipfad = datei_data[0]  # (Pfad, Dateityp)
+
+        if not dateipfad:
+            raise FileNotFoundError
+
         return dateipfad
 
     def __reset(self):
+        """
+        Setzt alle Werte in der GUI zurück
+        """
+
         pass
 
 
+# Zum schnellen einzeltesten
 if __name__ == "__main__":
     app = QtWidgets.QApplication(list())
     window = QtKontakt("./kontaktdaten.json")

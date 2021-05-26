@@ -38,17 +38,18 @@ class QtZeiten(QtWidgets.QDialog):
     Diese erbt von QtWidgets.QDialog
     """
 
-    def __init__(self, standard_speicherpfad:str, pfad_fenster_layout=os.path.join(PATH, "uhrzeiten.ui")):
+    def __init__(self, standard_speicherpfad: str, pfad_fenster_layout=os.path.join(PATH, "uhrzeiten.ui")):
         """
-        Ladet das angegebene Layout (wurde mit QT Designer erstellt https://www.qt.io/download)
-        Das Fenster wird automtaisch nach dem erstellen der Klasse geöffnet
+        Eingabe der Zeitkonfigurationen
 
         Args:
-            pfad_fester_layout (str): Speicherort der .ui - Datei
+            standard_speicherpfad (str): standard speicherpfad der JSON-Datei
+            pfad_fenster_layout (str, optional): Layout des Dialogs. Defaults to os.path.join(PATH, "uhrzeiten.ui").
         """
 
         super(QtZeiten, self).__init__()
 
+        # Startwerte setzten
         self.standard_speicherpfad = standard_speicherpfad
         self.pfad_fenster_layout = pfad_fenster_layout
 
@@ -56,13 +57,12 @@ class QtZeiten(QtWidgets.QDialog):
         uic.loadUi(self.pfad_fenster_layout, self)
         self.i_start_datum_qdate.setMinimumDateTime(QDateTime.currentDateTime())
 
-
         # Funktionen für Buttonbox zuweisen
         self.buttonBox.clicked.connect(self.__button_clicked)
 
     def bestaetigt(self):
         """
-        Speichert die aktuellen Werte
+        Speichert die aktuellen Werte und schließt anschließend den Dialog
         """
 
         try:
@@ -72,7 +72,6 @@ class QtZeiten(QtWidgets.QDialog):
             QtWidgets.QMessageBox.critical(self, "Ungültige Eingabe!", "Start-Uhrzeit ist später als End-Uhrzeit!")
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
-        
 
     def speicher_einstellungen(self):
         """
@@ -81,7 +80,6 @@ class QtZeiten(QtWidgets.QDialog):
         """
 
         speicherpfad = self.__oeffne_file_dialog()
-
         data = self.__get_alle_werte()
 
         with open(speicherpfad, 'w', encoding='utf-8') as f:
@@ -94,9 +92,16 @@ class QtZeiten(QtWidgets.QDialog):
                 raise error
 
     def __button_clicked(self, button):
+        """
+        Zuweisung der einzelnen Funktionen der Buttons in der ButtonBox
+
+        Args:
+            button (PyQt5.QtWidgets.QPushButton): Button welcher gedrückt wurde
+        """
+
         clicked_button = self.buttonBox.standardButton(button)
         if clicked_button == QtWidgets.QDialogButtonBox.Save:
-           self.bestaetigt()
+            self.bestaetigt()
         if clicked_button == QtWidgets.QDialogButtonBox.Reset:
             self.__reset()
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
@@ -109,7 +114,7 @@ class QtZeiten(QtWidgets.QDialog):
         Returns:
             dict: alle Daten
         """
-        
+
         aktive_wochentage = self.__get_aktive_wochentage()
         uhrzeiten = self.__get_uhrzeiten()
         termine = self.__get_aktive_termine()
@@ -197,6 +202,10 @@ class QtZeiten(QtWidgets.QDialog):
 
         datei_data = QtWidgets.QFileDialog.getSaveFileName(self, "Zeitspanne", self.standard_speicherpfad, "JSON Files (*.json)")
         dateipfad = datei_data[0]  # (Pfad, Dateityp)
+
+        if not dateipfad:
+            raise FileNotFoundError
+
         return dateipfad
 
     def __reset(self):
