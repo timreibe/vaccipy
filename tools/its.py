@@ -273,6 +273,26 @@ class ImpfterminService():
         except:
             return False
 
+    def driver_renew_cookies_code(self, driver, plz_impfzentrum):
+        self.driver_enter_code(driver, plz_impfzentrum)
+        self.log.warn(
+            "Du hast jetzt 10 Sekunden Zeit möglichst viele Elemente im Chrome Fenster anzuklicken. Das Fenster schließt sich automatisch.")
+        time.sleep(10)
+        # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
+        try:
+            cookie = driver.get_cookie("bm_sz")
+            time.sleep(10)
+            if cookie:
+                self.s.cookies.clear()
+                self.s.cookies.update({"bm_sz": cookie.get("value")})
+                self.log.info("Browser-Cookie generiert: *{}".format(cookie.get("value")[-6:]))
+                return True
+            else:
+                self.log.error("Cookies können nicht erstellt werden!")
+                return False
+        except:
+            return False
+
 
 
     def driver_book_appointment(self, driver, plz_impfzentrum):
@@ -431,6 +451,18 @@ class ImpfterminService():
         self.log.info("Browser-Cookies generieren")
         with self.get_chromedriver(headless=True) as driver:
             return self.driver_renew_cookies(driver, choice(self.plz_impfzentren))
+
+    @retry_on_failure()
+    def renew_cookies_code(self):
+        """
+        Cookies der Session erneuern, wenn sie abgelaufen sind.
+        :return:
+        """
+
+        self.log.info("Browser-Cookies generieren")
+        with self.get_chromedriver(headless=False) as driver:
+            return self.driver_renew_cookies_code(driver, choice(self.plz_impfzentren))
+
 
 
     @retry_on_failure()

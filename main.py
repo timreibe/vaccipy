@@ -268,7 +268,7 @@ def gen_code(kontaktdaten):
         print("Falscheingabe! Bitte erneut versuchen:")
 
     # cookies erneuern und code anfordern
-    its.renew_cookies()
+    its.renew_cookies_code()
     token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, leistungsmerkmal)
 
     if token is not None:
