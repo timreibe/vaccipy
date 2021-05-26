@@ -273,6 +273,8 @@ class ImpfterminService():
 
     def driver_book_appointment(self, driver, plz_impfzentrum):
         PATH = os.path.dirname(os.path.realpath(__file__))
+        timestamp = str(datetime.datetime.now()).replace(":", "").split(".")[0]
+        filepath = os.path.join(PATH, "log/errorselenium/")
         url = f"{self.domain}impftermine/service?plz={plz_impfzentrum}"
 
         self.driver_enter_code(driver, plz_impfzentrum)
@@ -287,7 +289,6 @@ class ImpfterminService():
         except:
             self.log.error("Termine können nicht gesucht werden")
             try:
-                filepath = os.path.join(PATH, "log/errorterminsuche/")
                 timestamp = str(datetime.datetime.now()).replace(":", "").split(".")[0]
                 driver.get_screenshot_as_file(filepath + "errorterminsuche" + timestamp + ".jpg")
             except:
@@ -307,9 +308,6 @@ class ImpfterminService():
         except:
             self.log.error("Termine können nicht ausgewählt werden")
             try:
-                PATH = os.path.dirname(os.path.realpath(__file__))
-                filepath = os.path.join(PATH, "log/errorterminauswahl/")
-                timestamp = str(datetime.datetime.now()).replace(":", "").split(".")[0]
                 with open(filepath + "errorterminauswahl" + timestamp + ".html", 'w', encoding='utf-8') as file:
                     file.write(str(driver.page_source))
                 driver.get_screenshot_as_file(filepath + "errorterminauswahl" + timestamp + ".jpg")
@@ -398,8 +396,6 @@ class ImpfterminService():
         except:
             self.log.error("Kontaktdaten können nicht eingegeben werden")
             try:
-                filepath = os.path.join(PATH, "log/errordateneingeben/")
-                timestamp = str(datetime.datetime.now()).replace(":", "").split(".")[0]
                 driver.get_screenshot_as_file(filepath + "errordateneingeben" + timestamp + ".jpg")
             except:
                 self.log.error("Screenshot konnte nicht gespeichert werden")
