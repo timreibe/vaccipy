@@ -200,6 +200,14 @@ pip3 install -r requirements.txt
 > 
 > "[...] Um das Tool dann zum Laufen zu bringen, könntest du zum Beispiel eine [Ausnahme in den Windows-Sicherheiteinstellungen hinzufügen.](https://support.microsoft.com/de-de/windows/hinzufügen-eines-ausschlusses-zu-windows-sicherheit-811816c0-4dfd-af4a-47e4-c301afe13b26)"
 
+## Ausführung unter Linux 
+1) [`vaccipy` downloaden](#Downloads)
+2) .zip Ordner entpacken
+3) Eventuell notwendig: Die Terminservice- und Driver-Executable ausführbar machen.
+Dazu das Terminal zum `linux-64-terminservice`-Ordner navigieren und folgenden Befehl ausführen:  
+  `sudo -- sh -c 'chmod +x ./linux-64-terminservice; chmod +x ./tools/chromedriver/chromedriver-linux-64'`
+4) Im `linux-64-terminservice`-Ordner die `./linux-64-terminsvervice`-Executable per Terminal ausführen. 
+
 ## Ausführung in der Kommandozeile
 
 `vaccipy` kannst du über die Kommandozeile oder in einer beliebigen python-Entwicklungsumgebung
