@@ -518,7 +518,7 @@ class ImpfterminService():
             terminpaare = res_json.get("termine")
             if terminpaare:
                 # Checken ob verfügbare terminpaare in angegebener Zeitspanne liegt
-                if zeitspanne["einhalten_bei"]:
+                if zeitspanne.get("einhalten_bei"):
                     terminpaare_in_zeitspanne = list()
 
                     # Alle Terminpaare durchgehen
