@@ -1,36 +1,40 @@
 ## Distributionen
 
-Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne installation von Python direkt ausgeführt werden können. 
-Die Unterfolder von `dist/` sind jeweils Distributionen die geteilt werden können und eigenständig funktionieren.
+Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne installation von Python direkt ausgeführt werden können.  
+Diese sind im Abschnitt `assets` des [neusten Release](https://github.com/iamnotturner/vaccipy/releases/latest 
+) zu finden.  
 
-Zum Ausführen des Programms, einfach die passende Distribution (basierend auf dem eigenen Betriebssysstem) auswählen und die folgende Datei ausführen. 
-
-*Hinweis: Es wird jeweils immer der gesamte Ordner benötigt!* 
 
 ### Download 
 Verfügbare Distributionen:
-- [x] [Windows](https://cntr.click/9ypzBLb)  
-- [x] [Linux](https://cntr.click/6Q0PXkK) 
+- [x] [Windows](https://cntr.click/rS9Ds4R)  
+- [x] [Linux](https://cntr.click/mN1MPzc) 
 - [ ] MacOS Intel
 - [ ] MacOS M1
 
 **Ausführung Windows:** 
-- .zip Ordner entpacken
-- Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
+- installer ausführen
+- vaccipy installieren
+- vaccipy ausführen
+- (INFO: Vaccipy kann später auch wieder deinstalliert werden)
 
+Für mehr Info zum Verteilen und Erstellen der Distributionen: [Shipping und Releases](#Shipping-und-releases)
 
-Für mehr Info zum Verteilen und Erstellen der Distributionen: [Shipping](#Shipping)
+## Shipping und Releases
 
-### Shipping
-#### Workflows
-Um den Buildprozess zu vereinfachen gibt es verschiedene Buildpipelines, welche bei push Events in den Masterbranch ausgeführt werden.   
-Die pipelines sind im `.github/workflows` Ordner zu finden. 
+### Workflows
 
-Aktuelle Pipelines:
-- [x] [Windows Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_windows.yaml)
-- [x] [Linux 64 Build-Pipeline](https://github.com/iamnotturner/vaccipy/actions/workflows/build_linux.yaml)
+Es gibt aktuell zwei aktive Worklflows: 
+* der [Build Workflow](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml) wird bei jedem push gestartet und überprüft ob die aktuellen Änderungen auch in ein Build gebaut werden können.
+* der [Deploy Workflow](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml) wird bei jedem push eines [Tags](https://git-scm.com/book/en/v2/Git-Basics-Tagging) gestartet und erstellt ein neues Build sowie ein neues Release dazu.   
+</br>
 
-#### Generell
+### Wie werden Releases erstellt ?
+
+Um ein neues Release zu erstellen, muss ein neues Tag (dessen Name mit `v` starten bsp. `v0.1`) zu dem neuesten Stand (Commit) erst hinzugefügt und dann gepushed werden. Das startet den [Deploy Workflow](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml).  
+</br>
+
+### Wie werden Distributionen erstellt ? 
 
 Zum Erstellen der Distributionen wird [pyinstaller](https://pyinstaller.readthedocs.io/en/stable/index.html) verwendet.  
 Schritte zum Erstellen einer Distribution: 
@@ -60,5 +64,12 @@ pyinstaller --clean specs/linux-64-terminservice.spec
 
 ```
 
+### Windows Installer
+Für den Windows installer wird aktuell [Inno Setup](https://jrsoftware.org/isinfo.php) verwendet.  
+Im [Deploy Workflow](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml) führt der Inno Setup Compiler das  `windows-terminservice.iss` Script aus, welches die zuvor von Pyinstaller gebaute Distribution, in einen Installer packt. 
+
+**Tipp:** Zum erstellen und bearbeiten des .iss Scripts empfiehlt sich der `Inno Script Studio script editor` welcher im [QuickStart Pack](https://jrsoftware.org/download.php/ispack.exe) vorhanden ist. 
+
 #### Resources
 - [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
+- [Inno Setup](https://jrsoftware.org/isinfo.php)
