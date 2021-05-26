@@ -36,14 +36,6 @@ Download neuste Version:
 #### BETA Version
 
 Der BETA-Branch enthält neue, noch nicht final getestete Features. [Sollten Fehler auftreten könnt ihr hier ein Issue erstellen.](https://github.com/iamnotturner/vaccipy/issues)  
-Download Beta:
-
-<a href="https://cntr.click/C476snF">
-<img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
-</a>
-<a href="https://cntr.click/R83AXwY">
-<img width="90" heigth="30" src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
-</a>
 
 ## Releases
 [Link zum neusten Release](https://github.com/iamnotturner/vaccipy/releases/latest)  
