@@ -395,7 +395,6 @@ class ImpfterminService():
                 driver.get_screenshot_as_file(filepath + "errordateneingeben" + timestamp + ".jpg")
             except:
                 self.log.error("Screenshot konnte nicht gespeichert werden")
-                pass
             pass
 
         # Klick Button "ÜBERNEHMEN"
