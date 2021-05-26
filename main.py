@@ -437,4 +437,17 @@ if __name__ == "__main__":
                                    |_|      |___/ 
 """)
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
-    main()
+
+    print("Termine können AUSSCHLIESSLICH für Personen gebucht werden, die zur Impfung berechtigt sind.\n"
+          "Ob Anspruch auf eine Impfung besteht kann hier geprüft werden:\n"
+          "https://www.impfterminservice.de/terminservice/faq\n")
+
+    ist_impfberechtigt = input("> Hiermit bestätige ich AUSDRÜCKLICH, dass dieses TOOL nur für die "
+                               "Terminsuche EINER PERSON verwendet wird.\n"
+                               "  Der ANSPRUCH AUF EINE CORONA SCHUTZIMPFUNG wurde geprüft. JA (y) oder NEIN (n): ")
+
+    if ist_impfberechtigt.lower() == "y":
+        print()
+        main()
+    else:
+        print("vaccipy wird nun beendet.")
