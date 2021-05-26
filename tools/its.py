@@ -272,9 +272,8 @@ class ImpfterminService():
             return False
 
     def driver_book_appointment(self, driver, plz_impfzentrum):
-        PATH = os.path.dirname(os.path.realpath(__file__))
-        timestamp = str(datetime.datetime.now()).replace(":", "").split(".")[0]
-        filepath = os.path.join(PATH, "log/errorselenium/")
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        filepath = os.path.join(self.PATH, "log/errorselenium/")
         url = f"{self.domain}impftermine/service?plz={plz_impfzentrum}"
 
         self.driver_enter_code(driver, plz_impfzentrum)
@@ -292,7 +291,6 @@ class ImpfterminService():
                 driver.get_screenshot_as_file(filepath + "errorterminsuche" + timestamp + ".jpg")
             except:
                 self.log.error("Screenshot konnte nicht gespeichert werden")
-                pass
             pass
 
         # Termin auswählen
@@ -312,7 +310,6 @@ class ImpfterminService():
                 driver.get_screenshot_as_file(filepath + "errorterminauswahl" + timestamp + ".jpg")
             except:
                 self.log.error("HTML und Screenshot konnten nicht gespeichert werden")
-                pass
             pass
 
         # Klick Button "AUSWÄHLEN"
