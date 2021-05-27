@@ -68,7 +68,7 @@ def update_kontaktdaten_interactive(
             kontaktdaten["kontakt"]["nachname"] = input("> Nachname: ")
 
         if "strasse" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["strasse"] = input("> Strasse: ")
+            kontaktdaten["kontakt"]["strasse"] = input("> Strasse (ohne Hausnummer): ")
 
         if "hausnummer" not in kontaktdaten["kontakt"] and command == "search":
             kontaktdaten["kontakt"]["hausnummer"] = input("> Hausnummer: ")
