@@ -33,15 +33,18 @@ Download neuste Version:
 <img width="90" heigth="30" src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
 </a></br></br>
 
+#### Probleme beim Ausführen des Windows-Installers?
+[Hier kannst du dir das Projekt komprimiert als `.zip` herunterladen.](https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy-windows.zip)
+
+#### Releases
+
+[Hier findest du den neusten Release.](https://github.com/iamnotturner/vaccipy/releases/latest)  
+Mehr Informationen, wie die Releases funktionieren findest du [hier](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md).
 
 #### BETA Version
 
-Der BETA-Branch enthält neue, noch nicht final getestete Features. [Sollten Fehler auftreten könnt ihr hier ein Issue erstellen.](https://github.com/iamnotturner/vaccipy/issues)  
+Der [BETA-Branch](https://github.com/iamnotturner/vaccipy/tree/beta) enthält neue, noch nicht final getestete Features. Hierfür gibt es keine Distribution für Windows oder Ubuntu. [Sollten Fehler auftreten könnt ihr hier ein Issue erstellen.](https://github.com/iamnotturner/vaccipy/issues)  
 
-## Releases
-
-[Link zum neusten Release](https://github.com/iamnotturner/vaccipy/releases/latest)  
-Mehr Informationen, wie die Releases funktionieren findest du [hier](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md).
 
 ## Ausgangssituation
 
@@ -263,7 +266,7 @@ Die Distributionen können im [neusten Release heruntergeladen werden](https://g
 
 <img src="https://github.com/iamnotturner/vaccipy/blob/master/images/beispiel_programmdurchlauf.png">
 
-## [Informationen zu den Distributionen und Shipping findest du hier.](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md)
+## [Informationen zu den Distributionen und Shipping findest du hier](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md)
 
 ## Das könnte noch kommen
 
