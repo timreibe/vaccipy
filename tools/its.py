@@ -640,7 +640,7 @@ class ImpfterminService():
         SMS-Code beim Impfterminservice anfordern.
 
         :param mail: Mail für Empfang des Codes
-        :param telefonnummer: Telefonnummer für SMS-Code
+        :param telefonnummer: Telefonnummer für SMS-Code, inkl. Präfix +49
         :param plz_impfzentrum: PLZ des Impfzentrums, für das ein Code erstellt werden soll
         :param leistungsmerkmal: gewählte Impfgruppe (bspw. L921)
         :return:
@@ -651,7 +651,7 @@ class ImpfterminService():
         data = {
             "email": mail,
             "leistungsmerkmal": leistungsmerkmal,
-            "phone": "+49" + telefonnummer,
+            "phone": telefonnummer,
             "plz": plz_impfzentrum
         }
         while True:
