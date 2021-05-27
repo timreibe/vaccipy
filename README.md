@@ -14,7 +14,7 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 * Automatisches Suchen und Buchen von Impfterminen
 * Suche bei mehreren Impfzentren gleichzeitig
 * Warteschlange umgehen
-* Dauerhaft Impf-Code's generieren - egal wo, egal für wen!
+* Dauerhaft Impf-Codes generieren - egal wo, egal für wen!
 
 **[Wusstest du: Du kannst mit einem Impf-Code in mehreren Impfzentren gleichzeitig nach freien Terminen suchen!](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)**
 
@@ -38,6 +38,7 @@ Download neuste Version:
 Der BETA-Branch enthält neue, noch nicht final getestete Features. [Sollten Fehler auftreten könnt ihr hier ein Issue erstellen.](https://github.com/iamnotturner/vaccipy/issues)  
 
 ## Releases
+
 [Link zum neusten Release](https://github.com/iamnotturner/vaccipy/releases/latest)  
 Mehr Informationen, wie die Releases funktionieren findest du [hier](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md).
 
@@ -53,7 +54,6 @@ andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Co
 Zunächst trägst du deinen "Impf-Code" (*Beispiel: A1B2-C3D4-E5F6*), die PLZ deines Impfzentrums 
 und deine Daten (Anschrift, Telefon, Mail) ein, die bei der Terminbuchung angegeben werden sollen.
 Du wirst zur Eingabe aufgefordert und deine Daten werden in der Datei `./data/kontaktdaten.json` gespeichert.
-
 
 Nachfolgend werden die zwei Grundfunktionalitäten von `vaccipy` kurz beschrieben.
 
@@ -109,12 +109,10 @@ anschließend per Mail zugesendet.
 > Es ist wichtig, dass du den Code entsprechend deiner Altersgruppe auswählst, ansonsten wird dir der Termin vor Ort abgesagt.
 > Der Code wird auf [www.impfterminservice.de](https://www.impfterminservice.de/) generiert und ist gültig.
 
-
 ## Was passiert mit meinen Daten?
 
 Deine Daten werden **lokal**, also nur bei dir auf dem Computer, in der Datei `./kontaktdaten.json` gespeichert.
 Beim nächsten Start kannst du deine Daten direkt laden und musst sie nicht erneut eintragen.
-
 
 ## Workflow
 
@@ -137,9 +135,7 @@ Beim nächsten Start kannst du deine Daten direkt laden und musst sie nicht erne
 
 > Das Einloggen im Script erfolgt lediglich, um eine Übersicht über die zugewiesenen Impfstoffe zu erhalten.
 > Sollte der Login mal nicht klappen, ist das nicht weiter tragisch. Die Terminsuche kann fortgesetzt werden.
-
-
-
+>
 > Die nachkommenden Schritte erfolgen im Loop. Alle 60 Sekunden werden verfügbare Termine abgerufen und, 
 > sollten Termine verfügbar sein, ~~der erstbeste~~ ein zufälliger ausgewählt. 
 > 
@@ -159,7 +155,6 @@ Beim nächsten Start kannst du deine Daten direkt laden und musst sie nicht erne
 > **Achtung! Im nächsten Schritt wird ein verbindlicher Impftermin gebucht!**
 
 7) Buchen des Impftermins
-
 
 ## Termin gebucht, was nun?
 
@@ -184,6 +179,7 @@ pip3 install -r requirements.txt
 ```
 
 ## Ausführung unter Windows
+
 1) [`vaccipy` downloaden](#Downloads)
 2) .zip Ordner entpacken
 3) Im `windows-terminservice\`-Ordner die `windows-terminservice.exe` ausführen. 
@@ -196,7 +192,8 @@ pip3 install -r requirements.txt
 > 
 > "[...] Um das Tool dann zum Laufen zu bringen, könntest du zum Beispiel eine [Ausnahme in den Windows-Sicherheiteinstellungen hinzufügen.](https://support.microsoft.com/de-de/windows/hinzufügen-eines-ausschlusses-zu-windows-sicherheit-811816c0-4dfd-af4a-47e4-c301afe13b26)"
 
-## Ausführung unter Linux 
+## Ausführung unter Linux
+
 1) [`vaccipy` downloaden](#Downloads)
 2) .zip Ordner entpacken
 3) Eventuell notwendig: Die Terminservice- und Driver-Executable ausführbar machen.
@@ -259,7 +256,6 @@ Die Distributionen können im [neusten Release heruntergeladen werden](https://g
 
 <img src="https://github.com/iamnotturner/vaccipy/blob/master/images/beispiel_programmdurchlauf.png">
 
-
 ## [Informationen zu den Distributionen und Shipping findest du hier.](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md)
 
 ## Das könnte noch kommen
@@ -278,8 +274,6 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 
 * Möglichkeit zum Eintragen mehrerer Impf-Codes und Kontaktdaten
-
-
 
 ## Bedanken?
 
@@ -310,4 +304,3 @@ save da world. my final message. goodbye.
 <a href="https://www1.wdr.de/nachrichten/themen/coronavirus/impftermine-online-buchen-100.html">
 <img width=100 src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/WDR_Dachmarke.svg/2000px-WDR_Dachmarke.svg.png>
 </a>
-
