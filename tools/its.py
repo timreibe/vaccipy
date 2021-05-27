@@ -253,17 +253,12 @@ class ImpfterminService():
         action.move_to_element(button).click().perform()
 
         # Maus-Bewegung hinzufügen (nicht sichtbar)
-        action.move_by_offset(10, 20).perform()
-        time.sleep(randint(1, 3))
-        try:
-            action.move_by_offset(randint(1, 100), randint(1, 100)).perform()
-        except:
-            pass
-        time.sleep(randint(1, 3))
-        try:
-            action.move_by_offset(randint(1, 100), randint(1, 100)).perform()
-        except:
-            pass
+        for i in range(3):
+            try:
+                action.move_by_offset(randint(1, 100), randint(1, 100)).perform()
+                time.sleep(randint(1, 3))
+            except:
+                pass
 
 
     def driver_renew_cookies(self, driver, plz_impfzentrum):
