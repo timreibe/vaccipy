@@ -243,17 +243,17 @@ python3 main.py search -f max-mustermann.json
 ### Optionale Umgebungsvariablen
 
 * `VACCIPY_CHROMEDRIVER`:
-  Name oder relativer Pfad der eines alternativen chromedrivers Programmdatei, die du verwenden möchtest.
+  Name oder relativer Pfad der einer alternativen chromedrivers Programmdatei, die du verwenden möchtest.
   
-  Der richtige chromedriver kann durch das setzen der Umgebungsvariable geändert werden (in diesem Fall "chromium.chromedriver"):
+  Der richtige chromedriver kann durch das setzen der Umgebungsvariable geändert werden (in diesem Fall `chromium.chromedriver`):
   
   `export VACCIPY_CHROMEDRIVER="chromium.chromedriver"`
   
-  Bei einer nicht aktuellen chromedriver-version kann es zu folgender Fehlermeldung kommen:
+  Bei einer nicht aktuellen chromedriver-Version kann es zu folgender Fehlermeldung kommen:
   
   `[err] [renew_cookies]   WebDriverException exception raised - retry 1`
   
-  Dies wird auch z.B. auf NixOS benötigt, um eine eigene chromedriver-installation zu verwenden.
+  Dies wird auch z.B. auf NixOS benötigt, um eine eigene chromedriver-Installation zu verwenden.
 
 Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne Installation von Python direkt ausgeführt werden können. 
 Die Distributionen können im [neusten Release heruntergeladen werden](https://github.com/iamnotturner/vaccipy/releases/latest).
