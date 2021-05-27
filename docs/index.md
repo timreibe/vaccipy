@@ -175,7 +175,9 @@ und anschließend rechts-oben auf "Buchung verwalten" klicken.
 
 * Python 3 (getestet mit Python 3.8 und 3.9)
 * pip (zur Installation der Python-Module, getestet mit pip3)
-* Google Chrome oder Chromium
+* Google Chrome oder Chromium und passende [ChromeDriver Version zur Google Chrome / Chromium Version](https://chromedriver.storage.googleapis.com/index.html)
+  * Habt ihr zum Beispiel Google Chrome in Version 91, braucht ihr die passende Version von dort
+  * Entpacken des Archives, dann nach `tools/chromedriver/chromedriver-mac-intel` (oder Linux/Windows) entpacken   
 
 Die notwendigen Python-Module können mittels pip installiert werden.
 
