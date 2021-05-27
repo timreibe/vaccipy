@@ -194,7 +194,7 @@
               <item row="0" column="0">
                <widget class="QLabel" name="kalender_label">
                 <property name="text">
-                 <string>Termin fühestens ab:</string>
+                 <string>Termin frühestens ab:</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>

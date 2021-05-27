@@ -3,6 +3,7 @@
 import sys
 import os
 import json
+import threading
 
 from PyQt5 import QtWidgets, uic
 from tools.gui.qtzeiten import QtZeiten
@@ -63,6 +64,9 @@ class HauptGUI(QtWidgets.QMainWindow):
         self.i_kontaktdaten_pfad.textChanged.connect(self.__update_pfade)
         self.i_zeitspanne_pfad.textChanged.connect(self.__update_pfade)
 
+        # Speichert alle termin_suchen Threads
+        self.such_threads = list()
+
         # GUI anzeigen
         self.show()
 
@@ -99,17 +103,45 @@ class HauptGUI(QtWidgets.QMainWindow):
 
     def __termin_suchen(self):
         """
-        Startet den Prozess der terminsuche mit Impfterminservice.terminsuche
+        Startet den Prozess der terminsuche mit Impfterminservice.terminsuche in einem neuen Thread
+        Dieser wird in self.such_threads hinzugefügt.
+        Alle Threads sind deamon Thread (Sofort töten sobald der Bot beendet wird)
         """
 
         kontaktdaten = self.__get_kontaktdaten()
         zeitspanne = self.__get_zeitspanne()
 
+        terminsuche_thread = threading.Thread(target=self.__start_terminsuche, args=(kontaktdaten, zeitspanne), daemon=True)
+        terminsuche_thread.setName(kontaktdaten["code"])
+
+        try:
+
+            terminsuche_thread.start()
+            if not terminsuche_thread.is_alive():
+                raise RuntimeError(
+                    f"Terminsuche wurde gestartet, lebt aber nicht mehr!\n\nTermin mit Code: {terminsuche_thread.getName()}\nBitte Daten Prüfen!"
+                )
+
+        except Exception as error:
+            QtWidgets.QMessageBox.critical(self, "Fehler - Suche nicht gestartet!", str(error))
+
+        else:
+            self.such_threads.append(terminsuche_thread)
+
+    def __start_terminsuche(self, kontaktdaten: dict, zeitspanne: dict):
+        """
+        Startet die Terminsuche. Dies nur mit einem Thread starten, da die GUI sonst hängt
+
+        Args:
+            kontaktdaten (dict): kontakdaten aus kontaktdaten.json
+            zeitspanne (dict): zeitspanne aus zeitspanne.json
+        """
+
         kontakt = kontaktdaten["kontakt"]
         code = kontaktdaten["code"]
         plz_impfzentren = kontaktdaten["plz_impfzentren"]
 
-        # TODO: starte es in einem extra thread, sonst hängt sich die GUI auf
+        # Startet das eigentliche suchen
         ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt, zeitspanne=zeitspanne, PATH=PATH)
 
     def __code_generieren(self):
