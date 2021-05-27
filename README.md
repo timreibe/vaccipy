@@ -25,10 +25,10 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 
 Download neuste Version:
 
-<a href="https://cntr.click/rS9Ds4R">
+<a href=" https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy_installer.exe">
 <img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
 </a>
-<a href="https://cntr.click/mN1MPzc">
+<a href="https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy-ubuntu.zip">
 <img width="90" heigth="30" src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
 </a></br></br>
 
