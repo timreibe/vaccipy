@@ -616,7 +616,7 @@ class ImpfterminService():
             return True
 
         elif res.status_code == 429:
-            msg = "Anfrage wurde von der Botprotection geblockt."
+            msg = "Anfrage wurde von der Botprotection geblockt. Cookies werden erneuert und die Buchung wiederholt."
             self.log.error(msg)
             self.renew_cookies_code()
             res = self.s.post(self.domain + path, json=data, timeout=15)
@@ -701,8 +701,7 @@ class ImpfterminService():
                 self.log.success("Der Impf-Code wurde erfolgreich angefragt, bitte prüfe deine Mails!")
                 return True
             elif res.status_code == 429:
-                self.log.error(
-                    "Cookies müssen erneuert werden.")
+                self.log.error("Cookies müssen erneuert werden.")
                 self.renew_cookies_code()
             else:
                 self.log.error(f"Code-Verifikation fehlgeschlagen: {res.text}")
