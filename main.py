@@ -437,4 +437,9 @@ if __name__ == "__main__":
                                    |_|      |___/ 
 """)
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
+
+    print("Vor der Ausführung des Programms ist die Berechtigung zur Impfung zu prüfen.\n"
+          "Ob Anspruch auf eine Impfung besteht, kann hier nachgelesen werden:\n"
+          "https://www.impfterminservice.de/terminservice/faq\n")
+
     main()
