@@ -528,8 +528,10 @@ class ImpfterminService():
                     ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                         '%d.%m.%Y um %H:%M Uhr')
                     self.log.success(f"{num}. Termin: {ts}")
-                if ENABLE_BEEPY:
+                 if ENABLE_BEEPY:
                     beepy.beep('coin')
+                 else:
+                    print("\a")
                 return True, 200
             else:
                 self.log.info(f"Keine Termine verfügbar in {plz}")
