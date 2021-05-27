@@ -22,12 +22,14 @@ from tools.utils import retry_on_failure, desktop_notification
 
 try:
     import beepy
+
     ENABLE_BEEPY = True
 except ImportError:
     ENABLE_BEEPY = False
 
+
 class ImpfterminService():
-    def __init__(self, code: str, plz_impfzentren: list, kontakt: dict,PATH:str):
+    def __init__(self, code: str, plz_impfzentren: list, kontakt: dict, PATH: str):
         self.code = str(code).upper()
         self.splitted_code = self.code.split("-")
 
@@ -151,7 +153,6 @@ class ImpfterminService():
         self.log.error("Keine Impfstoffe im ausgewählten Impfzentrum verfügbar")
         return False
 
-
     def get_chromedriver_path(self):
         """
         :return: String mit Pfad zur chromedriver-Programmdatei
@@ -176,7 +177,6 @@ class ImpfterminService():
         else:
             raise ValueError(f"Nicht unterstütztes Betriebssystem {self.operating_system}")
 
-
     def get_chromedriver(self, headless):
         chrome_options = Options()
 
@@ -193,7 +193,6 @@ class ImpfterminService():
         chrome_options.headless = headless
 
         return Chrome(self.get_chromedriver_path(), options=chrome_options)
-
 
     def driver_enter_code(self, driver, plz_impfzentrum):
         """
@@ -224,7 +223,7 @@ class ImpfterminService():
 
         # Klick auf "Vermittlungscode bereits vorhanden"
         button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
-                        "div/div/app-corona-vaccination/div[2]/div/div/label[1]/span"
+                       "div/div/app-corona-vaccination/div[2]/div/div/label[1]/span"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
@@ -232,8 +231,8 @@ class ImpfterminService():
 
         # Auswahl des ersten Code-Input-Feldes
         input_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
-                        "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
-                        "form[1]/div[1]/label/app-ets-input-code/div/div[1]/label/input"
+                      "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
+                      "form[1]/div[1]/label/app-ets-input-code/div/div[1]/label/input"
         input_field = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, input_xpath)))
         action = ActionChains(driver)
@@ -246,7 +245,7 @@ class ImpfterminService():
         # Klick auf "Termin suchen"
         button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
                        "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
-                        "form[1]/div[2]/button"
+                       "form[1]/div[2]/button"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
@@ -259,7 +258,6 @@ class ImpfterminService():
                 time.sleep(randint(1, 3))
             except:
                 pass
-
 
     def driver_renew_cookies(self, driver, plz_impfzentrum):
         self.driver_enter_code(driver, plz_impfzentrum)
@@ -277,6 +275,7 @@ class ImpfterminService():
                 return False
         except:
             return False
+
 
     def driver_renew_cookies_code(self, driver, plz_impfzentrum, manual=False):
         self.driver_enter_code(driver, plz_impfzentrum)
@@ -299,8 +298,9 @@ class ImpfterminService():
             return False
 
 
-
     def driver_book_appointment(self, driver, plz_impfzentrum):
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        filepath = os.path.join(self.PATH, "tools\\log\\")
         url = f"{self.domain}impftermine/service?plz={plz_impfzentrum}"
 
         self.driver_enter_code(driver, plz_impfzentrum)
@@ -312,13 +312,17 @@ class ImpfterminService():
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
             action.move_to_element(button).click().perform()
-            time.sleep(.5)
         except:
             self.log.error("Termine können nicht gesucht werden")
+            try:
+                driver.save_screenshot(filepath + "errorterminsuche" + timestamp + ".png")
+            except:
+                self.log.error("Screenshot konnte nicht gespeichert werden")
             pass
 
         # Termin auswählen
         try:
+            time.sleep(3)
             button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[1]/div[2]/label/div[2]/div'
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
@@ -327,8 +331,13 @@ class ImpfterminService():
             time.sleep(.5)
         except:
             self.log.error("Termine können nicht ausgewählt werden")
+            try:
+                with open(filepath + "errorterminauswahl" + timestamp + ".html", 'w', encoding='utf-8') as file:
+                    file.write(str(driver.page_source))
+                driver.save_screenshot(filepath + "errorterminauswahl" + timestamp + ".png")
+            except:
+                self.log.error("HTML und Screenshot konnten nicht gespeichert werden")
             pass
-
 
         # Klick Button "AUSWÄHLEN"
         try:
@@ -409,6 +418,10 @@ class ImpfterminService():
             input_field.send_keys(self.kontakt['notificationReceiver'])
         except:
             self.log.error("Kontaktdaten können nicht eingegeben werden")
+            try:
+                driver.save_screenshot(filepath + "errordateneingeben" + timestamp + ".png")
+            except:
+                self.log.error("Screenshot konnte nicht gespeichert werden")
             pass
 
         # Klick Button "ÜBERNEHMEN"
@@ -437,14 +450,14 @@ class ImpfterminService():
         if "Ihr Termin am" in str(driver.page_source):
             msg = "Termin erfolgreich gebucht!"
             self.log.success(msg)
-            desktop_notification(operating_system=self.operating_system,title="Terminbuchung:",message=msg)
+            desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
             return True
         else:
-            self.log.error("Automatisierte Terminbuchung fehlgeschlagen. Termin manuell im Fenster oder im Browser buchen.")
+            self.log.error(
+                "Automatisierte Terminbuchung fehlgeschlagen. Termin manuell im Fenster oder im Browser buchen.")
             print("Link für manuelle Buchung im Browser:", url)
-            time.sleep(10*60)
+            time.sleep(10 * 60)
             return False
-
 
     @retry_on_failure()
     def renew_cookies(self):
@@ -457,6 +470,7 @@ class ImpfterminService():
         with self.get_chromedriver(headless=True) as driver:
             return self.driver_renew_cookies(driver, choice(self.plz_impfzentren))
 
+          
     @retry_on_failure()
     def renew_cookies_code(self, manual=False):
         """
@@ -516,7 +530,6 @@ class ImpfterminService():
         else:
             return False
 
-
     @retry_on_failure()
     def termin_suchen(self, plz):
         """Es wird nach einen verfügbaren Termin in der gewünschten PLZ gesucht.
@@ -567,6 +580,8 @@ class ImpfterminService():
                     self.log.success(f"{num}. Termin: {ts}")
                 if ENABLE_BEEPY:
                     beepy.beep('coin')
+                else:
+                    print("\a")
                 return True, 200
             else:
                 self.log.info(f"Keine Termine verfügbar in {plz}")
@@ -597,7 +612,7 @@ class ImpfterminService():
         if res.status_code == 201:
             msg = "Termin erfolgreich gebucht!"
             self.log.success(msg)
-            desktop_notification(operating_system=self.operating_system,title="Terminbuchung:",message=msg)
+            desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
             return True
 
         elif res.status_code == 429:
@@ -616,7 +631,7 @@ class ImpfterminService():
             msg = f"Unbekannter Statuscode: {res.status_code}"
 
         self.log.error(msg)
-        desktop_notification(operating_system=self.operating_system,title="Terminbuchung:", message=msg)
+        desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
         return False
 
     @retry_on_failure()
@@ -678,7 +693,7 @@ class ImpfterminService():
             return False
 
     @staticmethod
-    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict,PATH:str, check_delay: int = 30):
+    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH: str, check_delay: int = 30):
         """
         Workflow für die Terminbuchung.
 
@@ -689,7 +704,7 @@ class ImpfterminService():
         :return:
         """
 
-        its = ImpfterminService(code, plz_impfzentren, kontakt,PATH)
+        its = ImpfterminService(code, plz_impfzentren, kontakt, PATH)
         its.renew_cookies()
 
         # login ist nicht zwingend erforderlich
