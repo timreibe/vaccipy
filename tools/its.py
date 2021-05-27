@@ -4,7 +4,7 @@ import sys
 import time
 from base64 import b64encode
 from datetime import datetime
-from random import choice
+from random import choice, randint
 
 from typing import Dict, List
 
@@ -254,6 +254,10 @@ class ImpfterminService():
 
         # Maus-Bewegung hinzufügen (nicht sichtbar)
         action.move_by_offset(10, 20).perform()
+        time.sleep(randint(1, 3))
+        action.move_by_offset(randint(1, 9), randint(1, 9)).perform()
+        time.sleep(randint(1, 3))
+        action.move_by_offset(randint(1, 15), randint(1, 15)).perform()
 
 
     def driver_renew_cookies(self, driver, plz_impfzentrum):
@@ -273,15 +277,15 @@ class ImpfterminService():
         except:
             return False
 
-    def driver_renew_cookies_code(self, driver, plz_impfzentrum):
+    def driver_renew_cookies_code(self, driver, plz_impfzentrum, manual=False):
         self.driver_enter_code(driver, plz_impfzentrum)
-        self.log.warn(
-            "Du hast jetzt 10 Sekunden Zeit möglichst viele Elemente im Chrome Fenster anzuklicken. Das Fenster schließt sich automatisch.")
-        time.sleep(10)
+        if manual:
+            self.log.warn(
+                "Du hast jetzt 30 Sekunden Zeit möglichst viele Elemente im Chrome Fenster anzuklicken. Das Fenster schließt sich automatisch.")
+            time.sleep(30)
         # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
         try:
             cookie = driver.get_cookie("bm_sz")
-            time.sleep(10)
             if cookie:
                 self.s.cookies.clear()
                 self.s.cookies.update({"bm_sz": cookie.get("value")})
@@ -453,7 +457,7 @@ class ImpfterminService():
             return self.driver_renew_cookies(driver, choice(self.plz_impfzentren))
 
     @retry_on_failure()
-    def renew_cookies_code(self):
+    def renew_cookies_code(self, manual=False):
         """
         Cookies der Session erneuern, wenn sie abgelaufen sind.
         :return:
@@ -461,7 +465,7 @@ class ImpfterminService():
 
         self.log.info("Browser-Cookies generieren")
         with self.get_chromedriver(headless=False) as driver:
-            return self.driver_renew_cookies_code(driver, choice(self.plz_impfzentren))
+            return self.driver_renew_cookies_code(driver, choice(self.plz_impfzentren), manual)
 
 
 
@@ -642,17 +646,8 @@ class ImpfterminService():
             elif res.status_code == 429:
                 self.log.error(
                     "Anfrage wurde von der Botprotection geblockt.\n"
-                    "Es werden manuelle Cookies aus dem Browser benötigt.\n"
-                    "Bitte Anleitung im FAQ in GitHub beachten.\n"
-                    f"Link: {self.domain}impftermine/service?plz={plz_impfzentrum}")
-                cookies = input("> Manuelle Cookies: ").strip()
-                optional_prefix = "Cookie: "
-                if cookies.startswith(optional_prefix):
-                    cookies = cookies[len(optional_prefix):]
-                self.s.headers.update({
-                    'Cookie': cookies
-                })
-
+                    "Es die Cookies müssen manuell im Browser generiert werden.\n")
+                self.renew_cookies_code(True)
             else:
                 self.log.error(f"Code kann nicht angefragt werden: {res.text}")
                 return None
