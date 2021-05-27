@@ -646,7 +646,7 @@ class ImpfterminService():
             elif res.status_code == 429:
                 self.log.error(
                     "Anfrage wurde von der Botprotection geblockt.\n"
-                    "Es die Cookies müssen manuell im Browser generiert werden.\n")
+                    "Die Cookies müssen manuell im Browser generiert werden.\n")
                 self.renew_cookies_code(True)
             else:
                 self.log.error(f"Code kann nicht angefragt werden: {res.text}")
