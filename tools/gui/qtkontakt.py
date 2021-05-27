@@ -36,16 +36,28 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class QtKontakt(QtWidgets.QDialog):
-    def __init__(self, standard_speicherpfad: str, pfad_fenster_layout=os.path.join(PATH, "kontaktdaten.ui")):
+    def __init__(self, modus: Modus, standard_speicherpfad: str, pfad_fenster_layout=os.path.join(PATH, "kontaktdaten.ui")):
         super().__init__()
 
         self.standard_speicherpfad = standard_speicherpfad
 
         # Laden der .ui Datei
         uic.loadUi(pfad_fenster_layout, self)
+        self.setup(modus)
 
         # Funktionen für Buttonbox zuweisen
         self.buttonBox.clicked.connect(self.__button_clicked)
+
+    def setup(self, modus: Modus):
+        if modus == Modus.TERMIN_SUCHEN:
+            # Default - Alle Felder aktiv
+            pass
+        elif modus == Modus.CODE_GENERIEREN:
+            # Benötig wird: PLZ's der Impfzentren, Telefonnummer, Mail
+            # Alles andere wird daher deaktiviert
+            self.readonly_alle_line_edits(("i_plz_impfzentren", "i_telefon", "i_mail"))
+        else:
+            raise RuntimeError("Modus ungueltig!")
 
     def bestaetigt(self):
         """
@@ -58,7 +70,6 @@ class QtKontakt(QtWidgets.QDialog):
             self.close()
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
-            print(error)
 
     def speicher_einstellungen(self):
         """
@@ -128,6 +139,22 @@ class QtKontakt(QtWidgets.QDialog):
             }
         }
         return kontaktdaten
+
+    def readonly_alle_line_edits(self, ausgeschlossen: list):
+        """
+        Setzt alle QLineEdit auf "read only", ausgeschlossen der Widgets in ausgeschlossen.
+        Setzt zudem den PlacholderText auf "Daten werden nicht benötigt"
+
+        Args:
+            ausgeschlossen (list): Liste mit den ObjectNamen der Widgets die ausgeschlossen werden sollen
+        """
+
+        line_edits = self.findChildren(QtWidgets.QLineEdit)
+
+        for line_edit in line_edits:
+            if line_edit.objectName() not in ausgeschlossen:
+                line_edit.setReadOnly(True)
+                line_edit.setPlaceholderText("Daten werden nicht benötigt")
 
     def __reset(self):
         """

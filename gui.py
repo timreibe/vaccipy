@@ -50,7 +50,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         self.b_code_generieren.clicked.connect(self.__code_generieren)
         self.b_dateien_kontaktdaten.clicked.connect(self.__update_kontaktdaten_pfad)
         self.b_dateien_zeitspanne.clicked.connect(self.__update_zeitspanne_pfad)
-        self.b_neue_kontaktdaten.clicked.connect(self.kontaktdaten_erstellen)
+        self.b_neue_kontaktdaten.clicked.connect(lambda: self.kontaktdaten_erstellen(Modus.TERMIN_SUCHEN))
         self.b_neue_zeitspanne.clicked.connect(self.zeitspanne_erstellen)
 
         # Standard Pfade
@@ -84,12 +84,15 @@ class HauptGUI(QtWidgets.QMainWindow):
         window = HauptGUI()
         app.exec_()
 
-    def kontaktdaten_erstellen(self):
+    def kontaktdaten_erstellen(self, modus: Modus = Modus.TERMIN_SUCHEN):
         """
         Ruft den Dialog für die Kontaktdaten auf
+
+        Args:
+            modus (Modus): Abhängig vom Modus werden nicht alle Daten benötigt. Defalut TERMIN_SUCHEN
         """
 
-        dialog = QtKontakt(self.pfad_kontaktdaten)
+        dialog = QtKontakt(modus, self.pfad_kontaktdaten)
         dialog.show()
         dialog.exec_()
 
@@ -109,8 +112,14 @@ class HauptGUI(QtWidgets.QMainWindow):
         Alle Threads sind deamon Thread (Sofort töten sobald der Bot beendet wird)
         """
 
-        kontaktdaten = self.__get_kontaktdaten()
+        kontaktdaten = self.__get_kontaktdaten(Modus.TERMIN_SUCHEN)
         zeitspanne = self.__get_zeitspanne()
+
+        try:
+            check_alle_kontakt_daten_da(Modus.TERMIN_SUCHEN, kontaktdaten)
+        except FehlendeDatenException as error:
+            QtWidgets.QMessageBox.critical(self, "Daten unvollständig!", f"Es fehlen Daten in der JSON Datei\n\n{error}")
+            return
 
         terminsuche_thread = threading.Thread(target=self.__start_terminsuche, args=(kontaktdaten, zeitspanne), daemon=True)
         terminsuche_thread.setName(kontaktdaten["code"])
@@ -151,18 +160,21 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
 
         # TODO: code generierung implementieren
-        pass
+        QtWidgets.QMessageBox.information(self, "Noch nicht verfügbar", "Funktion nur über Konsole verfügbar")
 
-    def __get_kontaktdaten(self) -> dict:
+    def __get_kontaktdaten(self, modus: Modus) -> dict:
         """
         Ladet die Kontakdaten aus dem in der GUI hinterlegten Pfad
+
+        Args:
+            modus (Modus): Abhängig vom Modus werden nicht alle Daten benötigt.
 
         Returns:
             dict: Kontakdaten
         """
 
         if not os.path.isfile(self.pfad_kontaktdaten):
-            self.kontaktdaten_erstellen()
+            self.kontaktdaten_erstellen(modus)
 
         with open(self.pfad_kontaktdaten, "r", encoding='utf-8') as f:
             kontaktdaten = json.load(f)
@@ -182,6 +194,8 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         with open(self.pfad_zeitspanne, "r", encoding='utf-8') as f:
             zeitspanne = json.load(f)
+
+        #TODO: Prüfen ob Daten vollständig
 
         return zeitspanne
 
