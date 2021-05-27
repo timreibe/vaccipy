@@ -6,6 +6,7 @@ import json
 import threading
 
 from PyQt5 import QtWidgets, uic
+from tools.gui import *
 from tools.gui.qtzeiten import QtZeiten
 from tools.gui.qtkontakt import QtKontakt
 from tools.its import ImpfterminService
@@ -47,8 +48,8 @@ class HauptGUI(QtWidgets.QMainWindow):
         # Funktionen den Buttons zuweisen
         self.b_termin_suchen.clicked.connect(self.__termin_suchen)
         self.b_code_generieren.clicked.connect(self.__code_generieren)
-        self.b_dateien_kontaktdaten.clicked.connect(lambda: self.__oeffne_file_dialog("kontaktdaten"))
-        self.b_dateien_zeitspanne.clicked.connect(lambda: self.__oeffne_file_dialog("zeitspanne"))
+        self.b_dateien_kontaktdaten.clicked.connect(self.__update_kontaktdaten_pfad)
+        self.b_dateien_zeitspanne.clicked.connect(self.__update_zeitspanne_pfad)
         self.b_neue_kontaktdaten.clicked.connect(self.kontaktdaten_erstellen)
         self.b_neue_zeitspanne.clicked.connect(self.zeitspanne_erstellen)
 
@@ -61,8 +62,8 @@ class HauptGUI(QtWidgets.QMainWindow):
         self.i_zeitspanne_pfad.setText(self.pfad_zeitspanne)
 
         # Events für Eingabefelder
-        self.i_kontaktdaten_pfad.textChanged.connect(self.__update_pfade)
-        self.i_zeitspanne_pfad.textChanged.connect(self.__update_pfade)
+        self.i_kontaktdaten_pfad.textChanged.connect(self.__update_kontaktdaten_pfad)
+        self.i_zeitspanne_pfad.textChanged.connect(self.__update_zeitspanne_pfad)
 
         # Speichert alle termin_suchen Threads
         self.such_threads = list()
@@ -184,32 +185,19 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         return zeitspanne
 
-    def __oeffne_file_dialog(self, datei: str):
-        """
-        Öffnet einen "File-Picker", der entsprechende Werte für die kontaktdaten / zeitspanne einliest
+    def __update_kontaktdaten_pfad(self):
+        try:
+            pfad = oeffne_file_dialog_select(self, "Kontakdaten", self.pfad_kontaktdaten)
+            self.pfad_kontaktdaten = pfad
+        except FileNotFoundError:
+            pass
 
-        Args:
-            datei (str): Startpfad vom File-Picker
-        """
-
-        # Öffnet den "File-Picker" vom System um ein bereits existierende Datei auszuwählen
-        datei_data = QtWidgets.QFileDialog.getOpenFileName(self, datei, os.path.join(PATH, "data"), "JSON Files (*.json)")
-        dateipfad = datei_data[0]  # (pfad, typ)
-
-        if dateipfad:
-            if datei == "kontaktdaten":
-                self.i_kontaktdaten_pfad.setText(dateipfad)
-            else:
-                self.i_zeitspanne_pfad.setText(dateipfad)
-
-    def __update_pfade(self):
-        """
-        Wird ein Pfad in der GUI verändert, so werden die entsprechende Attribute angepasst
-        """
-
-        self.pfad_kontaktdaten = self.i_kontaktdaten_pfad.text()
-        self.pfad_zeitspanne = self.i_zeitspanne_pfad.text()
-
+    def __update_zeitspanne_pfad(self):
+        try:
+            pfad = oeffne_file_dialog_select(self, "Zeitspanne", self.pfad_zeitspanne)
+            self.pfad_zeitspanne = pfad
+        except FileNotFoundError:
+            pass
 
 def main():
     """

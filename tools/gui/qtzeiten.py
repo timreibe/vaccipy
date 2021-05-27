@@ -3,6 +3,8 @@ import json
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QTime, QDate, QDateTime
 
+from tools.gui import *
+
 # Folgende Widgets stehen zur Verfügung:
 
 ### Checkboxes ###
@@ -70,9 +72,10 @@ class QtZeiten(QtWidgets.QDialog):
 
         try:
             self.speicher_einstellungen()
+            QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
             self.close()
         except ValueError as error:
-            QtWidgets.QMessageBox.critical(self, "Ungültige Eingabe!", "Start-Uhrzeit ist später als End-Uhrzeit!")
+            QtWidgets.QMessageBox.critical(self, "Ungültige Eingabe!", str(error))
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
 
@@ -82,17 +85,10 @@ class QtZeiten(QtWidgets.QDialog):
         Speicherpfad wird vom User abgefragt
         """
 
-        speicherpfad = self.__oeffne_file_dialog()
+        speicherpfad = oeffne_file_dialog_save(self, "Zeitspanne", self.standard_speicherpfad)
         data = self.__get_alle_werte()
 
-        with open(speicherpfad, 'w', encoding='utf-8') as f:
-            try:
-                json.dump(data, f, ensure_ascii=False, indent=4)
-                QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
-
-            except (TypeError, IOError, FileNotFoundError) as error:
-                QtWidgets.QMessageBox.critical(self, "Fehler!", "Daten konnten nicht gespeichert werden.")
-                raise error
+        speichern(speicherpfad, data)
 
     def __button_clicked(self, button):
         """
@@ -171,7 +167,7 @@ class QtZeiten(QtWidgets.QDialog):
         end_uhrzeit: QTime = self.i_end_time_qtime.time()
 
         if start_uhrzeit >= end_uhrzeit:
-            raise ValueError
+            raise ValueError("Start Uhrzeit is später als Enduhrzeit")
 
         uhrzeiten = {
             "startzeit": {
@@ -207,22 +203,6 @@ class QtZeiten(QtWidgets.QDialog):
             aktive_termine.append(2)
         return aktive_termine
 
-    def __oeffne_file_dialog(self) -> str:
-        """
-        Öffnet einen File Dialog, der den Speicherort festlegt
-
-        Returns:
-            str: Speicherpfad
-        """
-
-        datei_data = QtWidgets.QFileDialog.getSaveFileName(self, "Zeitspanne", self.standard_speicherpfad, "JSON Files (*.json)")
-        dateipfad = datei_data[0]  # (Pfad, Dateityp)
-
-        if not dateipfad:
-            raise FileNotFoundError
-
-        return dateipfad
-
     def __reset(self, widgets: list = None):
         """
         Setzt alle Werte in der GUI zurück
@@ -244,7 +224,6 @@ class QtZeiten(QtWidgets.QDialog):
                     widget.setTime(QTime(23, 59))
             elif isinstance(widget, QtWidgets.QFrame):
                 self.__reset(widget.children())
-            
 
 
 if __name__ == "__main__":

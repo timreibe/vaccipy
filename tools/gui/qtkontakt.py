@@ -4,6 +4,7 @@ import json
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QTime
 
+from tools.gui import *
 
 # Folgende Widgets stehen zur Verfügung:
 
@@ -53,6 +54,7 @@ class QtKontakt(QtWidgets.QDialog):
 
         try:
             self.speicher_einstellungen()
+            QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
             self.close()
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
@@ -64,18 +66,10 @@ class QtKontakt(QtWidgets.QDialog):
         Speicherpfad wird vom User abgefragt
         """
 
-        speicherpfad = self.__oeffne_file_dialog()
-
+        speicherpfad = oeffne_file_dialog_save(self, "Kontaktdaten", self.standard_speicherpfad)
         data = self.__get_alle_werte()
 
-        with open(speicherpfad, 'w', encoding='utf-8') as f:
-            try:
-                json.dump(data, f, ensure_ascii=False, indent=4)
-                QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
-
-            except (TypeError, IOError, FileNotFoundError) as error:
-                QtWidgets.QMessageBox.critical(self, "Fehler!", "Daten konnten nicht gespeichert werden.")
-                raise error
+        speichern(speicherpfad, data)
 
     def __button_clicked(self, button):
         """
@@ -134,25 +128,6 @@ class QtKontakt(QtWidgets.QDialog):
             }
         }
         return kontaktdaten
-
-    def __oeffne_file_dialog(self) -> str:
-        """
-        Öffnet einen File Dialog, der den Speicherort festlegt
-
-        Raises:
-            FileNotFoundError: Wird geworfen, wenn kein Pfad angegeben wurde
-
-        Returns:
-            str: speicherpfad
-        """
-
-        datei_data = QtWidgets.QFileDialog.getSaveFileName(self, "Kontaktdaten", self.standard_speicherpfad, "JSON Files (*.json)")
-        dateipfad = datei_data[0]  # (Pfad, Dateityp)
-
-        if not dateipfad:
-            raise FileNotFoundError
-
-        return dateipfad
 
     def __reset(self):
         """
