@@ -3,7 +3,9 @@
 import sys
 import os
 import json
+import time
 import threading
+import multiprocessing
 
 from PyQt5 import QtWidgets, uic
 from tools.gui import *
@@ -29,6 +31,9 @@ class HauptGUI(QtWidgets.QMainWindow):
     # b_dateien_zeitspanne
     # b_neue_kontaktdaten
     # b_neue_zeitspanne
+
+    ### Layouts ###
+    # prozesse_layout
 
     # TODO: Ausgabe der cmd in der GUI wiederspiegelen - wenn sowas überhaupt geht
     def __init__(self, pfad_fenster_layout: str = os.path.join(PATH, "tools/gui/main.ui")):
@@ -65,8 +70,12 @@ class HauptGUI(QtWidgets.QMainWindow):
         self.i_kontaktdaten_pfad.textChanged.connect(self.__update_kontaktdaten_pfad)
         self.i_zeitspanne_pfad.textChanged.connect(self.__update_zeitspanne_pfad)
 
-        # Speichert alle termin_suchen Threads
-        self.such_threads = list()
+        # Speichert alle termin_suchen Prozesse
+        self.such_prozesse = list()
+
+        # Überwachnung der Prozesse
+        self.prozess_bewacher = threading.Thread(target=self.__check_status_der_prozesse, daemon=True)
+        self.prozess_bewacher.start()
 
         # GUI anzeigen
         self.show()
@@ -121,22 +130,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, "Daten unvollständig!", f"Es fehlen Daten in der JSON Datei\n\n{error}")
             return
 
-        terminsuche_thread = threading.Thread(target=self.__start_terminsuche, args=(kontaktdaten, zeitspanne), daemon=True)
-        terminsuche_thread.setName(kontaktdaten["code"])
-
-        try:
-
-            terminsuche_thread.start()
-            if not terminsuche_thread.is_alive():
-                raise RuntimeError(
-                    f"Terminsuche wurde gestartet, lebt aber nicht mehr!\n\nTermin mit Code: {terminsuche_thread.getName()}\nBitte Daten Prüfen!"
-                )
-
-        except Exception as error:
-            QtWidgets.QMessageBox.critical(self, "Fehler - Suche nicht gestartet!", str(error))
-
-        else:
-            self.such_threads.append(terminsuche_thread)
+        self.__start_terminsuche(kontaktdaten, zeitspanne)
 
     def __start_terminsuche(self, kontaktdaten: dict, zeitspanne: dict):
         """
@@ -151,8 +145,26 @@ class HauptGUI(QtWidgets.QMainWindow):
         code = kontaktdaten["code"]
         plz_impfzentren = kontaktdaten["plz_impfzentren"]
 
-        # Startet das eigentliche suchen
-        ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt, zeitspanne=zeitspanne, PATH=PATH)
+        terminsuche_prozess = multiprocessing.Process(target=ImpfterminService.terminsuche, name=f"{code}-{len(self.such_prozesse)}", daemon=True, kwargs={
+                                                      "code": code,
+                                                      "plz_impfzentren": plz_impfzentren,
+                                                      "kontakt": kontakt,
+                                                      "zeitspanne": zeitspanne,
+                                                      "PATH": PATH})
+        try:
+            terminsuche_prozess.start()
+            if not terminsuche_prozess.is_alive():
+                raise RuntimeError(
+                    f"Terminsuche wurde gestartet, lebt aber nicht mehr!\n\nTermin mit Code: {terminsuche_prozess.getName()}\nBitte Daten Prüfen!"
+                )
+
+        except Exception as error:
+            QtWidgets.QMessageBox.critical(self, "Fehler - Suche nicht gestartet!", str(error))
+
+        else:
+            QtWidgets.QMessageBox.information(self, "Suche gestartet", "Terminsuche wurde gestartet!\nWeitere Infos in der Konsole")
+            self.such_prozesse.append(terminsuche_prozess)
+            self.__add_prozess_in_gui(terminsuche_prozess)
 
     def __code_generieren(self):
         """
@@ -195,7 +207,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         with open(self.pfad_zeitspanne, "r", encoding='utf-8') as f:
             zeitspanne = json.load(f)
 
-        #TODO: Prüfen ob Daten vollständig
+        # TODO: Prüfen ob Daten vollständig
 
         return zeitspanne
 
@@ -212,6 +224,52 @@ class HauptGUI(QtWidgets.QMainWindow):
             self.pfad_zeitspanne = pfad
         except FileNotFoundError:
             pass
+
+    def __add_prozess_in_gui(self, prozess: multiprocessing.Process):
+        """
+        Die Prozesse werden in der GUI in dem prozesse_layout angezeigt
+        """
+        # addRow(label, field)
+        label = QtWidgets.QLabel(f"Prozess: {prozess.name}")
+        button = QtWidgets.QPushButton("Stoppen")
+        button.setObjectName(prozess.name)
+        button.clicked.connect(lambda: self.__stop_prozess(prozess))
+
+        self.prozesse_layout.addRow(label, button)
+
+    def __stop_prozess(self, prozess: multiprocessing.Process):
+        """
+        Stopped den übergebenen Prozess und löscht diesen aus der GUI
+
+        Args:
+            prozess (multiprocessing.Process): Prozess welcher getötet werden soll
+        """
+        prozess.kill()
+        self.such_prozesse.remove(prozess)
+
+    def __remove_prozess_von_gui(self, prozess: multiprocessing.Process):
+        """
+        Entfernt die Anzeige des Prozesses aus der GUI
+
+        Args:
+            prozess (multiprocessing.Process): Prozess welcher entfernt werden soll
+            warnung (bool, optional): Warnung an den User ausgeben, dass der Prozess weg ist. Defaults to False.
+        """
+
+        button = self.findChild(QtWidgets.QPushButton, prozess.name)
+        self.prozesse_layout.removeRow(button)
+
+    def __check_status_der_prozesse(self):
+        """
+        Wird von einem Thread dauerhaft durchlaufen um zu prüfen ob ein Prozess sich beendet hat
+        """
+
+        while True:
+            for prozess in self.such_prozesse:
+                if not prozess.is_alive():
+                    self.__remove_prozess_von_gui(prozess)
+            time.sleep(5)
+
 
 def main():
     """
