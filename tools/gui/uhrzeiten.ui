@@ -395,6 +395,20 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>i_mo_check_box</tabstop>
+  <tabstop>i_di_check_box</tabstop>
+  <tabstop>i_mi_check_box</tabstop>
+  <tabstop>i_do_check_box</tabstop>
+  <tabstop>i_fr_check_box</tabstop>
+  <tabstop>i_sa_check_box</tabstop>
+  <tabstop>i_so_check_box</tabstop>
+  <tabstop>i_start_datum_qdate</tabstop>
+  <tabstop>i_start_time_qtime</tabstop>
+  <tabstop>i_end_time_qtime</tabstop>
+  <tabstop>i_erster_termin_check_box</tabstop>
+  <tabstop>i_zweiter_termin_check_box</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

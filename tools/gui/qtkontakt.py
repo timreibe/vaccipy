@@ -28,11 +28,14 @@ from PyQt5.QtCore import QTime
 # Cancel
 # Reset
 
+### Layouts ###
+# kontakdaten_layout
+
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class QtKontakt(QtWidgets.QDialog):
-    def __init__(self, standard_speicherpfad:str, pfad_fenster_layout=os.path.join(PATH, "kontaktdaten.ui")):
+    def __init__(self, standard_speicherpfad: str, pfad_fenster_layout=os.path.join(PATH, "kontaktdaten.ui")):
         super().__init__()
 
         self.standard_speicherpfad = standard_speicherpfad
@@ -156,7 +159,11 @@ class QtKontakt(QtWidgets.QDialog):
         Setzt alle Werte in der GUI zurück
         """
 
-        pass
+        for widget in self.children():
+            if isinstance(widget, QtWidgets.QLineEdit):
+                widget.setText("")
+            elif isinstance(widget, QtWidgets.QComboBox):
+                widget.setCurrentText("Bitte Wählen")
 
 
 # Zum schnellen einzeltesten

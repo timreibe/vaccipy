@@ -1,7 +1,7 @@
 import os
 import json
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QTime, QDate ,QDateTime
+from PyQt5.QtCore import QTime, QDate, QDateTime
 
 # Folgende Widgets stehen zur Verfügung:
 
@@ -28,6 +28,9 @@ from PyQt5.QtCore import QTime, QDate ,QDateTime
 # Apply
 # Cancel
 # Reset
+
+### QFrame ###
+# tage_frame
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -146,7 +149,7 @@ class QtZeiten(QtWidgets.QDialog):
 
         # Alle Checkboxen der GUI selektieren und durchgehen
         # BUG: Wenn die reihenfolge im Layout geändert wird, stimmen die Wochentage nicht mehr 0 = Mo ... 6 = So
-        checkboxes = self.i_mo_check_box.parent().findChildren(QtWidgets.QCheckBox)
+        checkboxes = self.tage_frame.findChildren(QtWidgets.QCheckBox)
         for num, checkboxe in enumerate(checkboxes, 0):
             if checkboxe.isChecked():
                 aktive_wochentage.append(num)
@@ -220,9 +223,28 @@ class QtZeiten(QtWidgets.QDialog):
 
         return dateipfad
 
-    def __reset(self):
-        #TODO: Reset
-        pass
+    def __reset(self, widgets: list = None):
+        """
+        Setzt alle Werte in der GUI zurück
+        """
+
+        if widgets == None:
+            self.__reset(self.children())
+            return
+
+        for widget in widgets:
+            if isinstance(widget, QtWidgets.QCheckBox):
+                widget.setChecked(True)
+            elif isinstance(widget, QtWidgets.QDateEdit):
+                widget.setDate(QDateTime.currentDateTime().date())
+            elif isinstance(widget, QtWidgets.QTimeEdit):
+                if widget == self.i_start_time_qtime:
+                    widget.setTime(QTime(0, 1))
+                else:
+                    widget.setTime(QTime(23, 59))
+            elif isinstance(widget, QtWidgets.QFrame):
+                self.__reset(widget.children())
+            
 
 
 if __name__ == "__main__":
