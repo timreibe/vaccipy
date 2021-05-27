@@ -247,6 +247,15 @@ python3 main.py search -f max-mustermann.json
   Dies kann verwendet werden, falls du deine eigene chromedriver-Installation verwenden möchtest
   und wird z. B. auf NixOS benötigt.
   Beispiel: `chromedriver`
+  
+  In Ubuntu wird aktuell Chromium 91.0.4472.77 verwendet, das nicht mit dem in vaccipy verwendeten chromedriver zusammenarbeitet. Dies führt zur Fehlermeldung
+  ```
+  [err] [renew_cookies]   WebDriverException exception raised - retry 1
+  ```
+  Um den aktuellen chromedriver auszuwählen muss die Umgebungsvariable folgendermaßen gesetzt werden:
+  ```
+  export VACCIPY_CHROMEDRIVER="chromium.chromedriver"
+  ```
 
 
 Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne Installation von Python direkt ausgeführt werden können. 
