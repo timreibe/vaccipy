@@ -245,7 +245,7 @@ class ImpfterminService():
 
         # Klick auf "Termin suchen"
         button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
-                        "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
+                       "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
                         "form[1]/div[2]/button"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
@@ -255,9 +255,15 @@ class ImpfterminService():
         # Maus-Bewegung hinzufügen (nicht sichtbar)
         action.move_by_offset(10, 20).perform()
         time.sleep(randint(1, 3))
-        action.move_by_offset(randint(1, 9), randint(1, 9)).perform()
+        try:
+            action.move_by_offset(randint(1, 100), randint(1, 100)).perform()
+        except:
+            pass
         time.sleep(randint(1, 3))
-        action.move_by_offset(randint(1, 15), randint(1, 15)).perform()
+        try:
+            action.move_by_offset(randint(1, 100), randint(1, 100)).perform()
+        except:
+            pass
 
 
     def driver_renew_cookies(self, driver, plz_impfzentrum):
