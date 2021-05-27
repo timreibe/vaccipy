@@ -80,7 +80,7 @@ Die folgenden Daten werden beim Programmstart benötigt:
 
 `vaccipy` übernimmt für dich die Suche und Buchung eines Impftermin auf [www.impfterminservice.de](https://www.impfterminservice.de/).
 Dazu musst du deinen Impf-Code, die PLZ's deiner gewählten Impfzentren und deine Daten beim Start des Tools eintragen. Anschließend beginnt `vaccipy` 
-die Suche und frägt in regelmäßigen Abständen (alle 60 Sekunden) verfügbare Termine in den gewählten Impfzentren ab.
+die Suche und fragt in regelmäßigen Abständen (alle 60 Sekunden) verfügbare Termine in den gewählten Impfzentren ab.
 
 Sobald ein Termin verfügbar ist, wird dieser direkt mit den Anfangs eingegeben Daten gebucht und die Suche beendet.
 Nach erfolgreicher Buchung erhälst du eine Bestätigungsmail vom Impfterminservice und kannst die Termine auch direkt unter [www.impfterminservice.de](https://www.impfterminservice.de/) einsehen (Bundesland wählen > Impfzentrum wählen > Buchung verwalten).
@@ -102,7 +102,7 @@ Die folgenden Daten werden beim Programmstart benötigt:
 #### Ablauf
 
 `vaccipy` kann neben der Terminbuchung dir auch einen Impf-Code generieren - dauerhaft, für jede Person, in jedem Impfzentrum. 
-Dazu musst du deine Mailadresse, deine Telefonnummer und die PLZ des gewünschten Impfzentrums eintragen. Anschließend frägt `vaccipy` einen Impf-Code
+Dazu musst du deine Mailadresse, deine Telefonnummer und die PLZ des gewünschten Impfzentrums eintragen. Anschließend fragt `vaccipy` einen Impf-Code
 an und du erhälst eine SMS mit einem Bestätigungscode. Diesen Bestätigungscode kannst du anschließend im Tool eintragen. Der Impf-Code wird dir 
 anschließend per Mail zugesendet.
 
@@ -243,11 +243,17 @@ python3 main.py search -f max-mustermann.json
 ### Optionale Umgebungsvariablen
 
 * `VACCIPY_CHROMEDRIVER`:
-  Name oder relativer Pfad der chromedriver Programmdatei, die du verwenden möchtest.
-  Dies kann verwendet werden, falls du deine eigene chromedriver-Installation verwenden möchtest
-  und wird z. B. auf NixOS benötigt.
-  Beispiel: `chromedriver`
-
+  Name oder relativer Pfad der einer alternativen chromedrivers Programmdatei, die du verwenden möchtest.
+  
+  Der richtige chromedriver kann durch das setzen der Umgebungsvariable geändert werden (in diesem Fall `chromium.chromedriver`):
+  
+  `export VACCIPY_CHROMEDRIVER="chromium.chromedriver"`
+  
+  Bei einer nicht aktuellen chromedriver-Version kann es zu folgender Fehlermeldung kommen:
+  
+  `[err] [renew_cookies]   WebDriverException exception raised - retry 1`
+  
+  Dies wird auch z.B. auf NixOS benötigt, um eine eigene chromedriver-Installation zu verwenden.
 
 Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne Installation von Python direkt ausgeführt werden können. 
 Die Distributionen können im [neusten Release heruntergeladen werden](https://github.com/iamnotturner/vaccipy/releases/latest).
