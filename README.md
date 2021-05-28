@@ -182,6 +182,14 @@ Die notwendigen Python-Module können mittels pip installiert werden.
 pip3 install -r requirements.txt
 ```
 
+#### Developer Collaboration
+
+Für direkte Kommunikation kannst du als Entwickler gerne unserem Slack beitreten!
+
+<a href="https://join.slack.com/t/vaccipy/shared_invite/zt-qt5ympiu-j7P86E2U0yM3shqoNSoqyg">
+<img width="50" heigth="50" src=https://cdn.pling.com/img/5/f/a/f/e20d4a4b5d23357c5ace1844206c6b02e082e73231a16f9036cb8e3bf109d52816bd.png>
+</a>
+
 ## Ausführung unter Windows
 
 1) [`vaccipy` downloaden](#Downloads)
@@ -262,11 +270,13 @@ python3 main.py search -f max-mustermann.json
 Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne Installation von Python direkt ausgeführt werden können. 
 Die Distributionen können im [neusten Release heruntergeladen werden](https://github.com/iamnotturner/vaccipy/releases/latest).
 
+
+#### [Informationen zu den Distributionen und Shipping findest du hier](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md)
+
 ## Programmdurchlauf
 
 <img src="https://github.com/iamnotturner/vaccipy/blob/master/images/beispiel_programmdurchlauf.png">
 
-## [Informationen zu den Distributionen und Shipping findest du hier](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md)
 
 ## Das könnte noch kommen
 
@@ -284,6 +294,8 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 
 * Möglichkeit zum Eintragen mehrerer Impf-Codes und Kontaktdaten
+
+
 
 ## Bedanken?
 
