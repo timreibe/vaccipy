@@ -69,10 +69,6 @@ class HauptGUI(QtWidgets.QMainWindow):
         self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
         self.i_zeitspanne_pfad.setText(self.pfad_zeitspanne)
 
-        # Events für Eingabefelder
-        self.i_kontaktdaten_pfad.textChanged.connect(self.__update_kontaktdaten_pfad)
-        self.i_zeitspanne_pfad.textChanged.connect(self.__update_zeitspanne_pfad)
-
         # Speichert alle termin_suchen Prozesse
         self.such_prozesse = list(list())
         self.prozesse_counter = 0
@@ -219,6 +215,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         try:
             pfad = oeffne_file_dialog_select(self, "Kontakdaten", self.pfad_kontaktdaten)
             self.pfad_kontaktdaten = pfad
+            self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
         except FileNotFoundError:
             pass
 
@@ -226,6 +223,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         try:
             pfad = oeffne_file_dialog_select(self, "Zeitspanne", self.pfad_zeitspanne)
             self.pfad_zeitspanne = pfad
+            self.i_zeitspanne_pfad.setText(self.pfad_zeitspanne)
         except FileNotFoundError:
             pass
 
