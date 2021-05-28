@@ -616,7 +616,18 @@ class ImpfterminService():
             return True
 
         elif res.status_code == 429:
-            msg = "Anfrage wurde von der Botprotection geblockt."
+            msg = "Anfrage wurde von der Botprotection geblockt. Cookies werden erneuert und die Buchung wiederholt."
+            self.log.error(msg)
+            self.renew_cookies_code()
+            res = self.s.post(self.domain + path, json=data, timeout=15)
+            if res.status_code == 201:
+                msg = "Termin erfolgreich gebucht!"
+                self.log.success(msg)
+                desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
+                return True
+            else:
+                return False
+
         elif res.status_code >= 400:
             data = res.json()
             try:
@@ -684,13 +695,17 @@ class ImpfterminService():
             "smspin": sms_pin
 
         }
-        res = self.s.post(self.domain + path, json=data, timeout=15)
-        if res.ok:
-            self.log.success("Der Impf-Code wurde erfolgreich angefragt, bitte prüfe deine Mails!")
-            return True
-        else:
-            self.log.error(f"Code-Verifikation fehlgeschlagen: {res.text}")
-            return False
+        while True:
+            res = self.s.post(self.domain + path, json=data, timeout=15)
+            if res.ok:
+                self.log.success("Der Impf-Code wurde erfolgreich angefragt, bitte prüfe deine Mails!")
+                return True
+            elif res.status_code == 429:
+                self.log.error("Cookies müssen erneuert werden.")
+                self.renew_cookies_code()
+            else:
+                self.log.error(f"Code-Verifikation fehlgeschlagen: {res.text}")
+                return False
 
     @staticmethod
     def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH: str, check_delay: int = 30):
