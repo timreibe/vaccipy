@@ -7,7 +7,7 @@ import time
 import threading
 import multiprocessing
 
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtCore, QtWidgets, uic
 from PyQt5.QtGui import QIcon
 from tools.gui import *
 from tools.gui.qtzeiten import QtZeiten
@@ -90,6 +90,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
 
         app = QtWidgets.QApplication(list())
+        app.setAttribute(QtCore.Qt.AA_X11InitThreads)
         window = HauptGUI()
         app.exec_()
 
@@ -101,7 +102,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             modus (Modus): Abhängig vom Modus werden nicht alle Daten benötigt. Defalut TERMIN_SUCHEN
         """
 
-        dialog = QtKontakt(modus, self.pfad_kontaktdaten, PATH)
+        dialog = QtKontakt(self, modus, self.pfad_kontaktdaten, PATH)
         dialog.show()
         dialog.exec_()
 

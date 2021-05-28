@@ -37,8 +37,8 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class QtKontakt(QtWidgets.QDialog):
-    def __init__(self, modus: Modus, standard_speicherpfad: str, ROOT_PATH: str, pfad_fenster_layout=os.path.join(PATH, "kontaktdaten.ui")):
-        super().__init__()
+    def __init__(self, parent: QtWidgets.QWidget, modus: Modus, standard_speicherpfad: str, ROOT_PATH: str, pfad_fenster_layout=os.path.join(PATH, "kontaktdaten.ui")):
+        super().__init__(parent=parent)
 
         self.standard_speicherpfad = standard_speicherpfad
 

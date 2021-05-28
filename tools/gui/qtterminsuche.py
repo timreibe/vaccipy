@@ -128,6 +128,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
             ROOT_PATH (str): Pfad zum Root Ordner, damit dieser an its übergeben werden kann
         """
         app = QtWidgets.QApplication(list())
+        app.setAttribute(QtCore.Qt.AA_X11InitThreads)
         window = QtTerminsuche(kontaktdaten, zeitspanne, ROOT_PATH)
         app.exec_()
 

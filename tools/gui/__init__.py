@@ -89,7 +89,9 @@ def oeffne_file_dialog_save(parent_widged: QtWidgets.QWidget, titel: str, standa
         str: Vollständiger Pfad
     """
 
-    datei_data = QtWidgets.QFileDialog.getSaveFileName(parent_widged, titel, standard_speicherpfad, dateityp)
+    options = QtWidgets.QFileDialog.Options()
+    options |= QtWidgets.QFileDialog.DontUseNativeDialog
+    datei_data = QtWidgets.QFileDialog.getSaveFileName(parent=parent_widged, caption=titel, directory=standard_speicherpfad, filter="JSON Files (*.json)", options=options)
     dateipfad = datei_data[0]  # (Pfad, Dateityp)
 
     if not dateipfad:
@@ -116,7 +118,9 @@ def oeffne_file_dialog_select(parent_widged: QtWidgets.QWidget, titel: str, stan
     """
 
     # Öffnet den "File-Picker" vom System um ein bereits existierende Datei auszuwählen
-    datei_data = QtWidgets.QFileDialog.getOpenFileName(parent_widged, titel, standard_oeffnungspfad, "JSON Files (*.json)")
+    options = QtWidgets.QFileDialog.Options()
+    options |= QtWidgets.QFileDialog.DontUseNativeDialog
+    datei_data = QtWidgets.QFileDialog.getOpenFileName(parent=parent_widged, caption=titel, directory=standard_oeffnungspfad, filter="JSON Files (*.json)", options=options)
     dateipfad = datei_data[0]  # (pfad, typ)
 
     if not dateipfad:
