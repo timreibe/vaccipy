@@ -584,6 +584,7 @@ class ImpfterminService():
                     print("\a")
                 return True, 200
             else:
+                self.s.cookies.clear()
                 self.log.info(f"Keine Termine verfügbar in {plz}")
         else:
             self.log.error(f"Terminpaare können nicht geladen werden: {res.text}")
@@ -720,10 +721,6 @@ class ImpfterminService():
         """
 
         its = ImpfterminService(code, plz_impfzentren, kontakt, PATH)
-        its.renew_cookies()
-
-        # login ist nicht zwingend erforderlich
-        its.login()
 
         while True:
             termin_gefunden = False
