@@ -92,6 +92,8 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(ROOT_PATH, "images/spritze.ico")))
 
+        self.buttonBox.rejected.connect(self.close)
+
         # Attribute erstellen
         self.erfolgreich: bool = None
         self.kontaktdaten = kontaktdaten
