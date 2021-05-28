@@ -73,7 +73,7 @@ def update_kontaktdaten_interactive(
 
         if "strasse" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
-                kontaktdaten, ["kontakt", "strasse"], "> Strasse: ")
+                kontaktdaten, ["kontakt", "strasse"], "> Strasse (ohne Hausnummer): ")
 
         if "hausnummer" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
