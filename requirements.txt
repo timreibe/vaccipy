@@ -1,6 +1,6 @@
 certifi>=2020.12.5
 chardet>=4.0.0
-idna>=2.10
+idna>=2.5,<3
 selenium>=3.141.0
 urllib3>=1.26.4
 pyinstaller>=4.3
