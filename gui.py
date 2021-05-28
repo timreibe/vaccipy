@@ -8,6 +8,7 @@ import threading
 import multiprocessing
 
 from PyQt5 import QtWidgets, uic
+from PyQt5.QtGui import QIcon
 from tools.gui import *
 from tools.gui.qtzeiten import QtZeiten
 from tools.gui.qtkontakt import QtKontakt
@@ -50,6 +51,7 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         # Laden der .ui Datei und Anpassungen
         uic.loadUi(pfad_fenster_layout, self)
+        self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
 
         # Funktionen den Buttons zuweisen
         self.b_termin_suchen.clicked.connect(self.__termin_suchen)
@@ -103,7 +105,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             modus (Modus): Abhängig vom Modus werden nicht alle Daten benötigt. Defalut TERMIN_SUCHEN
         """
 
-        dialog = QtKontakt(modus, self.pfad_kontaktdaten)
+        dialog = QtKontakt(modus, self.pfad_kontaktdaten, PATH)
         dialog.show()
         dialog.exec_()
 
@@ -112,7 +114,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         Ruft den Dialog für die Zeitspanne auf
         """
 
-        dialog = QtZeiten(self.pfad_zeitspanne)
+        dialog = QtZeiten(self.pfad_zeitspanne, PATH)
         dialog.show()
         dialog.exec_()
 

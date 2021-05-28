@@ -2,6 +2,7 @@ import os
 import json
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QTime, QDate, QDateTime
+from PyQt5.QtGui import QIcon
 
 from tools.gui import *
 
@@ -43,7 +44,7 @@ class QtZeiten(QtWidgets.QDialog):
     Diese erbt von QtWidgets.QDialog
     """
 
-    def __init__(self, standard_speicherpfad: str, pfad_fenster_layout=os.path.join(PATH, "uhrzeiten.ui")):
+    def __init__(self, standard_speicherpfad: str, ROOT_PATH: str, pfad_fenster_layout=os.path.join(PATH, "uhrzeiten.ui")):
         """
         Eingabe der Zeitkonfigurationen
 
@@ -60,6 +61,7 @@ class QtZeiten(QtWidgets.QDialog):
 
         # Laden der .ui Datei und Anpassungen
         uic.loadUi(self.pfad_fenster_layout, self)
+        self.setWindowIcon(QIcon(os.path.join(ROOT_PATH, "images/spritze.ico")))
         self.i_start_datum_qdate.setMinimumDateTime(QDateTime.currentDateTime())
 
         # Funktionen für Buttonbox zuweisen

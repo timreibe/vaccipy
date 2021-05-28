@@ -4,14 +4,12 @@ import sys
 import os
 import json
 import time
-import ctypes
-import threading
-import multiprocessing
 
 from io import StringIO
 
 from PyQt5 import QtWidgets, uic, QtCore, QtGui
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
+from PyQt5.QtGui import QIcon
 from tools.gui import *
 from tools.its import ImpfterminService
 
@@ -92,6 +90,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
 
         # Laden der .ui Datei und Anpassungen
         uic.loadUi(pfad_fenster_layout, self)
+        self.setWindowIcon(QIcon(os.path.join(ROOT_PATH, "images/spritze.ico")))
 
         # Attribute erstellen
         self.erfolgreich: bool = None

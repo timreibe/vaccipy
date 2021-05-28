@@ -3,6 +3,7 @@ import json
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QTime
+from PyQt5.QtGui import QIcon
 
 from tools.gui import *
 
@@ -36,13 +37,14 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class QtKontakt(QtWidgets.QDialog):
-    def __init__(self, modus: Modus, standard_speicherpfad: str, pfad_fenster_layout=os.path.join(PATH, "kontaktdaten.ui")):
+    def __init__(self, modus: Modus, standard_speicherpfad: str, ROOT_PATH: str, pfad_fenster_layout=os.path.join(PATH, "kontaktdaten.ui")):
         super().__init__()
 
         self.standard_speicherpfad = standard_speicherpfad
 
         # Laden der .ui Datei
         uic.loadUi(pfad_fenster_layout, self)
+        self.setWindowIcon(QIcon(os.path.join(ROOT_PATH, "images/spritze.ico")))
         self.setup(modus)
 
         # Funktionen für Buttonbox zuweisen
