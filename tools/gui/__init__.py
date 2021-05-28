@@ -1,6 +1,7 @@
 import json
 from enum import Enum, auto
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtWidgets import QMessageBox
 
 
 class Modus(Enum):

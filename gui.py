@@ -11,6 +11,7 @@ from PyQt5 import QtWidgets, uic
 from tools.gui import *
 from tools.gui.qtzeiten import QtZeiten
 from tools.gui.qtkontakt import QtKontakt
+from tools.gui.qtterminsuche import QtTerminsuche
 from tools.its import ImpfterminService
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -71,7 +72,8 @@ class HauptGUI(QtWidgets.QMainWindow):
         self.i_zeitspanne_pfad.textChanged.connect(self.__update_zeitspanne_pfad)
 
         # Speichert alle termin_suchen Prozesse
-        self.such_prozesse = list()
+        self.such_prozesse = list(list())
+        self.prozesse_counter = 0
 
         # Überwachnung der Prozesse
         self.prozess_bewacher = threading.Thread(target=self.__check_status_der_prozesse, daemon=True)
@@ -141,16 +143,11 @@ class HauptGUI(QtWidgets.QMainWindow):
             zeitspanne (dict): zeitspanne aus zeitspanne.json
         """
 
-        kontakt = kontaktdaten["kontakt"]
         code = kontaktdaten["code"]
-        plz_impfzentren = kontaktdaten["plz_impfzentren"]
-
-        terminsuche_prozess = multiprocessing.Process(target=ImpfterminService.terminsuche, name=f"{code}-{len(self.such_prozesse)}", daemon=True, kwargs={
-                                                      "code": code,
-                                                      "plz_impfzentren": plz_impfzentren,
-                                                      "kontakt": kontakt,
+        terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{code}-{self.prozesse_counter}", daemon=True, kwargs={
+                                                      "kontaktdaten": kontaktdaten,
                                                       "zeitspanne": zeitspanne,
-                                                      "PATH": PATH})
+                                                      "ROOT_PATH": PATH})
         try:
             terminsuche_prozess.start()
             if not terminsuche_prozess.is_alive():
@@ -162,9 +159,10 @@ class HauptGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, "Fehler - Suche nicht gestartet!", str(error))
 
         else:
-            QtWidgets.QMessageBox.information(self, "Suche gestartet", "Terminsuche wurde gestartet!\nWeitere Infos in der Konsole")
+            # QtWidgets.QMessageBox.information(self, "Suche gestartet", "Terminsuche wurde gestartet!\nWeitere Infos in der Konsole")
             self.such_prozesse.append(terminsuche_prozess)
             self.__add_prozess_in_gui(terminsuche_prozess)
+            self.prozesse_counter += 1
 
     def __code_generieren(self):
         """
@@ -172,7 +170,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
 
         # TODO: code generierung implementieren
-        QtWidgets.QMessageBox.information(self, "Noch nicht verfügbar", "Funktion nur über Konsole verfügbar")
+        QtWidgets.QMessageBox.information(self, "Noch nicht verfügbar", "Funktion nur über Konsolenanwendung verfügbar")
 
     def __get_kontaktdaten(self, modus: Modus) -> dict:
         """
@@ -246,6 +244,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
         prozess.kill()
         self.such_prozesse.remove(prozess)
+        self.__remove_prozess_von_gui(prozess)
 
     def __remove_prozess_von_gui(self, prozess: multiprocessing.Process):
         """
@@ -268,14 +267,15 @@ class HauptGUI(QtWidgets.QMainWindow):
             for prozess in self.such_prozesse:
                 if not prozess.is_alive():
                     self.__remove_prozess_von_gui(prozess)
-            time.sleep(5)
+                    self.such_prozesse.remove(prozess)
+            time.sleep(2)
 
 
 def main():
     """
     Startet die GUI-Anwendung
     """
-
+    multiprocessing.freeze_support()
     HauptGUI.start_gui()
 
 
