@@ -7,6 +7,7 @@ from plyer import notification
 from tools.exceptions import DesktopNotificationError
 from json import JSONDecodeError
 from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
+from selenium.common.exceptions import SessionNotCreatedException
 
 
 def retry_on_failure(retries=10):
@@ -43,6 +44,14 @@ def retry_on_failure(retries=10):
                                    "erneuter Versuch in 30 Sekunden",
                                    prefix=function.__name__)
                     time.sleep(30)
+
+                except SessionNotCreatedException as e:
+                    self.log.error("Chrome-Version stimmt nicht mit Chromedriver-Version überein. "
+                                   "Der Chrome-Browser benötigt ein Update.\n"
+                                   "Bitte Chrome updaten und das Tool erneut starten.\n"
+                                   f"{e}",
+                                   prefix=function.__name__)
+                    quit()
 
                 except JSONDecodeError:
                     # die API gibt eine nicht-JSON-Response,
