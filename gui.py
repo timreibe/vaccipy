@@ -123,11 +123,15 @@ class HauptGUI(QtWidgets.QMainWindow):
         Alle Threads sind deamon Thread (Sofort töten sobald der Bot beendet wird)
         """
 
-        kontaktdaten = self.__get_kontaktdaten(Modus.TERMIN_SUCHEN)
-        zeitspanne = self.__get_zeitspanne()
-
         try:
+            kontaktdaten = self.__get_kontaktdaten(Modus.TERMIN_SUCHEN)
+            zeitspanne = self.__get_zeitspanne()
+
             check_alle_kontakt_daten_da(Modus.TERMIN_SUCHEN, kontaktdaten)
+
+        except FileNotFoundError as error:
+            QtWidgets.QMessageBox.critical(self, "Datei nicht gefunden!", f"Datei zum Laden konnte nicht gefunden werden\n\nBitte erstellen")
+            return
         except FehlendeDatenException as error:
             QtWidgets.QMessageBox.critical(self, "Daten unvollständig!", f"Es fehlen Daten in der JSON Datei\n\n{error}")
             return
