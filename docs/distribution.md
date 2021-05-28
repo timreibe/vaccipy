@@ -36,7 +36,7 @@ Es gibt aktuell zwei aktive Worklflows:
 
 ### Wie werden Releases erstellt ?
 
-Um ein neues Release zu erstellen, muss ein neues Tag (dessen Name mit `v` starten bsp. `v0.1`) zu dem neuesten Stand (Commit) erst hinzugefügt und dann gepushed werden. Das startet den [Deploy Workflow](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml).  
+Um ein neues Release zu erstellen, muss ein neues Tag (dessen Name mit `v` starten und im Format vx.y.z ist bsp. `v1.1.0`) zu dem neuesten Stand (Commit) erst hinzugefügt und dann gepushed werden. Das startet den [Deploy Workflow](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml).  
 </br>
 
 ### Wie werden Distributionen erstellt ? 
@@ -75,6 +75,14 @@ Im [Deploy Workflow](https://github.com/iamnotturner/vaccipy/actions/workflows/d
 
 **Tipp:** Zum erstellen und bearbeiten des .iss Scripts empfiehlt sich der `Inno Script Studio script editor` welcher im [QuickStart Pack](https://jrsoftware.org/download.php/ispack.exe) vorhanden ist. 
 
+#### Permissions
+Wenn vaccipy files oder folder bearbeiten können soll, bspw. die `kontaktdaten.json`, müssen die entsprechenden Rechte vergeben werden. Diese werden in der `.iss` file gesetzt. 
+
+⚠️ Wichtig:  
+>"It is not recommended that you use this parameter if you aren't familiar with ACLs or why you would need to change them, because misusing it could negatively impact system security"
+ 
+
 #### Resources
 - [pyinstaller docs](https://pyinstaller.readthedocs.io/en/stable/index.html)
 - [Inno Setup](https://jrsoftware.org/isinfo.php)
+- [Inno Setup Permissions](https://jrsoftware.org/ishelp/index.php?topic=dirssection)

@@ -10,8 +10,9 @@ try:
 except:
     pass
 
-from tools.utils import create_missing_dirs, remove_prefix
 from tools.its import ImpfterminService
+from tools.kontaktdaten import get_kontaktdaten, validate_kontaktdaten, ValidationError
+from tools.utils import create_missing_dirs, remove_prefix
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -34,8 +35,8 @@ def update_kontaktdaten_interactive(
 
     assert (command in ["code", "search"])
 
-    if filepath is None:
-        filepath = os.path.join(PATH, "data/kontaktdaten.json")
+    # Werfe Fehler, falls die übergebenen Kontaktdaten bereits ungültig sind.
+    validate_kontaktdaten(known_kontaktdaten)
 
     kontaktdaten = copy.deepcopy(known_kontaktdaten)
 
@@ -47,86 +48,80 @@ def update_kontaktdaten_interactive(
                 "https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren\n\n"
                 "Trage nun die PLZ deines Impfzentrums ein. Für mehrere Impfzentren die PLZ's kommagetrennt nacheinander.\n"
                 "Beispiel: 68163, 69124, 69469\n")
-            plz_impfzentren = input("> PLZ's der Impfzentren: ")
-            kontaktdaten["plz_impfzentren"] = list(
-                set([plz.strip() for plz in plz_impfzentren.split(",")]))
+            input_kontaktdaten_key(kontaktdaten,
+                                   ["plz_impfzentren"],
+                                   "> PLZ's der Impfzentren: ",
+                                   lambda x: list(set([plz.strip() for plz in x.split(",")])))
 
         if "code" not in kontaktdaten and command == "search":
-            kontaktdaten["code"] = input("> Code: ")
+            input_kontaktdaten_key(kontaktdaten, ["code"], "> Code: ")
 
         if "kontakt" not in kontaktdaten:
             kontaktdaten["kontakt"] = {}
 
         if "anrede" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["anrede"] = input(
-                "> Anrede (Frau/Herr/...): ")
+            input_kontaktdaten_key(
+                kontaktdaten, ["kontakt", "anrede"], "> Anrede (Frau/Herr/...): ")
 
         if "vorname" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["vorname"] = input("> Vorname: ")
+            input_kontaktdaten_key(
+                kontaktdaten, ["kontakt", "vorname"], "> Vorname: ")
 
         if "nachname" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["nachname"] = input("> Nachname: ")
+            input_kontaktdaten_key(
+                kontaktdaten, ["kontakt", "nachname"], "> Nachname: ")
 
         if "strasse" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["strasse"] = input("> Strasse: ")
+            input_kontaktdaten_key(
+                kontaktdaten, ["kontakt", "strasse"], "> Strasse (ohne Hausnummer): ")
 
         if "hausnummer" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["hausnummer"] = input("> Hausnummer: ")
+            input_kontaktdaten_key(
+                kontaktdaten, ["kontakt", "hausnummer"], "> Hausnummer: ")
 
         if "plz" not in kontaktdaten["kontakt"] and command == "search":
-            # Sicherstellen, dass die PLZ ein valides Format hat.
-            _wohnort_plz_valid = False
-            while not _wohnort_plz_valid:
-                wohnort_plz = input("> PLZ des Wohnorts: ")
-                wohnort_plz = wohnort_plz.strip()
-                if len(wohnort_plz) == 5 and wohnort_plz.isdigit():
-                    _wohnort_plz_valid = True
-                else:
-                    print(
-                        f"Die eingegebene PLZ {wohnort_plz} scheint ungültig. Genau 5 Stellen und nur Ziffern sind erlaubt.")
-            kontaktdaten["kontakt"]["plz"] = wohnort_plz
+            input_kontaktdaten_key(
+                kontaktdaten, ["kontakt", "plz"], "> PLZ des Wohnorts: ")
 
         if "ort" not in kontaktdaten["kontakt"] and command == "search":
-            kontaktdaten["kontakt"]["ort"] = input("> Wohnort: ")
+            input_kontaktdaten_key(
+                kontaktdaten, ["kontakt", "ort"], "> Wohnort: ")
 
         if "phone" not in kontaktdaten["kontakt"]:
-            telefonnummer = input("> Telefonnummer: +49")
-            # Anführende Zahlen und Leerzeichen entfernen
-            telefonnummer = telefonnummer.strip()
-            telefonnummer = remove_prefix(telefonnummer, "+49")
-            telefonnummer = remove_prefix(telefonnummer, "0")
-            kontaktdaten["kontakt"]["phone"] = f"+49{telefonnummer}"
+            input_kontaktdaten_key(
+                kontaktdaten,
+                ["kontakt", "phone"],
+                "> Telefonnummer: +49",
+                lambda x: x if x.startswith("+49") else f"+49{remove_prefix(x, '0')}")
 
         if "notificationChannel" not in kontaktdaten["kontakt"]:
             kontaktdaten["kontakt"]["notificationChannel"] = "email"
 
         if "notificationReceiver" not in kontaktdaten["kontakt"]:
-            kontaktdaten["kontakt"]["notificationReceiver"] = input("> Mail: ")
+            input_kontaktdaten_key(
+                kontaktdaten, ["kontakt", "notificationReceiver"], "> Mail: ")
 
         json.dump(kontaktdaten, file, ensure_ascii=False, indent=4)
 
     return kontaktdaten
 
 
-def get_kontaktdaten(filepath=None):
-    """
-    Lade Kontaktdaten aus Datei.
-
-    :param filepath: Pfad zur JSON-Datei mit Kontaktdaten. Default: data/kontaktdaten.json im aktuellen Ordner
-    :return: Dictionary mit Kontaktdaten
-    """
-
-    if filepath is None:
-        filepath = os.path.join(PATH, "data/kontaktdaten.json")
-
-    try:
-        with open(filepath, encoding='utf-8') as f:
-            try:
-                return json.load(f)
-            except json.JSONDecodeError:
-                return {}
-    except FileNotFoundError:
-        return {}
+def input_kontaktdaten_key(
+        kontaktdaten,
+        path,
+        prompt,
+        transformer=lambda x: x):
+    target = kontaktdaten
+    for key in path[:-1]:
+        target = target[key]
+    key = path[-1]
+    while True:
+        target[key] = transformer(input(prompt).strip())
+        try:
+            validate_kontaktdaten(kontaktdaten)
+            break
+        except ValidationError as exc:
+            print(f"\n{str(exc)}\n")
 
 
 def run_search_interactive(kontaktdaten_path, check_delay):
@@ -141,9 +136,6 @@ def run_search_interactive(kontaktdaten_path, check_delay):
 
     :param kontaktdaten_path: Pfad zur JSON-Datei mit Kontaktdaten. Default: data/kontaktdaten.json im aktuellen Ordner
     """
-
-    if kontaktdaten_path is None:
-        kontaktdaten_path = os.path.join(PATH, "data/kontaktdaten.json")
 
     print(
         "Bitte trage zunächst deinen Impfcode und deine Kontaktdaten ein.\n"
@@ -209,9 +201,6 @@ def gen_code_interactive(kontaktdaten_path):
     :param kontaktdaten_path: Pfad zur JSON-Datei mit Kontaktdaten. Default: kontaktdaten.json im aktuellen Ordner
     """
 
-    if kontaktdaten_path is None:
-        kontaktdaten_path = os.path.join(PATH, "data/kontaktdaten.json")
-
     print(
         "Du kannst dir jetzt direkt einen Impf-Code erstellen.\n"
         "Dazu benötigst du eine Mailadresse, Telefonnummer und die PLZ deines Impfzentrums.\n"
@@ -243,15 +232,13 @@ def gen_code(kontaktdaten):
         plz_impfzentrum = kontaktdaten["plz_impfzentren"][0]
         mail = kontaktdaten["kontakt"]["notificationReceiver"]
         telefonnummer = kontaktdaten["kontakt"]["phone"]
-        telefonnummer = telefonnummer.strip()
-        telefonnummer = remove_prefix(telefonnummer, "+49")
-        telefonnummer = remove_prefix(telefonnummer, "0")
+        if not telefonnummer.startswith("+49"):
+            telefonnummer = f"+49{remove_prefix(telefonnummer, '0')}"
     except KeyError as exc:
-        print(
+        raise ValueError(
             "Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
             "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
-            "deine Daten beim Programmstart erneut ein.\n")
-        raise exc
+            "deine Daten beim Programmstart erneut ein.\n") from exc
 
     its = ImpfterminService("PLAT-ZHAL-TER1", [plz_impfzentrum], {},PATH)
 
@@ -268,7 +255,7 @@ def gen_code(kontaktdaten):
         print("Falscheingabe! Bitte erneut versuchen:")
 
     # cookies erneuern und code anfordern
-    its.renew_cookies()
+    its.renew_cookies_code()
     token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, leistungsmerkmal)
 
     if token is not None:
@@ -355,8 +342,8 @@ def main():
 
     args = parser.parse_args()
 
-    if not hasattr(args, "file"):
-        args.file = None
+    if not hasattr(args, "file") or args.file is None:
+        args.file = os.path.join(PATH, "data/kontaktdaten.json")
     if not hasattr(args, "configure_only"):
         args.configure_only = False
     if not hasattr(args, "read_only"):
@@ -370,11 +357,16 @@ def main():
         parser.error(str(exc))
         # parser.error terminates the program with status code 2.
 
-    if args.command == "search":
-        subcommand_search(args)
-
-    elif args.command == "code":
-        subcommand_code(args)
+    if args.command is not None:
+        try:
+            if args.command == "search":
+                subcommand_search(args)
+            elif args.command == "code":
+                subcommand_code(args)
+            else:
+                assert False
+        except ValidationError as exc:
+            print(f"Fehler in {json.dumps(args.file)}:\n{str(exc)}")
 
     else:
         extended_settings = False
@@ -422,7 +414,7 @@ def main():
                     print("Falscheingabe! Bitte erneut versuchen.")
                 print()
             except Exception as exc:
-                print(f"\nFehler: {str(exc)}\n")
+                print(f"\nFehler:\n{str(exc)}\n")
 
 
 if __name__ == "__main__":
@@ -437,4 +429,9 @@ if __name__ == "__main__":
                                    |_|      |___/ 
 """)
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
+
+    print("Vor der Ausführung des Programms ist die Berechtigung zur Impfung zu prüfen.\n"
+          "Ob Anspruch auf eine Impfung besteht, kann hier nachgelesen werden:\n"
+          "https://www.impfterminservice.de/terminservice/faq\n")
+
     main()
