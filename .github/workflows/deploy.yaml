@@ -33,7 +33,7 @@ jobs:
           args: install innosetup --install-arguments="'/DIR=../innosetup'" --force
       - name: Run innosetup
         # Run innosetup and set application version to git tag
-        run: ../innosetup/ISCC.exe specs/windows-terminservice.iss /DApplicationVersion=tag::${GITHUB_REF#refs/*/}
+        run: ../innosetup/ISCC.exe specs/windows-terminservice.iss /DApplicationVersion=${GITHUB_REF#refs/*/}
       - name: Zip
         uses: papeloto/action-zip@v1
         with:
