@@ -10,7 +10,11 @@ log/
 # data
 kontaktdaten.json
 
+#building: 
+installer/
 
 # pyinstaller 
 # temporary building files:
 build/    
+dist/
+
