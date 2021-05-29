@@ -702,7 +702,7 @@ class ImpfterminService():
         path = "rest/smspin/anforderung"
 
         data = {
-            "email": mail,
+            "email": mail.lower(),
             "leistungsmerkmal": leistungsmerkmal,
             "phone": telefonnummer,
             "plz": plz_impfzentrum
