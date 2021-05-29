@@ -285,10 +285,11 @@ class ImpfterminService():
             time.sleep(30)
         # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
         try:
-            cookie = driver.get_cookie("bm_sz")
+            cookie = driver.get_cookie("bm_sz").get("value")
+            akavpau = driver.get_cookie("akavpau_User_allowed").get("value")
             if cookie:
                 self.s.cookies.clear()
-                self.s.cookies.update({"bm_sz": cookie.get("value")})
+                self.s.cookies.update({"bm_sz": cookie,"akavpau_User_allowed": akavpau })
                 self.log.info("Browser-Cookie generiert: *{}".format(cookie.get("value")[-6:]))
                 return True
             else:
