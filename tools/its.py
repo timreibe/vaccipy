@@ -3,12 +3,14 @@ import platform
 import sys
 import time
 from base64 import b64encode
-from datetime import datetime
+from datetime import datetime, date
+from datetime import time as dtime
 from random import choice, randint
 
 from typing import Dict, List
 
 import cloudscraper
+
 
 from selenium.webdriver import ActionChains
 from selenium.webdriver import Chrome
@@ -532,9 +534,9 @@ class ImpfterminService():
             return False
 
     @retry_on_failure()
-    def termin_suchen(self, plz):
+    def termin_suchen(self, plz: int, zeitspanne: dict):
         """Es wird nach einen verfügbaren Termin in der gewünschten PLZ gesucht.
-        Ausgewählt wird der erstbeste Termin (!).
+        Ausgewählt wird der erstbeste Termin, welcher im entsprechenden Zeitraum liegt (!).
         Zurückgegeben wird das Ergebnis der Abfrage und der Status-Code.
         Bei Status-Code > 400 müssen die Cookies erneuert werden.
 
@@ -566,24 +568,63 @@ class ImpfterminService():
             res_json = res.json()
             terminpaare = res_json.get("termine")
             if terminpaare:
-                # Auswahl des erstbesten Terminpaares
-                self.terminpaar = choice(terminpaare)
-                self.plz_termin = plz
-                self.log.success(f"Terminpaar gefunden!")
-                self.impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                self.log.success("'{}' in {} {}".format(
-                    self.impfzentrum.get("Zentrumsname").strip(),
-                    self.impfzentrum.get("PLZ"),
-                    self.impfzentrum.get("Ort")))
-                for num, termin in enumerate(self.terminpaar, 1):
-                    ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
-                        '%d.%m.%Y um %H:%M Uhr')
-                    self.log.success(f"{num}. Termin: {ts}")
-                if ENABLE_BEEPY:
-                    beepy.beep('coin')
+                # Checken ob verfügbare terminpaare in angegebener Zeitspanne liegt
+                # Falls daten nicht vorhanden - einfach alle aktzeptieren
+                if zeitspanne.get("einhalten_bei"):
+                    terminpaare_in_zeitspanne = list()
+
+                    # Alle Terminpaare durchgehen
+                    for terminpaar in terminpaare:
+                        termine_in_zeitspanne = True
+
+                        # Einzelne Termine druchgehen
+                        for num, termin in enumerate(terminpaar, 1):
+
+                            # Soll einer der Beiden Termine überprüft werden
+                            if num in zeitspanne["einhalten_bei"]:
+                                startdatum = date(zeitspanne["startdatum"]["jahr"], zeitspanne["startdatum"]["monat"], zeitspanne["startdatum"]["tag"])
+                                startzeit = dtime(zeitspanne["startzeit"]["h"], zeitspanne["startzeit"]["m"])
+                                endzeit = dtime(zeitspanne["endzeit"]["h"], zeitspanne["endzeit"]["m"])
+                                wochentage = zeitspanne["wochentage"]
+
+                                termin_zeit = datetime.fromtimestamp(int(termin["begin"])/1000)
+
+                                # Termin inherhalb der Zeitspanne und im Wochentag
+                                if not ((startzeit <= termin_zeit.time() <= endzeit) and termin_zeit.date() >= startdatum and (termin_zeit.weekday() in wochentage)):
+                                    termine_in_zeitspanne = False
+
+                        # Beide Termine sind in der Zeitspanne
+                        if termine_in_zeitspanne:
+                            terminpaare_in_zeitspanne.append(terminpaar)
+                        else:
+                            self.log.info("Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
+                            for num, terminpaar in enumerate(terminpaar, 1):
+                                ts = datetime.fromtimestamp(terminpaar["begin"] / 1000).strftime(
+                                    '%d.%m.%Y um %H:%M Uhr')
+                                self.log.info(f"{num}. Termin: {ts}")
                 else:
-                    print("\a")
-                return True, 200
+                    # Keine Bedingungen, alle Terminpaare zugelassen
+                    terminpaare_in_zeitspanne = terminpaare
+
+                if terminpaare_in_zeitspanne:
+                    # Auswahl des erstbesten Terminpaares
+                    self.terminpaar = choice(terminpaare_in_zeitspanne)
+                    self.plz_termin = plz
+                    self.log.success(f"Terminpaar gefunden!")
+                    self.impfzentrum = self.verfuegbare_impfzentren.get(plz)
+                    self.log.success("'{}' in {} {}".format(
+                        self.impfzentrum.get("Zentrumsname").strip(),
+                        self.impfzentrum.get("PLZ"),
+                        self.impfzentrum.get("Ort")))
+                    for num, termin in enumerate(self.terminpaar, 1):
+                        ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
+                            '%d.%m.%Y um %H:%M Uhr')
+                        self.log.success(f"{num}. Termin: {ts}")
+                    if ENABLE_BEEPY:
+                        beepy.beep('coin')
+                    else:
+                        print("\a")
+                    return True, 200
             else:
                 self.log.info(f"Keine Termine verfügbar in {plz}")
         else:
@@ -709,7 +750,7 @@ class ImpfterminService():
                 return False
 
     @staticmethod
-    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH: str, check_delay: int = 30):
+    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH:str, zeitspanne: dict = dict(), check_delay: int = 30):
         """
         Workflow für die Terminbuchung.
 
@@ -732,7 +773,7 @@ class ImpfterminService():
 
                 # durchlaufe jede eingegebene PLZ und suche nach Termin
                 for plz in its.plz_impfzentren:
-                    termin_gefunden, status_code = its.termin_suchen(plz)
+                    termin_gefunden, status_code = its.termin_suchen(plz, zeitspanne)
 
                     # Durchlauf aller PLZ unterbrechen, wenn Termin gefunden wurde
                     if termin_gefunden:
