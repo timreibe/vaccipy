@@ -14,6 +14,7 @@ from tools.gui.qtzeiten import QtZeiten
 from tools.gui.qtkontakt import QtKontakt
 from tools.gui.qtterminsuche import QtTerminsuche
 from tools.its import ImpfterminService
+from tools.utils import create_missing_dirs
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -48,7 +49,9 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
 
         super().__init__()
-
+        
+        create_missing_dirs()
+        
         # Laden der .ui Datei und Anpassungen
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
