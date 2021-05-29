@@ -11,7 +11,11 @@ log/
 kontaktdaten.json
 zeitspanne.json
 
+#building: 
+installer/
 
 # pyinstaller 
 # temporary building files:
 build/    
+dist/
+

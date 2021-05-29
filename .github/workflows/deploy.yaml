@@ -7,7 +7,7 @@ name: deploy
 on:
   push:
     tags: 
-      - v*
+      - v*.*.*
   workflow_dispatch:
 
 jobs:
@@ -31,8 +31,11 @@ jobs:
         with:
           # Arguments to pass to Chocolatey
           args: install innosetup --install-arguments="'/DIR=../innosetup'" --force
+      - name: tagname
+        uses: olegtarasov/get-tag@v2.1
       - name: Run innosetup
-        run: ../innosetup/ISCC.exe specs/windows-terminservice.iss
+        # Run innosetup and set application version to git tag
+        run: ../innosetup/ISCC.exe specs/windows-terminservice.iss /DApplicationVersion=${{ env.GIT_TAG_NAME }}
       - name: Zip
         uses: papeloto/action-zip@v1
         with:

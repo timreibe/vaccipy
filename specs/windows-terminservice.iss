@@ -2,7 +2,11 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "vaccipy"
-#define MyAppVersion "0.1"
+
+#ifndef ApplicationVersion
+#define ApplicationVersion "0.1"
+#endif
+
 #define MyAppPublisher "vaccipy"
 #define MyAppURL "https://github.com/iamnotturner/vaccipy"
 #define MyAppExeName "windows-terminservice.exe"
@@ -13,8 +17,8 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{BB9C61EE-C8C5-4AD4-B233-008F16893EBD}
 AppName={#MyAppName}
-AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
+AppVersion={#ApplicationVersion}
+;AppVerName={#MyAppName} {#ApplicationVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
