@@ -1,5 +1,5 @@
 import os
-import json
+
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QTime, QDate, QDateTime
 from PyQt5.QtGui import QIcon
@@ -155,7 +155,7 @@ class QtZeiten(QtWidgets.QDialog):
         return aktive_wochentage
 
     def __get_uhrzeiten(self) -> dict:
-        """ 
+        """
         Erstellt ein Dict mit ensprechenden start und endzeiten
 
         Raises:
@@ -210,7 +210,7 @@ class QtZeiten(QtWidgets.QDialog):
         Setzt alle Werte in der GUI zurück
         """
 
-        if widgets == None:
+        if widgets is None:
             self.__reset(self.children())
             return
 

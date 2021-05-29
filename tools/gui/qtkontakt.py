@@ -1,5 +1,4 @@
 import os
-import json
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QTime
