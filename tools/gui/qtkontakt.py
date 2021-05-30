@@ -168,6 +168,9 @@ class QtKontakt(QtWidgets.QDialog):
             elif isinstance(widget, QtWidgets.QComboBox):
                 widget.setCurrentText("Bitte Wählen")
 
+        # Telefon wieder mit Prefix befüllen
+        self.i_telefon.setText("+49")
+
 
 # Zum schnellen einzeltesten
 if __name__ == "__main__":
