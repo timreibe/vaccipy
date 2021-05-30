@@ -33,7 +33,7 @@ class Worker(QObject):
     sobald die Suche beendet wurde, wird ein "fertig" Signal geworfen, welches den Rückgabewert von its übergibt
     """
 
-    # Signal wenn suche abgeschlossen
+    # Signal wenn Suche abgeschlossen
     fertig = pyqtSignal(bool)
 
     def __init__(self, kontaktdaten: dict, zeitspanne: dict, ROOT_PATH: str):
@@ -96,7 +96,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         self.zeitspanne = zeitspanne
         self.ROOT_PATH = ROOT_PATH
 
-        # std.out & error umleiten auf das Textfeld
+        # std.out & error auf das Textfeld umleiten
         sys.stdout = EigenerStream(text_schreiben=self.update_ausgabe)
         sys.stderr = EigenerStream(text_schreiben=self.update_ausgabe)
 
@@ -147,7 +147,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         # Worker und Thread verbinden
         self.worker.moveToThread(self.thread)
 
-        # Signale setzten
+        # Signale setzen
         self.worker.fertig.connect(self.suche_beendet)
         self.worker.fertig.connect(self.thread.quit)
         self.worker.fertig.connect(self.worker.deleteLater)
