@@ -165,6 +165,10 @@ class QtTerminsuche(QtWidgets.QMainWindow):
 
         cursor = self.console_text_edit.textCursor()
         cursor.movePosition(QtGui.QTextCursor.End)
+        listeCodes = ['\033[95m', '\033[95m', '\033[91m', '\033[33m', '\x1b[0m', '\033[94m', '\033[32m', '\033[0m']
+        for farbcode in listeCodes:
+            if farbcode in text:
+                text = text.replace(farbcode, '')
         cursor.insertText(str(text))
         self.console_text_edit.setTextCursor(cursor)
         self.console_text_edit.ensureCursorVisible()
