@@ -12,6 +12,10 @@ class Modus(Enum):
     TERMIN_SUCHEN = auto()
 
 
+class FehlendeDatenException(Exception):
+    pass
+
+
 def check_alle_kontakt_daten_da(modus: Modus, data: dict):
     """
     Nur für Kontaktdaten!
