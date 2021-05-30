@@ -40,20 +40,21 @@ class QtKontakt(QtWidgets.QDialog):
         super().__init__(parent=parent)
 
         self.standard_speicherpfad = standard_speicherpfad
+        self.modus = modus
 
         # Laden der .ui Datei
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(ROOT_PATH, "images/spritze.ico")))
-        self.setup(modus)
+        self.setup()
 
         # Funktionen für Buttonbox zuweisen
         self.buttonBox.clicked.connect(self.__button_clicked)
 
-    def setup(self, modus: Modus):
-        if modus == Modus.TERMIN_SUCHEN:
+    def setup(self):
+        if self.modus == Modus.TERMIN_SUCHEN:
             # Default - Alle Felder aktiv
             pass
-        elif modus == Modus.CODE_GENERIEREN:
+        elif self.modus == Modus.CODE_GENERIEREN:
             # Benötig wird: PLZ's der Impfzentren, Telefonnummer, Mail
             # Alles andere wird daher deaktiviert
             self.readonly_alle_line_edits(("i_plz_impfzentren", "i_telefon", "i_mail"))
@@ -73,6 +74,8 @@ class QtKontakt(QtWidgets.QDialog):
             self.close()
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
+        except FehlendeDatenException as error:
+            QtWidgets.QMessageBox.critical(self, "Fehlende Daten!", f"Bitte ergänzen!\n\n{error}")
         except AttributeError as error:
             # Parent hat i_kontaktdaten_pfad nicht
             # Falls der Dialog ein anderer Parent hat soll kein Fehler kommen
@@ -89,6 +92,8 @@ class QtKontakt(QtWidgets.QDialog):
 
         speicherpfad = oeffne_file_dialog_save(self, "Kontaktdaten", self.standard_speicherpfad)
         data = self.__get_alle_werte()
+
+        check_alle_kontakt_daten_da(self.modus, data)
 
         speichern(speicherpfad, data)
         return speicherpfad

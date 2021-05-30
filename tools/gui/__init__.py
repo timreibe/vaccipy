@@ -102,7 +102,7 @@ def oeffne_file_dialog_save(parent_widged: QtWidgets.QWidget, titel: str, standa
     datei_data = QtWidgets.QFileDialog.getSaveFileName(parent=parent_widged, caption=titel, directory=standard_speicherpfad, filter=dateityp, options=options)
     dateipfad = datei_data[0]  # (Pfad, Dateityp)
 
-    dateipfad = dateipfad.replace("/", os_name.path.sep)
+    dateipfad = dateipfad.replace("/", os.path.sep)
 
     if not dateipfad:
         raise FileNotFoundError
