@@ -12,6 +12,7 @@ def get_kontaktdaten(filepath: str, mode: Modus = Modus.TERMIN_SUCHEN):
     Lade Kontaktdaten aus Datei.
 
     :param filepath: Pfad zur JSON-Datei mit Kontaktdaten.
+    :param modus: Unterschiedliche Kriterien ob key / values vorhanden sein müssen
     :return: Dictionary mit Kontaktdaten
 
     :raise: ValidationError: Wird geworfen wenn eine Datei ungültige Values besitzt
