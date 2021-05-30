@@ -82,7 +82,7 @@
         <property name="text">
          <string>Vaccipy
 
-Willkommen bei der automatische Terminbuchung
+Willkommen bei der automatischen Terminbuchung
 für den Corona Impfterminservice </string>
         </property>
         <property name="alignment">
@@ -102,7 +102,7 @@ für den Corona Impfterminservice </string>
         <item row="0" column="0">
          <widget class="QLabel" name="kontaktdaten_label">
           <property name="text">
-           <string>Pfad Kontakdaten:</string>
+           <string>Pfad Kontaktdaten:</string>
           </property>
          </widget>
         </item>
@@ -160,7 +160,7 @@ für den Corona Impfterminservice </string>
       <item row="3" column="0">
        <widget class="QPushButton" name="b_neue_kontaktdaten">
         <property name="text">
-         <string>Kontakdaten erstellen</string>
+         <string>Kontaktdaten erstellen</string>
         </property>
        </widget>
       </item>
