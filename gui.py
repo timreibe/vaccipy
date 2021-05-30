@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 import os
 import json
 import time
@@ -9,11 +8,11 @@ import multiprocessing
 
 from PyQt5 import QtCore, QtWidgets, uic
 from PyQt5.QtGui import QIcon
-from tools.gui import *
+from tools.exceptions import FehlendeDatenException
+from tools.gui import Modus, check_alle_kontakt_daten_da, oeffne_file_dialog_select
 from tools.gui.qtzeiten import QtZeiten
 from tools.gui.qtkontakt import QtKontakt
 from tools.gui.qtterminsuche import QtTerminsuche
-from tools.its import ImpfterminService
 from tools.utils import create_missing_dirs
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -38,7 +37,6 @@ class HauptGUI(QtWidgets.QMainWindow):
     ### Layouts ###
     # prozesse_layout
 
-    # TODO: Ausgabe der cmd in der GUI wiederspiegelen - wenn sowas überhaupt geht
     def __init__(self, pfad_fenster_layout: str = os.path.join(PATH, "tools/gui/main.ui")):
         """
         Main der GUI Anwendung
@@ -49,9 +47,9 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
 
         super().__init__()
-        
+
         create_missing_dirs()
-        
+
         # Laden der .ui Datei und Anpassungen
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
@@ -114,7 +112,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         Ruft den Dialog für die Zeitspanne auf
         """
 
-        dialog = QtZeiten(self.pfad_zeitspanne, PATH)
+        dialog = QtZeiten(self, self.pfad_zeitspanne, PATH)
         dialog.show()
         dialog.exec_()
 
@@ -216,6 +214,11 @@ class HauptGUI(QtWidgets.QMainWindow):
         return zeitspanne
 
     def __update_kontaktdaten_pfad(self):
+        """
+        Holt sich mithilfe des QFileDialogs eine bereits vorhandene Datei.
+        Dieser Pfad wird in der GUI ersetzt und im Attribut der Kasse gespeichert
+        """
+
         try:
             pfad = oeffne_file_dialog_select(self, "Kontakdaten", self.pfad_kontaktdaten)
             self.pfad_kontaktdaten = pfad
@@ -224,6 +227,11 @@ class HauptGUI(QtWidgets.QMainWindow):
             pass
 
     def __update_zeitspanne_pfad(self):
+        """
+        Holt sich mithilfe des QFileDialogs eine bereits vorhandene Datei.
+        Dieser Pfad wird in der GUI ersetzt und im Attribut der Kasse gespeichert
+        """
+
         try:
             pfad = oeffne_file_dialog_select(self, "Zeitspanne", self.pfad_zeitspanne)
             self.pfad_zeitspanne = pfad

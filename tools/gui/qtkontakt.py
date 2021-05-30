@@ -1,5 +1,4 @@
 import os
-import json
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QTime
@@ -41,20 +40,21 @@ class QtKontakt(QtWidgets.QDialog):
         super().__init__(parent=parent)
 
         self.standard_speicherpfad = standard_speicherpfad
+        self.modus = modus
 
         # Laden der .ui Datei
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(ROOT_PATH, "images/spritze.ico")))
-        self.setup(modus)
+        self.setup()
 
         # Funktionen für Buttonbox zuweisen
         self.buttonBox.clicked.connect(self.__button_clicked)
 
-    def setup(self, modus: Modus):
-        if modus == Modus.TERMIN_SUCHEN:
+    def setup(self):
+        if self.modus == Modus.TERMIN_SUCHEN:
             # Default - Alle Felder aktiv
             pass
-        elif modus == Modus.CODE_GENERIEREN:
+        elif self.modus == Modus.CODE_GENERIEREN:
             # Benötig wird: PLZ's der Impfzentren, Telefonnummer, Mail
             # Alles andere wird daher deaktiviert
             self.readonly_alle_line_edits(("i_plz_impfzentren", "i_telefon", "i_mail"))
@@ -64,25 +64,39 @@ class QtKontakt(QtWidgets.QDialog):
     def bestaetigt(self):
         """
         Versucht die Daten zu speichern und schließt sich anschließend selbst
+        Ändert zusätzlich den Text in self.parent().i_kontaktdaten_pfad zum Pfad, falls möglich
         """
 
         try:
-            self.speicher_einstellungen()
+            speicherpfad = self.speicher_einstellungen()
             QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
+            self.parent().i_kontaktdaten_pfad.setText(speicherpfad)
             self.close()
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
+        except FehlendeDatenException as error:
+            QtWidgets.QMessageBox.critical(self, "Fehlende Daten!", f"Bitte ergänzen!\n\n{error}")
+        except AttributeError as error:
+            # Parent hat i_kontaktdaten_pfad nicht
+            # Falls der Dialog ein anderer Parent hat soll kein Fehler kommen
+            self.close()
 
-    def speicher_einstellungen(self):
+    def speicher_einstellungen(self) -> str:
         """
         Speichert alle Werte in der entsprechenden JSON-Formatierung
         Speicherpfad wird vom User abgefragt
+
+        Returns:
+            str: Speicherpfad
         """
 
         speicherpfad = oeffne_file_dialog_save(self, "Kontaktdaten", self.standard_speicherpfad)
         data = self.__get_alle_werte()
 
+        check_alle_kontakt_daten_da(self.modus, data)
+
         speichern(speicherpfad, data)
+        return speicherpfad
 
     def __button_clicked(self, button):
         """
@@ -168,6 +182,9 @@ class QtKontakt(QtWidgets.QDialog):
                 widget.setText("")
             elif isinstance(widget, QtWidgets.QComboBox):
                 widget.setCurrentText("Bitte Wählen")
+
+        # Telefon wieder mit Prefix befüllen
+        self.i_telefon.setText("+49")
 
 
 # Zum schnellen einzeltesten

@@ -2,10 +2,6 @@
 
 import sys
 import os
-import json
-import time
-
-from io import StringIO
 
 from PyQt5 import QtWidgets, uic, QtCore, QtGui
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
@@ -112,10 +108,9 @@ class QtTerminsuche(QtWidgets.QMainWindow):
 
         # GUI anzeigen
         self.show()
-        
+
         # Terminsuche starten
         self.thread.start()
-
 
     @staticmethod
     def start_suche(kontaktdaten: dict, zeitspanne: dict, ROOT_PATH: str):
@@ -133,6 +128,10 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         app.exec_()
 
     def setup_infos(self):
+        """
+        Setzt die entsprechende Labels
+        """
+
         self.code_label.setText(self.kontaktdaten["code"])
         self.vorname_label.setText(self.kontaktdaten["kontakt"]["vorname"])
         self.nachname_label.setText(self.kontaktdaten["kontakt"]["nachname"])
@@ -192,7 +191,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         if self.thread.isRunning():
             self.thread.quit()
 
-        if self.erfolgreich == None:
+        if self.erfolgreich is None:
             QtWidgets.QMessageBox.warning(self, "Suche beenden", "Die Suche wird beendet!\nVorher Ausgabe Prüfen!")
 
         # Streams wieder korrigieren, damit kein Fehler kommt

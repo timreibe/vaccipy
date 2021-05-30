@@ -1,7 +1,11 @@
+import os
 import json
+import platform
 from enum import Enum, auto
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QMessageBox
+
+from tools.exceptions import FehlendeDatenException
 
 
 class Modus(Enum):
@@ -89,10 +93,16 @@ def oeffne_file_dialog_save(parent_widged: QtWidgets.QWidget, titel: str, standa
         str: Vollständiger Pfad
     """
 
+    os_name: str = platform.system()
     options = QtWidgets.QFileDialog.Options()
-    options |= QtWidgets.QFileDialog.DontUseNativeDialog
-    datei_data = QtWidgets.QFileDialog.getSaveFileName(parent=parent_widged, caption=titel, directory=standard_speicherpfad, filter="JSON Files (*.json)", options=options)
+
+    if os_name.lower() != "windows":
+        options |= QtWidgets.QFileDialog.DontUseNativeDialog
+
+    datei_data = QtWidgets.QFileDialog.getSaveFileName(parent=parent_widged, caption=titel, directory=standard_speicherpfad, filter=dateityp, options=options)
     dateipfad = datei_data[0]  # (Pfad, Dateityp)
+
+    dateipfad = dateipfad.replace("/", os.path.sep)
 
     if not dateipfad:
         raise FileNotFoundError
@@ -118,10 +128,15 @@ def oeffne_file_dialog_select(parent_widged: QtWidgets.QWidget, titel: str, stan
     """
 
     # Öffnet den "File-Picker" vom System um ein bereits existierende Datei auszuwählen
+    os_name: str = platform.system()
     options = QtWidgets.QFileDialog.Options()
-    options |= QtWidgets.QFileDialog.DontUseNativeDialog
-    datei_data = QtWidgets.QFileDialog.getOpenFileName(parent=parent_widged, caption=titel, directory=standard_oeffnungspfad, filter="JSON Files (*.json)", options=options)
+    if os_name.lower() != "windows":
+        options |= QtWidgets.QFileDialog.DontUseNativeDialog
+
+    datei_data = QtWidgets.QFileDialog.getOpenFileName(parent=parent_widged, caption=titel, directory=standard_oeffnungspfad, filter=dateityp, options=options)
     dateipfad = datei_data[0]  # (pfad, typ)
+
+    dateipfad = dateipfad.replace("/", os.path.sep)
 
     if not dateipfad:
         raise FileNotFoundError
