@@ -1,75 +1,10 @@
+import os
 import json
-from enum import Enum, auto
+
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QMessageBox
 
-
-class Modus(Enum):
-    CODE_GENERIEREN = auto()
-    TERMIN_SUCHEN = auto()
-
-
-class FehlendeDatenException(Exception):
-    pass
-
-
-def check_alle_kontakt_daten_da(modus: Modus, data: dict):
-    """
-    Nur für Kontaktdaten!
-    Überprüft ob alle Key vorhanden sind und ob die Values kein leeren String enthalten
-
-    Args:
-        modus (Modus): Entsprechend werden Daten überprüft
-        data (dict): Inhalt der JSON
-
-    Raises:
-        FehlendeDatenException: Es wird ein Key oder Value vermisst
-    """
-
-    if modus == Modus.TERMIN_SUCHEN:
-        try:
-            # Daten vorhanden
-            data["plz_impfzentren"]
-            data["code"]
-            data["kontakt"]["anrede"]
-            data["kontakt"]["vorname"]
-            data["kontakt"]["nachname"]
-            data["kontakt"]["strasse"]
-            data["kontakt"]["hausnummer"]
-            data["kontakt"]["plz"]
-            data["kontakt"]["ort"]
-            data["kontakt"]["phone"]
-            data["kontakt"]["notificationChannel"]
-            data["kontakt"]["notificationReceiver"]
-
-            # Daten enthalten kein leerer String
-            # PLZ
-            for plz in data["plz_impfzentren"]:
-                if not plz.strip():
-                    raise FehlendeDatenException("Wert fuer \"plz_impfzentren\" fehlerhaft!")
-            if not data["code"].strip():
-                raise FehlendeDatenException("Wert fuer \"code\" fehlt!")
-            # 2. Ebene
-            for key, value in data["kontakt"].items():
-                if not value.strip():
-                    raise FehlendeDatenException(f"Wert fuer \"{key}\" fehlt!")
-        except KeyError as error:
-            raise FehlendeDatenException("Schluesselwort Fehlt!") from error
-
-    elif modus == Modus.CODE_GENERIEREN:
-        try:
-            # Daten vorhanden
-            data["plz_impfzentren"]
-            data["kontakt"]["phone"]
-            data["kontakt"]["notificationChannel"]
-            data["kontakt"]["notificationReceiver"]
-
-            # Daten enthalten kein leerer String
-            for key, values in data.items():
-                if values.strip() == "":
-                    raise FehlendeDatenException(f"Wert fuer \"{key}\" fehlt!")
-        except KeyError as error:
-            raise FehlendeDatenException("Schluesselwort Fehlt!") from error
+from tools.exceptions import MissingValuesError
 
 
 def oeffne_file_dialog_save(parent_widged: QtWidgets.QWidget, titel: str, standard_speicherpfad: str, dateityp="JSON Files (*.json)") -> str:
@@ -91,8 +26,10 @@ def oeffne_file_dialog_save(parent_widged: QtWidgets.QWidget, titel: str, standa
 
     options = QtWidgets.QFileDialog.Options()
     options |= QtWidgets.QFileDialog.DontUseNativeDialog
-    datei_data = QtWidgets.QFileDialog.getSaveFileName(parent=parent_widged, caption=titel, directory=standard_speicherpfad, filter="JSON Files (*.json)", options=options)
+    datei_data = QtWidgets.QFileDialog.getSaveFileName(parent=parent_widged, caption=titel, directory=standard_speicherpfad, filter=dateityp, options=options)
     dateipfad = datei_data[0]  # (Pfad, Dateityp)
+
+    dateipfad = dateipfad.replace("/", os.path.sep)
 
     if not dateipfad:
         raise FileNotFoundError
@@ -120,8 +57,10 @@ def oeffne_file_dialog_select(parent_widged: QtWidgets.QWidget, titel: str, stan
     # Öffnet den "File-Picker" vom System um ein bereits existierende Datei auszuwählen
     options = QtWidgets.QFileDialog.Options()
     options |= QtWidgets.QFileDialog.DontUseNativeDialog
-    datei_data = QtWidgets.QFileDialog.getOpenFileName(parent=parent_widged, caption=titel, directory=standard_oeffnungspfad, filter="JSON Files (*.json)", options=options)
+    datei_data = QtWidgets.QFileDialog.getOpenFileName(parent=parent_widged, caption=titel, directory=standard_oeffnungspfad, filter=dateityp, options=options)
     dateipfad = datei_data[0]  # (pfad, typ)
+
+    dateipfad = dateipfad.replace("/", os.path.sep)
 
     if not dateipfad:
         raise FileNotFoundError

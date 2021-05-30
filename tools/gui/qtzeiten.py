@@ -1,5 +1,5 @@
 import os
-import json
+
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QTime, QDate, QDateTime
 from PyQt5.QtGui import QIcon
@@ -44,7 +44,7 @@ class QtZeiten(QtWidgets.QDialog):
     Diese erbt von QtWidgets.QDialog
     """
 
-    def __init__(self, standard_speicherpfad: str, ROOT_PATH: str, pfad_fenster_layout=os.path.join(PATH, "uhrzeiten.ui")):
+    def __init__(self, parent: QtWidgets.QWidget, standard_speicherpfad: str, ROOT_PATH: str, pfad_fenster_layout=os.path.join(PATH, "uhrzeiten.ui")):
         """
         Eingabe der Zeitkonfigurationen
 
@@ -53,7 +53,7 @@ class QtZeiten(QtWidgets.QDialog):
             pfad_fenster_layout (str, optional): Layout des Dialogs. Defaults to os.path.join(PATH, "uhrzeiten.ui").
         """
 
-        super(QtZeiten, self).__init__()
+        super().__init__(parent=parent)
 
         # Startwerte setzten
         self.standard_speicherpfad = standard_speicherpfad
@@ -70,27 +70,37 @@ class QtZeiten(QtWidgets.QDialog):
     def bestaetigt(self):
         """
         Speichert die aktuellen Werte und schließt anschließend den Dialog
+        Ändert zusätzlich den Text in self.parent().i_zeitspanne_pfad zum Pfad, falls möglich
         """
 
         try:
-            self.speicher_einstellungen()
+            speicherpfad = self.speicher_einstellungen()
             QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
+            self.parent().i_zeitspanne_pfad.setText(speicherpfad)
             self.close()
         except ValueError as error:
             QtWidgets.QMessageBox.critical(self, "Ungültige Eingabe!", str(error))
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
+        except AttributeError as error:
+            # Parent hat i_zeitspanne_pfad nicht
+            # Falls der Dialog ein anderer Parent hat soll kein Fehler kommen
+            self.close()
 
-    def speicher_einstellungen(self):
+    def speicher_einstellungen(self) -> str:
         """
         Speichert alle Werte in der entsprechenden JSON-Formatierung
         Speicherpfad wird vom User abgefragt
+
+        Returns:
+            str: Speicherpfad
         """
 
         speicherpfad = oeffne_file_dialog_save(self, "Zeitspanne", self.standard_speicherpfad)
         data = self.__get_alle_werte()
 
         speichern(speicherpfad, data)
+        return speicherpfad
 
     def __button_clicked(self, button):
         """
@@ -155,7 +165,7 @@ class QtZeiten(QtWidgets.QDialog):
         return aktive_wochentage
 
     def __get_uhrzeiten(self) -> dict:
-        """ 
+        """
         Erstellt ein Dict mit ensprechenden start und endzeiten
 
         Raises:
@@ -210,7 +220,7 @@ class QtZeiten(QtWidgets.QDialog):
         Setzt alle Werte in der GUI zurück
         """
 
-        if widgets == None:
+        if widgets is None:
             self.__reset(self.children())
             return
 

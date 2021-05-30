@@ -1,11 +1,13 @@
 import os
-import json
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QTime
 from PyQt5.QtGui import QIcon
 
 from tools.gui import *
+from tools import kontaktdaten as kontakt_tools
+from tools import Modus
+from tools.exceptions import ValidationError, MissingValuesError
 
 # Folgende Widgets stehen zur Verfügung:
 
@@ -40,49 +42,82 @@ class QtKontakt(QtWidgets.QDialog):
     def __init__(self, parent: QtWidgets.QWidget, modus: Modus, standard_speicherpfad: str, ROOT_PATH: str, pfad_fenster_layout=os.path.join(PATH, "kontaktdaten.ui")):
         super().__init__(parent=parent)
 
+        # Setze Attribute
         self.standard_speicherpfad = standard_speicherpfad
+        self.modus = modus
 
         # Laden der .ui Datei
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(ROOT_PATH, "images/spritze.ico")))
-        self.setup(modus)
+        self.setup()
 
         # Funktionen für Buttonbox zuweisen
         self.buttonBox.clicked.connect(self.__button_clicked)
 
-    def setup(self, modus: Modus):
-        if modus == Modus.TERMIN_SUCHEN:
+    def setup(self):
+        """
+        Aktiviert abhänfig vom Modus die Eingabefelder
+
+        Raises:
+            RuntimeError: Modus ungültig
+        """
+
+        if self.modus == Modus.TERMIN_SUCHEN:
             # Default - Alle Felder aktiv
             pass
-        elif modus == Modus.CODE_GENERIEREN:
+        elif self.modus == Modus.CODE_GENERIEREN:
             # Benötig wird: PLZ's der Impfzentren, Telefonnummer, Mail
             # Alles andere wird daher deaktiviert
             self.readonly_alle_line_edits(("i_plz_impfzentren", "i_telefon", "i_mail"))
+            self.i_code_impfzentren.setInputMask("")
         else:
             raise RuntimeError("Modus ungueltig!")
 
     def bestaetigt(self):
         """
         Versucht die Daten zu speichern und schließt sich anschließend selbst
+        Ändert zusätzlich den Text in self.parent().i_kontaktdaten_pfad zum Pfad, falls möglich
         """
 
         try:
-            self.speicher_einstellungen()
+            data = self.__get_alle_werte()
+
+            self.__check_werte(data)
+
+            # Daten speichern
+            speicherpfad = self.speicher_einstellungen(data)
             QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
+            self.parent().i_kontaktdaten_pfad.setText(speicherpfad)
             self.close()
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
+        except ValidationError as error:
+            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In den angegebenen Daten sind Fehler:\n\n{error}")
+            return
+        except MissingValuesError as error:
+            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Daten Fehlen Werte:\n\n{error}")
+            return
+        except AttributeError as error:
+            # Parent hat i_kontaktdaten_pfad nicht
+            # Falls der Dialog ein anderer Parent hat soll kein Fehler kommen
+            self.close()
 
-    def speicher_einstellungen(self):
+    def speicher_einstellungen(self, data: dict) -> str:
         """
         Speichert alle Werte in der entsprechenden JSON-Formatierung
         Speicherpfad wird vom User abgefragt
+
+        Params:
+            data (dict): Kontaktaden zum speichern
+
+        Returns:
+            str: Speicherpfad
         """
 
         speicherpfad = oeffne_file_dialog_save(self, "Kontaktdaten", self.standard_speicherpfad)
-        data = self.__get_alle_werte()
 
         speichern(speicherpfad, data)
+        return speicherpfad
 
     def __button_clicked(self, button):
         """
@@ -142,6 +177,30 @@ class QtKontakt(QtWidgets.QDialog):
         }
         return kontaktdaten
 
+    def __check_werte(self, kontaktdaten: dict):
+        """
+        Prüft mithilfe von den kontakt_tools ob alle Daten da und gültig sind
+
+        Args:
+            kontaktdaten (dict): Kontaktdaten
+
+        Raises:
+            ValidationError: Daten Fehlerhaft
+            MissingValuesError: Daten Fehlen
+        """
+
+        kontakt_tools.check_kontaktdaten(kontaktdaten, self.modus)
+
+        if self.modus == Modus.TERMIN_SUCHEN:
+            kontakt_tools.validate_kontaktdaten(kontaktdaten)
+        elif self.modus == Modus.CODE_GENERIEREN:
+            kontakt_tools.validate_plz_impfzentren(kontaktdaten["plz_impfzentren"])
+            kontakt_tools.validate_email(kontaktdaten["kontakt"]["notificationReceiver"])
+            try:
+                kontakt_tools.validate_phone(kontaktdaten["kontakt"]["phone"])
+            except ValidationError as error:
+                raise ValidationError("Telefonnummer: +49 nicht vergessen") from error
+
     def readonly_alle_line_edits(self, ausgeschlossen: list):
         """
         Setzt alle QLineEdit auf "read only", ausgeschlossen der Widgets in ausgeschlossen.
@@ -168,6 +227,9 @@ class QtKontakt(QtWidgets.QDialog):
                 widget.setText("")
             elif isinstance(widget, QtWidgets.QComboBox):
                 widget.setCurrentText("Bitte Wählen")
+
+        # Telefon wieder mit Prefix befüllen
+        self.i_telefon.setText("+49")
 
 
 # Zum schnellen einzeltesten
