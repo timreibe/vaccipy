@@ -112,7 +112,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         Ruft den Dialog für die Zeitspanne auf
         """
 
-        dialog = QtZeiten(self.pfad_zeitspanne, PATH)
+        dialog = QtZeiten(self, self.pfad_zeitspanne, PATH)
         dialog.show()
         dialog.exec_()
 

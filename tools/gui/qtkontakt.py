@@ -63,25 +63,35 @@ class QtKontakt(QtWidgets.QDialog):
     def bestaetigt(self):
         """
         Versucht die Daten zu speichern und schließt sich anschließend selbst
+        Ändert zusätzlich den Text in self.parent().i_kontaktdaten_pfad zum Pfad, falls möglich
         """
 
         try:
-            self.speicher_einstellungen()
+            speicherpfad = self.speicher_einstellungen()
             QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
+            self.parent().i_kontaktdaten_pfad.setText(speicherpfad)
             self.close()
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
+        except AttributeError as error:
+            # Parent hat i_kontaktdaten_pfad nicht
+            # Falls der Dialog ein anderer Parent hat soll kein Fehler kommen
+            self.close()
 
-    def speicher_einstellungen(self):
+    def speicher_einstellungen(self) -> str:
         """
         Speichert alle Werte in der entsprechenden JSON-Formatierung
         Speicherpfad wird vom User abgefragt
+
+        Returns:
+            str: Speicherpfad
         """
 
         speicherpfad = oeffne_file_dialog_save(self, "Kontaktdaten", self.standard_speicherpfad)
         data = self.__get_alle_werte()
 
         speichern(speicherpfad, data)
+        return speicherpfad
 
     def __button_clicked(self, button):
         """
