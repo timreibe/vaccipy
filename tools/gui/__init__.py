@@ -1,5 +1,6 @@
 import os
 import json
+import platform
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QMessageBox
@@ -24,8 +25,12 @@ def oeffne_file_dialog_save(parent_widged: QtWidgets.QWidget, titel: str, standa
         str: Vollständiger Pfad
     """
 
+    os_name: str = platform.system()
     options = QtWidgets.QFileDialog.Options()
-    options |= QtWidgets.QFileDialog.DontUseNativeDialog
+
+    if os_name.lower() != "windows":
+        options |= QtWidgets.QFileDialog.DontUseNativeDialog
+
     datei_data = QtWidgets.QFileDialog.getSaveFileName(parent=parent_widged, caption=titel, directory=standard_speicherpfad, filter=dateityp, options=options)
     dateipfad = datei_data[0]  # (Pfad, Dateityp)
 
@@ -55,8 +60,11 @@ def oeffne_file_dialog_select(parent_widged: QtWidgets.QWidget, titel: str, stan
     """
 
     # Öffnet den "File-Picker" vom System um ein bereits existierende Datei auszuwählen
+    os_name: str = platform.system()
     options = QtWidgets.QFileDialog.Options()
-    options |= QtWidgets.QFileDialog.DontUseNativeDialog
+    if os_name.lower() != "windows":
+        options |= QtWidgets.QFileDialog.DontUseNativeDialog
+
     datei_data = QtWidgets.QFileDialog.getOpenFileName(parent=parent_widged, caption=titel, directory=standard_oeffnungspfad, filter=dateityp, options=options)
     dateipfad = datei_data[0]  # (pfad, typ)
 
