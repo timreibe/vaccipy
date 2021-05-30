@@ -3,11 +3,7 @@ import os
 import re
 
 from email.utils import parseaddr
-
-
-class ValidationError(Exception):
-    pass
-
+from tools.exceptions import ValidationError
 
 def get_kontaktdaten(filepath):
     """
