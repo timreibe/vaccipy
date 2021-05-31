@@ -6,9 +6,12 @@ from base64 import b64encode
 from datetime import datetime, date
 from datetime import time as dtime
 from random import choice, randint
+
 from typing import Dict, List
 
 import cloudscraper
+
+
 from selenium.webdriver import ActionChains
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
@@ -179,6 +182,8 @@ class ImpfterminService():
     def get_chromedriver(self, headless):
         chrome_options = Options()
 
+
+
         # deaktiviere Selenium Logging
         chrome_options.add_argument('disable-infobars')
         chrome_options.add_experimental_option('useAutomationExtension', False)
@@ -191,7 +196,7 @@ class ImpfterminService():
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
         chrome_options.add_argument("user-agent=Mozilla/5.0")
-
+        
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
             chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
@@ -286,6 +291,7 @@ class ImpfterminService():
         except:
             return False
 
+
     def driver_renew_cookies_code(self, driver, plz_impfzentrum, manual=False):
         self.driver_enter_code(driver, plz_impfzentrum)
         if manual:
@@ -298,7 +304,7 @@ class ImpfterminService():
             akavpau = driver.get_cookie("akavpau_User_allowed").get("value")
             if cookie:
                 self.s.cookies.clear()
-                self.s.cookies.update({"bm_sz": cookie, "akavpau_User_allowed": akavpau})
+                self.s.cookies.update({"bm_sz": cookie,"akavpau_User_allowed": akavpau })
                 self.log.info("Browser-Cookie generiert: *{}".format(cookie.get("value")[-6:]))
                 return True
             else:
@@ -306,6 +312,7 @@ class ImpfterminService():
                 return False
         except:
             return False
+
 
     def driver_book_appointment(self, driver, plz_impfzentrum):
         timestamp = time.strftime("%Y%m%d-%H%M%S")
@@ -341,8 +348,7 @@ class ImpfterminService():
         except:
             self.log.error("Termine können nicht ausgewählt werden")
             try:
-                with open(filepath + "errorterminauswahl" + timestamp + ".html", 'w',
-                          encoding='utf-8') as file:
+                with open(filepath + "errorterminauswahl" + timestamp + ".html", 'w', encoding='utf-8') as file:
                     file.write(str(driver.page_source))
                 driver.save_screenshot(filepath + "errorterminauswahl" + timestamp + ".png")
             except:
@@ -462,8 +468,7 @@ class ImpfterminService():
         if "Ihr Termin am" in str(driver.page_source):
             msg = "Termin erfolgreich gebucht!"
             self.log.success(msg)
-            desktop_notification(operating_system=self.operating_system, title="Terminbuchung:",
-                                 message=msg)
+            desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
             return True
         else:
             self.log.error(
@@ -484,6 +489,7 @@ class ImpfterminService():
         with self.get_chromedriver(headless=True) as driver:
             return self.driver_renew_cookies(driver, choice(self.plz_impfzentren))
 
+          
     @retry_on_failure()
     def renew_cookies_code(self, manual=False):
         """
@@ -494,6 +500,8 @@ class ImpfterminService():
         self.log.info("Browser-Cookies generieren")
         with self.get_chromedriver(headless=False) as driver:
             return self.driver_renew_cookies_code(driver, choice(self.plz_impfzentren), manual)
+
+
 
     @retry_on_failure()
     def book_appointment(self):
@@ -590,29 +598,22 @@ class ImpfterminService():
 
                             # Soll einer der Beiden Termine überprüft werden
                             if num in zeitspanne["einhalten_bei"]:
-                                startdatum = date(zeitspanne["startdatum"]["jahr"],
-                                                  zeitspanne["startdatum"]["monat"],
-                                                  zeitspanne["startdatum"]["tag"])
-                                startzeit = dtime(zeitspanne["startzeit"]["h"],
-                                                  zeitspanne["startzeit"]["m"])
-                                endzeit = dtime(zeitspanne["endzeit"]["h"],
-                                                zeitspanne["endzeit"]["m"])
+                                startdatum = date(zeitspanne["startdatum"]["jahr"], zeitspanne["startdatum"]["monat"], zeitspanne["startdatum"]["tag"])
+                                startzeit = dtime(zeitspanne["startzeit"]["h"], zeitspanne["startzeit"]["m"])
+                                endzeit = dtime(zeitspanne["endzeit"]["h"], zeitspanne["endzeit"]["m"])
                                 wochentage = zeitspanne["wochentage"]
 
-                                termin_zeit = datetime.fromtimestamp(int(termin["begin"]) / 1000)
+                                termin_zeit = datetime.fromtimestamp(int(termin["begin"])/1000)
 
                                 # Termin inherhalb der Zeitspanne und im Wochentag
-                                if not ((
-                                                startzeit <= termin_zeit.time() <= endzeit) and termin_zeit.date() >= startdatum and (
-                                                termin_zeit.weekday() in wochentage)):
+                                if not ((startzeit <= termin_zeit.time() <= endzeit) and termin_zeit.date() >= startdatum and (termin_zeit.weekday() in wochentage)):
                                     termine_in_zeitspanne = False
 
                         # Beide Termine sind in der Zeitspanne
                         if termine_in_zeitspanne:
                             terminpaare_in_zeitspanne.append(terminpaar)
                         else:
-                            self.log.info(
-                                "Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
+                            self.log.info("Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
                             for num, terminpaar in enumerate(terminpaar, 1):
                                 ts = datetime.fromtimestamp(terminpaar["begin"] / 1000).strftime(
                                     '%d.%m.%Y um %H:%M Uhr')
@@ -669,8 +670,7 @@ class ImpfterminService():
         if res.status_code == 201:
             msg = "Termin erfolgreich gebucht!"
             self.log.success(msg)
-            desktop_notification(operating_system=self.operating_system, title="Terminbuchung:",
-                                 message=msg)
+            desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
             return True
 
         elif res.status_code == 429:
@@ -681,8 +681,7 @@ class ImpfterminService():
             if res.status_code == 201:
                 msg = "Termin erfolgreich gebucht!"
                 self.log.success(msg)
-                desktop_notification(operating_system=self.operating_system,
-                                     title="Terminbuchung:", message=msg)
+                desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
                 return True
             else:
                 return False
@@ -701,8 +700,7 @@ class ImpfterminService():
             msg = f"Unbekannter Statuscode: {res.status_code}"
 
         self.log.error(msg)
-        desktop_notification(operating_system=self.operating_system, title="Terminbuchung:",
-                             message=msg)
+        desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
         return False
 
     @retry_on_failure()
@@ -758,8 +756,7 @@ class ImpfterminService():
         while True:
             res = self.s.post(self.domain + path, json=data, timeout=15)
             if res.ok:
-                self.log.success(
-                    "Der Impf-Code wurde erfolgreich angefragt, bitte prüfe deine Mails!")
+                self.log.success("Der Impf-Code wurde erfolgreich angefragt, bitte prüfe deine Mails!")
                 return True
             elif res.status_code == 429:
                 self.log.error("Cookies müssen erneuert werden.")
@@ -769,8 +766,7 @@ class ImpfterminService():
                 return False
 
     @staticmethod
-    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH: str,
-                    zeitspanne: dict = dict(), check_delay: int = 30):
+    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH:str, zeitspanne: dict = dict(), check_delay: int = 30):
         """
         Workflow für die Terminbuchung.
 
