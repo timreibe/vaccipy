@@ -22,7 +22,7 @@ import pathlib
 logger = logging.getLogger(__name__)
 
 vaccipy_dir = pathlib.Path(__file__).parent.absolute()
-chromium_revision = '588429'
+chromium_revision = '869685'
 DOWNLOADS_FOLDER = Path(vaccipy_dir) / 'local-chromium'
 DEFAULT_DOWNLOAD_HOST = 'https://storage.googleapis.com'
 DOWNLOAD_HOST = os.environ.get(
