@@ -4,6 +4,7 @@ import argparse
 import copy
 import json
 import os
+import random
 
 try:
     import readline
@@ -239,8 +240,13 @@ def gen_code(kontaktdaten):
             "Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
             "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
             "deine Daten beim Programmstart erneut ein.\n") from exc
-
-    its = ImpfterminService("PLAT-ZHAL-TER1", [plz_impfzentrum], {},PATH)
+    # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
+    password_characters = string.ascii_letters + string.digits
+    one = ''.join(random.choice(password_characters) for i in range(4))
+    two = ''.join(random.choice(password_characters) for i in range(4))
+    three = ''.join(random.choice(password_characters) for i in range(4))
+    
+    its = ImpfterminService(one+"-"+two+"-"+three, [plz_impfzentrum], {},PATH)
 
     print("Wähle nachfolgend deine Altersgruppe aus (L920, L921, L922 oder L923).\n"
           "Es ist wichtig, dass du die Gruppe entsprechend deines Alters wählst, "
