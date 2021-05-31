@@ -243,7 +243,7 @@ def gen_code(kontaktdaten):
     # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
     password_characters = string.ascii_letters + string.digits
     one = 'VACC'
-    two = 'IPY'.join(random.choice(password_characters) for i in range(3))
+    two = 'IPY'.join(random.choice(password_characters) for i in range(1))
     three = ''.join(random.choice(password_characters) for i in range(4))
     
     combine = one + "-" + two + "-" three
