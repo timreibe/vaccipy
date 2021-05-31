@@ -37,6 +37,9 @@ class HauptGUI(QtWidgets.QMainWindow):
     ### Layouts ###
     # prozesse_layout
 
+    ### QSpinBox ###
+    # i_interval
+
     def __init__(self, pfad_fenster_layout: str = os.path.join(PATH, "tools/gui/main.ui")):
         """
         Main der GUI Anwendung
@@ -146,12 +149,13 @@ class HauptGUI(QtWidgets.QMainWindow):
             kontaktdaten (dict): kontakdaten aus kontaktdaten.json
             zeitspanne (dict): zeitspanne aus zeitspanne.json
         """
-
+        check_delay = self.i_interval.value()
         code = kontaktdaten["code"]
         terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{code}-{self.prozesse_counter}", daemon=True, kwargs={
                                                       "kontaktdaten": kontaktdaten,
                                                       "zeitspanne": zeitspanne,
-                                                      "ROOT_PATH": PATH})
+                                                      "ROOT_PATH": PATH,
+                                                      "check_delay": check_delay})
         try:
             terminsuche_prozess.start()
             if not terminsuche_prozess.is_alive():
