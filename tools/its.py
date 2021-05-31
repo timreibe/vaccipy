@@ -550,7 +550,7 @@ class ImpfterminService():
             return False
 
     @retry_on_failure()
-    def termin_suchen(self, plz: int, zeitspanne: dict):
+    def termin_suchen(self, plz: str, zeitspanne: dict):
         """Es wird nach einen verfügbaren Termin in der gewünschten PLZ gesucht.
         Ausgewählt wird der erstbeste Termin, welcher im entsprechenden Zeitraum liegt (!).
         Zurückgegeben wird das Ergebnis der Abfrage und der Status-Code.
