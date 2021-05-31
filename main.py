@@ -5,6 +5,7 @@ import copy
 import json
 import os
 import random
+import string
 
 try:
     import readline
