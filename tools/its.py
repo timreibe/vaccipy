@@ -430,8 +430,7 @@ class ImpfterminService():
 
             # Input Mail
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-'
-                'contact-form/div[5]/div/div/label/input')
+                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[5]/div/div/label/input')
             input_field.send_keys(self.kontakt['notificationReceiver'])
         except:
             self.log.error("Kontaktdaten können nicht eingegeben werden")
@@ -455,8 +454,7 @@ class ImpfterminService():
 
         # Termin buchen
         try:
-            button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/' \
-                           'div[5]/div/div[3]/div[2]/div[2]/button'
+            button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[3]/div[2]/div[2]/button'
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
@@ -472,8 +470,7 @@ class ImpfterminService():
             return True
         else:
             self.log.error(
-                "Automatisierte Terminbuchung fehlgeschlagen. Termin manuell im Fenster oder "
-                "im Browser buchen.")
+                "Automatisierte Terminbuchung fehlgeschlagen. Termin manuell im Fenster oder im Browser buchen.")
             print("Link für manuelle Buchung im Browser:", url)
             time.sleep(10 * 60)
             return False
