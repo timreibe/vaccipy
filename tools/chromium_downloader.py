@@ -183,5 +183,5 @@ def check_chromium() -> bool:
 
 
 if __name__ == '__main__':
-    download_chromium()
-    logger.info('Chromium downloaded to ' + chromium_executable())
+    if not check_chromium():
+        download_chromium()
