@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>764</width>
+    <width>766</width>
     <height>489</height>
    </rect>
   </property>
@@ -288,6 +288,9 @@
               <property name="checked">
                <bool>true</bool>
               </property>
+              <property name="weekday" stdset="0">
+               <UInt>1</UInt>
+              </property>
              </widget>
             </item>
             <item row="2" column="0" colspan="2">
@@ -297,6 +300,9 @@
               </property>
               <property name="checked">
                <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <UInt>0</UInt>
               </property>
              </widget>
             </item>
@@ -315,6 +321,9 @@
               <property name="checked">
                <bool>true</bool>
               </property>
+              <property name="weekday" stdset="0">
+               <UInt>3</UInt>
+              </property>
              </widget>
             </item>
             <item row="9" column="0" colspan="2">
@@ -324,6 +333,9 @@
               </property>
               <property name="checked">
                <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <UInt>5</UInt>
               </property>
              </widget>
             </item>
@@ -335,6 +347,9 @@
               <property name="checked">
                <bool>true</bool>
               </property>
+              <property name="weekday" stdset="0">
+               <UInt>6</UInt>
+              </property>
              </widget>
             </item>
             <item row="4" column="0" colspan="2">
@@ -344,6 +359,9 @@
               </property>
               <property name="checked">
                <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <UInt>2</UInt>
               </property>
              </widget>
             </item>
@@ -361,6 +379,9 @@
               </property>
               <property name="checked">
                <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <UInt>4</UInt>
               </property>
              </widget>
             </item>

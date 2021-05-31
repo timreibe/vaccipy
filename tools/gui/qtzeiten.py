@@ -160,7 +160,7 @@ class QtZeiten(QtWidgets.QDialog):
         checkboxes = self.tage_frame.findChildren(QtWidgets.QCheckBox)
         for num, checkboxe in enumerate(checkboxes, 0):
             if checkboxe.isChecked():
-                aktive_wochentage.append(num)
+                aktive_wochentage.append( checkboxe.property("weekday"))
 
         return aktive_wochentage
 
