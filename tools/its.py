@@ -191,6 +191,10 @@ class ImpfterminService():
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
         chrome_options.add_argument("user-agent=Mozilla/5.0")
+        
+        chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
+        if chromebin_from_env:
+            chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
 
         chrome_options.headless = headless
 
