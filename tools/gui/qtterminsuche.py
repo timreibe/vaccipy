@@ -162,14 +162,26 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         Args:
             text (str): Text welcher hinzukommen soll
         """
+        # Austausch der Farbcodes / Ascii Zeichen aus der Shell
+        listeCodes = ['\033[95m', '\033[91m', '\033[33m', '\x1b[0m', '\033[94m', '\033[32m', '\033[0m']
+        for farbcode in listeCodes:
+            if farbcode in text:
+                if farbcode == '\033[95m' or farbcode == '\033[91m':
+                    text = f"<div style='color:red'>{text}</div>"
+                elif farbcode == '\033[33m':
+                    text = f"<div style='color:orange'>{text}</div>"
+                elif farbcode == '\x1b[0m':
+                    text = f"<div>{text}</div>"
+                elif farbcode == '\033[94m':
+                    text = f"<div style='color:blue'>{text}</div>"
+                elif farbcode == '\033[32m':
+                    text = f"<div style='color:green'>{text}</div>"
+                text = text.replace(farbcode, '')
 
         cursor = self.console_text_edit.textCursor()
         cursor.movePosition(QtGui.QTextCursor.End)
-        listeCodes = ['\033[95m', '\033[95m', '\033[91m', '\033[33m', '\x1b[0m', '\033[94m', '\033[32m', '\033[0m']
-        for farbcode in listeCodes:
-            if farbcode in text:
-                text = text.replace(farbcode, '')
-        cursor.insertText(str(text))
+        cursor.insertHtml(str(text))
+        cursor.insertText(str("\n"))
         self.console_text_edit.setTextCursor(cursor)
         self.console_text_edit.ensureCursorVisible()
 
