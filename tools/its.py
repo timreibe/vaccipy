@@ -581,47 +581,20 @@ class ImpfterminService():
             res_json = res.json()
             terminpaare = res_json.get("termine")
             if terminpaare:
-                # Checken ob verfügbare terminpaare in angegebener Zeitspanne liegt
-                # Falls daten nicht vorhanden - einfach alle aktzeptieren
-                if zeitspanne.get("einhalten_bei"):
-                    terminpaare_in_zeitspanne = list()
-
-                    # Alle Terminpaare durchgehen
-                    for terminpaar in terminpaare:
-                        termine_in_zeitspanne = True
-
-                        # Einzelne Termine druchgehen
-                        for num, termin in enumerate(terminpaar, 1):
-
-                            # Soll einer der Beiden Termine überprüft werden
-                            if num in zeitspanne["einhalten_bei"]:
-                                startdatum = date(zeitspanne["startdatum"]["jahr"], zeitspanne["startdatum"]["monat"], zeitspanne["startdatum"]["tag"])
-                                startzeit = dtime(zeitspanne["startzeit"]["h"], zeitspanne["startzeit"]["m"])
-                                endzeit = dtime(zeitspanne["endzeit"]["h"], zeitspanne["endzeit"]["m"])
-                                wochentage = zeitspanne["wochentage"]
-
-                                termin_zeit = datetime.fromtimestamp(int(termin["begin"])/1000)
-
-                                # Termin inherhalb der Zeitspanne und im Wochentag
-                                if not ((startzeit <= termin_zeit.time() <= endzeit) and termin_zeit.date() >= startdatum and (termin_zeit.weekday() in wochentage)):
-                                    termine_in_zeitspanne = False
-
-                        # Beide Termine sind in der Zeitspanne
-                        if termine_in_zeitspanne:
-                            terminpaare_in_zeitspanne.append(terminpaar)
-                        else:
-                            self.log.info("Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
-                            for num, terminpaar in enumerate(terminpaar, 1):
-                                ts = datetime.fromtimestamp(terminpaar["begin"] / 1000).strftime(
-                                    '%d.%m.%Y um %H:%M Uhr')
-                                self.log.info(f"{num}. Termin: {ts}")
-                else:
-                    # Keine Bedingungen, alle Terminpaare zugelassen
-                    terminpaare_in_zeitspanne = terminpaare
-
-                if terminpaare_in_zeitspanne:
+                terminpaare_angenommen = {
+                    tp for tp in terminpaare
+                    if terminpaar_im_zeitrahmen(tp, zeitspanne)
+                }
+                for tp_abgelehnt in set(terminpaare) - terminpaare_angenommen:
+                    self.log.info(
+                        "Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
+                    for num, termin in enumerate(tp_abgelehnt, 1):
+                        ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
+                            '%d.%m.%Y um %H:%M Uhr')
+                        self.log.info(f"{num}. Termin: {ts}")
+                if terminpaare_angenommen:
                     # Auswahl des erstbesten Terminpaares
-                    self.terminpaar = choice(terminpaare_in_zeitspanne)
+                    self.terminpaar = choice(terminpaare_angenommen)
                     self.plz_termin = plz
                     self.log.success(f"Terminpaar gefunden!")
                     self.impfzentrum = self.verfuegbare_impfzentren.get(plz)
@@ -806,3 +779,39 @@ class ImpfterminService():
             # Anschließend nach neuem Termin suchen
             if its.book_appointment():
                 return True
+
+
+def terminpaar_im_zeitrahmen(terminpaar, zeitspanne):
+    """
+    Checken ob Terminpaar in angegebener Zeitspanne liegt
+
+    :param terminpaar: Terminpaar wie in ImpfterminService.termin_suchen
+    :param zeitspanne: Zeitspannen-Dictionary wie in ImpfterminService.termin_suchen
+    :return: True oder False
+    """
+
+    # Einzelne Termine durchgehen
+    for num, termin in enumerate(terminpaar, 1):
+
+        # Falls Daten nicht vorhanden, einfach akzeptieren
+        if num in zeitspanne["einhalten_bei"]:
+            startdatum = date(
+                zeitspanne["startdatum"]["jahr"],
+                zeitspanne["startdatum"]["monat"],
+                zeitspanne["startdatum"]["tag"])
+            startzeit = dtime(
+                zeitspanne["startzeit"]["h"],
+                zeitspanne["startzeit"]["m"])
+            endzeit = dtime(
+                zeitspanne["endzeit"]["h"],
+                zeitspanne["endzeit"]["m"])
+            wochentage = zeitspanne["wochentage"]
+
+            termin_zeit = datetime.fromtimestamp(int(termin["begin"]) / 1000)
+
+            # Prüfen, ob Termin innerhalb der Zeitspanne liegt
+            if not ((startzeit <= termin_zeit.time() <= endzeit) and termin_zeit.date(
+            ) >= startdatum and (termin_zeit.weekday() in wochentage)):
+                return False
+
+    return True
