@@ -182,11 +182,16 @@ class ImpfterminService():
     def get_chromedriver(self, headless):
         chrome_options = Options()
 
+
+
         # deaktiviere Selenium Logging
         chrome_options.add_argument('disable-infobars')
         chrome_options.add_experimental_option('useAutomationExtension', False)
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+
+        # Zur Behebung von "DevToolsActivePort file doesn't exist"
+        chrome_options.add_argument("--remote-debugging-port=9222")  # this
 
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
