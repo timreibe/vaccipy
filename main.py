@@ -251,7 +251,7 @@ def gen_code(kontaktdaten):
           "Aktueller Code: " + combine + "\n"
           
     
-    its = ImpfterminService(one+"-"+two+"-"+three, [plz_impfzentrum], {},PATH)
+    its = ImpfterminService(combine, [plz_impfzentrum], {},PATH)
 
     print("Wähle nachfolgend deine Altersgruppe aus (L920, L921, L922 oder L923).\n"
           "Es ist wichtig, dass du die Gruppe entsprechend deines Alters wählst, "
