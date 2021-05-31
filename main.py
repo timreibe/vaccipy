@@ -246,7 +246,7 @@ def gen_code(kontaktdaten):
     two = 'IPY'.join(random.choice(password_characters) for i in range(1))
     three = ''.join(random.choice(password_characters) for i in range(4))
     
-    combine = one + "-" + two + "-" three
+    combine = one + "-" + two + "-" + three
     print("Benutze einen zufälligen Code für Cookie Generierung. \n"
           "Aktueller Code: " + combine + "\n"
           
