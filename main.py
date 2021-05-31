@@ -242,9 +242,14 @@ def gen_code(kontaktdaten):
             "deine Daten beim Programmstart erneut ein.\n") from exc
     # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
     password_characters = string.ascii_letters + string.digits
-    one = ''.join(random.choice(password_characters) for i in range(4))
-    two = ''.join(random.choice(password_characters) for i in range(4))
+    one = 'VACC'
+    two = 'IPY'.join(random.choice(password_characters) for i in range(3))
     three = ''.join(random.choice(password_characters) for i in range(4))
+    
+    combine = one + "-" + two + "-" three
+    print("Benutze einen zufälligen Code für Cookie Generierung. \n"
+          "Aktueller Code: " + combine + "\n"
+          
     
     its = ImpfterminService(one+"-"+two+"-"+three, [plz_impfzentrum], {},PATH)
 
