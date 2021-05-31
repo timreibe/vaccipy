@@ -21,6 +21,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from tools.clog import CLogger
 from tools.utils import retry_on_failure, desktop_notification
+from tools.chromium_downloader import chromium_executable, check_chromium
 
 try:
     import beepy
@@ -195,6 +196,8 @@ class ImpfterminService():
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
             chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
+        elif check_chromium():
+            chrome_options.binary_location = str(chromium_executable())
 
         chrome_options.headless = headless
 
