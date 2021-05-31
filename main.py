@@ -249,7 +249,7 @@ def gen_code(kontaktdaten):
     
     combine = one + "-" + two + "-" + three
     print("Benutze einen zufälligen Code für Cookie Generierung. \n"
-          "Aktueller Code: " + combine + "\n"
+          "Aktueller Code: " + combine + "\n")
           
     
     its = ImpfterminService(combine, [plz_impfzentrum], {},PATH)
