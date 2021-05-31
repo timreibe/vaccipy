@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# Code copied and adapted from pyppeteer
+# See for pyppeteer package: https://github.com/pyppeteer/pyppeteer
+# See for original code: https://github.com/pyppeteer/pyppeteer/blob/46f04c66c109353e08d873a1019df1cf4dac9dea/pyppeteer/chromium_downloader.py
+
 """Chromium download module."""
 
 from io import BytesIO
