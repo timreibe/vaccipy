@@ -200,6 +200,10 @@ class ImpfterminService():
         """
         TODO xpath code auslagern
         """
+
+        self.log.info("Code eintragen und Mausbewegung / Klicks simulieren. "
+                      "Dieser Vorgang kann einige Sekunden dauern.")
+
         url = f"{self.domain}impftermine/service?plz={plz_impfzentrum}"
 
         driver.get(url)
