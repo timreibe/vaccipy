@@ -271,6 +271,9 @@ python3 main.py search -f max-mustermann.json
 Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne Installation von Python direkt ausgeführt werden können. 
 Die Distributionen können im [neusten Release heruntergeladen werden](https://github.com/iamnotturner/vaccipy/releases/latest).
 
+* `VACCIPY_CHROME_BIN`:
+  Name oder relativer Pfad der einer alternativen chrome Programmdatei, die du verwenden möchtest.
+
 
 #### [Informationen zu den Distributionen und Shipping findest du hier](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md)
 
