@@ -289,7 +289,7 @@
                <bool>true</bool>
               </property>
               <property name="weekday" stdset="0">
-               <UInt>1</UInt>
+               <string>Di</string>
               </property>
              </widget>
             </item>
@@ -302,7 +302,7 @@
                <bool>true</bool>
               </property>
               <property name="weekday" stdset="0">
-               <UInt>0</UInt>
+               <string>Mo</string>
               </property>
              </widget>
             </item>
@@ -322,7 +322,7 @@
                <bool>true</bool>
               </property>
               <property name="weekday" stdset="0">
-               <UInt>3</UInt>
+               <string>Do</string>
               </property>
              </widget>
             </item>
@@ -335,7 +335,7 @@
                <bool>true</bool>
               </property>
               <property name="weekday" stdset="0">
-               <UInt>5</UInt>
+               <string>Sa</string>
               </property>
              </widget>
             </item>
@@ -348,7 +348,7 @@
                <bool>true</bool>
               </property>
               <property name="weekday" stdset="0">
-               <UInt>6</UInt>
+               <string>So</string>
               </property>
              </widget>
             </item>
@@ -361,7 +361,7 @@
                <bool>true</bool>
               </property>
               <property name="weekday" stdset="0">
-               <UInt>2</UInt>
+               <string>Mi</string>
               </property>
              </widget>
             </item>
@@ -381,7 +381,7 @@
                <bool>true</bool>
               </property>
               <property name="weekday" stdset="0">
-               <UInt>4</UInt>
+               <string>Fr</string>
               </property>
              </widget>
             </item>

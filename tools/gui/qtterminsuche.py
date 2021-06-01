@@ -61,7 +61,7 @@ class Worker(QObject):
         plz_impfzentren = self.kontaktdaten["plz_impfzentren"]
 
         erfolgreich = ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                                    PATH=self.ROOT_PATH, check_delay=self.check_delay, zeitspanne=self.zeitspanne)
+                                                    PATH=self.ROOT_PATH, check_delay=self.check_delay, zeitrahmen=self.zeitspanne)
 
         self.fertig.emit(erfolgreich)
 
