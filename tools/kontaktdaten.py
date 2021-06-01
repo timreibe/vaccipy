@@ -7,7 +7,7 @@ from tools.exceptions import ValidationError, MissingValuesError
 from tools import Modus
 
 
-def get_kontaktdaten(filepath: str, mode: Modus = Modus.TERMIN_SUCHEN):
+def get_kontaktdaten(filepath: str, mode: Modus):
     """
     Lade Kontaktdaten aus Datei.
 
