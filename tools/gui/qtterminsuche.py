@@ -102,7 +102,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
 
         # std.out & error auf das Textfeld umleiten
         sys.stdout = EigenerStream(text_schreiben=self.update_ausgabe)
-        sys.stderr = EigenerStream(text_schreiben=self.update_ausgabe)
+        # sys.stderr = EigenerStream(text_schreiben=self.update_ausgabe)
 
         # Entsprechend Konfigurieren
         self.setup_thread()
