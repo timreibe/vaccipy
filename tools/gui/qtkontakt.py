@@ -6,6 +6,9 @@ from PyQt5.QtGui import QIcon
 
 from tools.gui import *
 from tools.gui.qtimpfzentren import QtImpfzentren
+from tools import kontaktdaten as kontakt_tools
+from tools import Modus
+from tools.exceptions import ValidationError, MissingValuesError
 
 # Folgende Widgets stehen zur Verfügung:
 
@@ -43,6 +46,7 @@ class QtKontakt(QtWidgets.QDialog):
     def __init__(self, parent: QtWidgets.QWidget, modus: Modus, standard_speicherpfad: str, ROOT_PATH: str, pfad_fenster_layout=os.path.join(PATH, "kontaktdaten.ui")):
         super().__init__(parent=parent)
 
+        # Setze Attribute
         self.standard_speicherpfad = standard_speicherpfad
         self.modus = modus
 
@@ -58,6 +62,13 @@ class QtKontakt(QtWidgets.QDialog):
         self.b_impfzentren_waehlen.clicked.connect(self.__open_impfzentren)
 
     def setup(self):
+        """
+        Aktiviert abhänfig vom Modus die Eingabefelder
+
+        Raises:
+            RuntimeError: Modus ungültig
+        """
+
         if self.modus == Modus.TERMIN_SUCHEN:
             # Default - Alle Felder aktiv
             pass
@@ -65,6 +76,7 @@ class QtKontakt(QtWidgets.QDialog):
             # Benötig wird: PLZ's der Impfzentren, Telefonnummer, Mail
             # Alles andere wird daher deaktiviert
             self.readonly_alle_line_edits(("i_plz_impfzentren", "i_telefon", "i_mail"))
+            self.i_code_impfzentren.setInputMask("")
         else:
             raise RuntimeError("Modus ungueltig!")
 
@@ -75,32 +87,41 @@ class QtKontakt(QtWidgets.QDialog):
         """
 
         try:
-            speicherpfad = self.speicher_einstellungen()
+            data = self.__get_alle_werte()
+
+            self.__check_werte(data)
+
+            # Daten speichern
+            speicherpfad = self.speicher_einstellungen(data)
             QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
             self.parent().i_kontaktdaten_pfad.setText(speicherpfad)
             self.close()
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
-        except FehlendeDatenException as error:
-            QtWidgets.QMessageBox.critical(self, "Fehlende Daten!", f"Bitte ergänzen!\n\n{error}")
+        except ValidationError as error:
+            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In den angegebenen Daten sind Fehler:\n\n{error}")
+            return
+        except MissingValuesError as error:
+            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Daten Fehlen Werte:\n\n{error}")
+            return
         except AttributeError as error:
             # Parent hat i_kontaktdaten_pfad nicht
-            # Falls der Dialog ein anderer Parent hat soll kein Fehler kommen
+            # Falls der Dialog ein anderer Parent hat, soll kein Fehler kommen
             self.close()
 
-    def speicher_einstellungen(self) -> str:
+    def speicher_einstellungen(self, data: dict) -> str:
         """
         Speichert alle Werte in der entsprechenden JSON-Formatierung
         Speicherpfad wird vom User abgefragt
+
+        Params:
+            data (dict): Kontaktaden zum speichern
 
         Returns:
             str: Speicherpfad
         """
 
         speicherpfad = oeffne_file_dialog_save(self, "Kontaktdaten", self.standard_speicherpfad)
-        data = self.__get_alle_werte()
-
-        check_alle_kontakt_daten_da(self.modus, data)
 
         speichern(speicherpfad, data)
         return speicherpfad
@@ -161,7 +182,7 @@ class QtKontakt(QtWidgets.QDialog):
         telefon = self.i_telefon.text().strip()
         mail = self.i_mail.text().strip()
 
-        # PLZ der Zentren in liste und "strippen"
+        # PLZ der Zentren in Liste und "strippen"
         plz_zentren = plz_zentrum_raw.split(",")
         plz_zentren = [plz.strip() for plz in plz_zentren]
 
@@ -182,6 +203,30 @@ class QtKontakt(QtWidgets.QDialog):
             }
         }
         return kontaktdaten
+
+    def __check_werte(self, kontaktdaten: dict):
+        """
+        Prüft mithilfe von den kontakt_tools ob alle Daten da und gültig sind
+
+        Args:
+            kontaktdaten (dict): Kontaktdaten
+
+        Raises:
+            ValidationError: Daten Fehlerhaft
+            MissingValuesError: Daten Fehlen
+        """
+
+        kontakt_tools.check_kontaktdaten(kontaktdaten, self.modus)
+
+        if self.modus == Modus.TERMIN_SUCHEN:
+            kontakt_tools.validate_kontaktdaten(kontaktdaten)
+        elif self.modus == Modus.CODE_GENERIEREN:
+            kontakt_tools.validate_plz_impfzentren(kontaktdaten["plz_impfzentren"])
+            kontakt_tools.validate_email(kontaktdaten["kontakt"]["notificationReceiver"])
+            try:
+                kontakt_tools.validate_phone(kontaktdaten["kontakt"]["phone"])
+            except ValidationError as error:
+                raise ValidationError("Telefonnummer: +49 nicht vergessen") from error
 
     def readonly_alle_line_edits(self, ausgeschlossen: list):
         """

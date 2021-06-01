@@ -20,6 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from tools.clog import CLogger
+from tools.kontaktdaten import decode_wochentag, validate_kontakt, validate_zeitrahmen
 from tools.utils import retry_on_failure, desktop_notification
 
 try:
@@ -182,15 +183,24 @@ class ImpfterminService():
     def get_chromedriver(self, headless):
         chrome_options = Options()
 
+
+
         # deaktiviere Selenium Logging
         chrome_options.add_argument('disable-infobars')
         chrome_options.add_experimental_option('useAutomationExtension', False)
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
+        # Zur Behebung von "DevToolsActivePort file doesn't exist"
+        chrome_options.add_argument("--remote-debugging-port=9222")  # this
+
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
         chrome_options.add_argument("user-agent=Mozilla/5.0")
+        
+        chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
+        if chromebin_from_env:
+            chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
 
         chrome_options.headless = headless
 
@@ -200,6 +210,10 @@ class ImpfterminService():
         """
         TODO xpath code auslagern
         """
+
+        self.log.info("Code eintragen und Mausbewegung / Klicks simulieren. "
+                      "Dieser Vorgang kann einige Sekunden dauern.")
+
         url = f"{self.domain}impftermine/service?plz={plz_impfzentrum}"
 
         driver.get(url)
@@ -534,7 +548,7 @@ class ImpfterminService():
             return False
 
     @retry_on_failure()
-    def termin_suchen(self, plz: int, zeitspanne: dict):
+    def termin_suchen(self, plz: str, zeitrahmen: dict):
         """Es wird nach einen verfügbaren Termin in der gewünschten PLZ gesucht.
         Ausgewählt wird der erstbeste Termin, welcher im entsprechenden Zeitraum liegt (!).
         Zurückgegeben wird das Ergebnis der Abfrage und der Status-Code.
@@ -568,47 +582,20 @@ class ImpfterminService():
             res_json = res.json()
             terminpaare = res_json.get("termine")
             if terminpaare:
-                # Checken ob verfügbare terminpaare in angegebener Zeitspanne liegt
-                # Falls daten nicht vorhanden - einfach alle aktzeptieren
-                if zeitspanne.get("einhalten_bei"):
-                    terminpaare_in_zeitspanne = list()
-
-                    # Alle Terminpaare durchgehen
-                    for terminpaar in terminpaare:
-                        termine_in_zeitspanne = True
-
-                        # Einzelne Termine druchgehen
-                        for num, termin in enumerate(terminpaar, 1):
-
-                            # Soll einer der Beiden Termine überprüft werden
-                            if num in zeitspanne["einhalten_bei"]:
-                                startdatum = date(zeitspanne["startdatum"]["jahr"], zeitspanne["startdatum"]["monat"], zeitspanne["startdatum"]["tag"])
-                                startzeit = dtime(zeitspanne["startzeit"]["h"], zeitspanne["startzeit"]["m"])
-                                endzeit = dtime(zeitspanne["endzeit"]["h"], zeitspanne["endzeit"]["m"])
-                                wochentage = zeitspanne["wochentage"]
-
-                                termin_zeit = datetime.fromtimestamp(int(termin["begin"])/1000)
-
-                                # Termin inherhalb der Zeitspanne und im Wochentag
-                                if not ((startzeit <= termin_zeit.time() <= endzeit) and termin_zeit.date() >= startdatum and (termin_zeit.weekday() in wochentage)):
-                                    termine_in_zeitspanne = False
-
-                        # Beide Termine sind in der Zeitspanne
-                        if termine_in_zeitspanne:
-                            terminpaare_in_zeitspanne.append(terminpaar)
-                        else:
-                            self.log.info("Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
-                            for num, terminpaar in enumerate(terminpaar, 1):
-                                ts = datetime.fromtimestamp(terminpaar["begin"] / 1000).strftime(
-                                    '%d.%m.%Y um %H:%M Uhr')
-                                self.log.info(f"{num}. Termin: {ts}")
-                else:
-                    # Keine Bedingungen, alle Terminpaare zugelassen
-                    terminpaare_in_zeitspanne = terminpaare
-
-                if terminpaare_in_zeitspanne:
+                terminpaare_angenommen = {
+                    tp for tp in terminpaare
+                    if terminpaar_im_zeitrahmen(tp, zeitrahmen)
+                }
+                for tp_abgelehnt in set(terminpaare) - terminpaare_angenommen:
+                    self.log.info(
+                        "Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
+                    for num, termin in enumerate(tp_abgelehnt, 1):
+                        ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
+                            '%d.%m.%Y um %H:%M Uhr')
+                        self.log.info(f"{num}. Termin: {ts}")
+                if terminpaare_angenommen:
                     # Auswahl des erstbesten Terminpaares
-                    self.terminpaar = choice(terminpaare_in_zeitspanne)
+                    self.terminpaar = choice(terminpaare_angenommen)
                     self.plz_termin = plz
                     self.log.success(f"Terminpaar gefunden!")
                     self.impfzentrum = self.verfuegbare_impfzentren.get(plz)
@@ -750,7 +737,8 @@ class ImpfterminService():
                 return False
 
     @staticmethod
-    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH:str, zeitspanne: dict = dict(), check_delay: int = 30):
+    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict,
+                    PATH: str, zeitrahmen: dict = dict(), check_delay: int = 30):
         """
         Workflow für die Terminbuchung.
 
@@ -760,6 +748,9 @@ class ImpfterminService():
         :param check_delay: Zeit zwischen Iterationen der Terminsuche
         :return:
         """
+
+        validate_kontakt(kontakt)
+        validate_zeitrahmen(zeitrahmen)
 
         its = ImpfterminService(code, plz_impfzentren, kontakt, PATH)
         its.renew_cookies()
@@ -773,7 +764,7 @@ class ImpfterminService():
 
                 # durchlaufe jede eingegebene PLZ und suche nach Termin
                 for plz in its.plz_impfzentren:
-                    termin_gefunden, status_code = its.termin_suchen(plz, zeitspanne)
+                    termin_gefunden, status_code = its.termin_suchen(plz, zeitrahmen)
 
                     # Durchlauf aller PLZ unterbrechen, wenn Termin gefunden wurde
                     if termin_gefunden:
@@ -793,3 +784,47 @@ class ImpfterminService():
             # Anschließend nach neuem Termin suchen
             if its.book_appointment():
                 return True
+
+
+def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
+    """
+    Checken ob Terminpaar im angegebenen Zeitrahmen liegt
+
+    :param terminpaar: Terminpaar wie in ImpfterminService.termin_suchen
+    :param zeitrahmen: Zeitrahmen-Dictionary wie in ImpfterminService.termin_suchen
+    :return: True oder False
+    """
+    if zeitrahmen is None:
+        return True
+
+    assert zeitrahmen["einhalten_bei"] in ["1", "2", "beide"]
+
+    von_datum = datetime.datetime.strptime(
+        zeitrahmen["von_datum"],
+        "%d.%m.%Y") if "von_datum" in zeitrahmen else datetime.date.min
+    bis_datum = datetime.datetime.strptime(
+        zeitrahmen["bis_datum"],
+        "%d.%m.%Y") if "bis_datum" in zeitrahmen else datetime.date.max
+    von_uhrzeit = datetime.datetime.strptime(
+        zeitrahmen["von_uhrzeit"],
+        "%H:%M") if "von_uhrzeit" in zeitrahmen else datetime.time.min
+    bis_uhrzeit = datetime.datetime.strptime(
+        zeitrahmen["bis_uhrzeit"],
+        "%H:%M") if "bis_uhrzeit" in zeitrahmen else datetime.time.max
+    wochentage = [decode_wochentag(wt) for wt in set(
+        zeitrahmen["wochentage"])] if "wochentage" in zeitrahmen else range(7)
+
+    # Einzelne Termine durchgehen
+    for num, termin in enumerate(terminpaar, 1):
+        if zeitrahmen["einhalten_bei"] in ["beide", str(num)]:
+            termin_zeit = datetime.fromtimestamp(int(termin["begin"]) / 1000)
+
+            if not (von_datum <= termin_zeit.date() <= bis_datum):
+                return False
+
+            if not (von_uhrzeit <= termin_zeit.time() <= bis_uhrzeit):
+                return False
+
+            if not termin_zeit.weekday() in wochentage:
+                return False
+    return True

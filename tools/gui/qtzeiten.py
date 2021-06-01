@@ -131,18 +131,16 @@ class QtZeiten(QtWidgets.QDialog):
         termine = self.__get_aktive_termine()
         start_datum = self.__get_start_datum()
 
-        zeitspanne = {
-            "wochentage": aktive_wochentage,
-            "startzeit": uhrzeiten["startzeit"],
-            "endzeit": uhrzeiten["endzeit"],
-            "einhalten_bei": termine,
-            "startdatum": {
-                "jahr": start_datum.year(),
-                "monat": start_datum.month(),
-                "tag": start_datum.day()
-            },
-        }
-        return zeitspanne
+        if termine:
+            return {
+                "von_datum": f"{start_datum.day()}.{start_datum.month()}.{start_datum.year()}",
+                "von_uhrzeit": f"{uhrzeiten['startzeit']['h']}:{uhrzeiten['startzeit']['m']}",
+                "bis_uhrzeit": f"{uhrzeiten['endzeit']['h']}:{uhrzeiten['endzeit']['m']}",
+                "wochentage": aktive_wochentage,
+                "einhalten_bei": "beide" if len(termine) > 1 else str(termine[0]),
+            }
+        else:
+            return {}
 
     def __get_aktive_wochentage(self) -> list:
         """

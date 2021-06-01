@@ -8,12 +8,14 @@ import multiprocessing
 
 from PyQt5 import QtCore, QtWidgets, uic
 from PyQt5.QtGui import QIcon
-from tools.exceptions import FehlendeDatenException
-from tools.gui import Modus, check_alle_kontakt_daten_da, oeffne_file_dialog_select
+from tools.exceptions import ValidationError, MissingValuesError
+from tools.gui import oeffne_file_dialog_select
 from tools.gui.qtzeiten import QtZeiten
 from tools.gui.qtkontakt import QtKontakt
 from tools.gui.qtterminsuche import QtTerminsuche
 from tools.utils import create_missing_dirs
+from tools import kontaktdaten as kontak_tools
+from tools import Modus
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -36,6 +38,9 @@ class HauptGUI(QtWidgets.QMainWindow):
 
     ### Layouts ###
     # prozesse_layout
+
+    ### QSpinBox ###
+    # i_interval
 
     def __init__(self, pfad_fenster_layout: str = os.path.join(PATH, "tools/gui/main.ui")):
         """
@@ -127,13 +132,14 @@ class HauptGUI(QtWidgets.QMainWindow):
             kontaktdaten = self.__get_kontaktdaten(Modus.TERMIN_SUCHEN)
             zeitspanne = self.__get_zeitspanne()
 
-            check_alle_kontakt_daten_da(Modus.TERMIN_SUCHEN, kontaktdaten)
-
         except FileNotFoundError as error:
             QtWidgets.QMessageBox.critical(self, "Datei nicht gefunden!", f"Datei zum Laden konnte nicht gefunden werden\n\nBitte erstellen")
             return
-        except FehlendeDatenException as error:
-            QtWidgets.QMessageBox.critical(self, "Daten unvollständig!", f"Es fehlen Daten in der JSON Datei\n\n{error}")
+        except ValidationError as error:
+            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei sind Fehler:\n\n{error}")
+            return
+        except MissingValuesError as error:
+            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei Fehlen Daten:\n\n{error}")
             return
 
         self.__start_terminsuche(kontaktdaten, zeitspanne)
@@ -146,12 +152,13 @@ class HauptGUI(QtWidgets.QMainWindow):
             kontaktdaten (dict): kontakdaten aus kontaktdaten.json
             zeitspanne (dict): zeitspanne aus zeitspanne.json
         """
-
+        check_delay = self.i_interval.value()
         code = kontaktdaten["code"]
         terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{code}-{self.prozesse_counter}", daemon=True, kwargs={
                                                       "kontaktdaten": kontaktdaten,
                                                       "zeitspanne": zeitspanne,
-                                                      "ROOT_PATH": PATH})
+                                                      "ROOT_PATH": PATH,
+                                                      "check_delay": check_delay})
         try:
             terminsuche_prozess.start()
             if not terminsuche_prozess.is_alive():
@@ -190,8 +197,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         if not os.path.isfile(self.pfad_kontaktdaten):
             self.kontaktdaten_erstellen(modus)
 
-        with open(self.pfad_kontaktdaten, "r", encoding='utf-8') as f:
-            kontaktdaten = json.load(f)
+        kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
 
         return kontaktdaten
 

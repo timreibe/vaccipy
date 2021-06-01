@@ -1,5 +1,10 @@
 class DesktopNotificationError(Exception):
     pass
 
-class FehlendeDatenException(Exception):
+
+class ValidationError(Exception):
+    pass
+
+
+class MissingValuesError(Exception):
     pass
