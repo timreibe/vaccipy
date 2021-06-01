@@ -1,5 +1,6 @@
 import time
 import traceback
+import requests
 from pathlib import Path
 
 from threading import Thread
@@ -112,4 +113,32 @@ def create_missing_dirs():
     """
     Path("./data").mkdir(parents=True, exist_ok=True)
 
-        
+
+def get_grouped_impfzentren() -> dict:
+    """
+    Gibt ein dict mit allen Impfzentren Grupiert nach den gültigen Codes
+
+    Returns:
+        dict: Informationen über die Impfzentren
+    """
+
+    url = "https://www.impfterminservice.de/assets/static/impfzentren.json"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36',
+    }
+    impfzentren_sortiert = {}
+    res = requests.get(url, timeout=15, headers=headers)
+    if res.ok:
+        for bundesland, impfzentren in res.json().items():
+            for impfzentrum in impfzentren:
+                url = impfzentrum["URL"]
+                # liste von impfzentren_sortiert oder leere liste
+                impfzentren_gruppiert = impfzentren_sortiert.get(url, [])
+                # impfzentrum zur liste hinzufügen
+                impfzentren_gruppiert.append(impfzentrum)
+                # liste in dict abspeichern
+                impfzentren_sortiert[url] = impfzentren_gruppiert
+    result = {}
+    for gruppe, impfzentren in enumerate(impfzentren_sortiert.values(), start=1):
+        result[f"Gruppe {gruppe}"] = impfzentren
+    return result
