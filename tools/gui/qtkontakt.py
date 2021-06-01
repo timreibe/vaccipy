@@ -5,6 +5,7 @@ from PyQt5.QtCore import QTime
 from PyQt5.QtGui import QIcon
 
 from tools.gui import *
+from tools.gui.qtimpfzentren import QtImpfzentren
 from tools import kontaktdaten as kontakt_tools
 from tools import Modus
 from tools.exceptions import ValidationError, MissingValuesError
@@ -35,6 +36,9 @@ from tools.exceptions import ValidationError, MissingValuesError
 ### Layouts ###
 # kontakdaten_layout
 
+### Buttons ###
+# b_impfzentren_waehlen
+
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -46,13 +50,16 @@ class QtKontakt(QtWidgets.QDialog):
         self.standard_speicherpfad = standard_speicherpfad
         self.modus = modus
 
-        # Laden der .ui Datei
+        # Laden der .ui Datei und init config
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(ROOT_PATH, "images/spritze.ico")))
         self.setup()
 
-        # Funktionen für Buttonbox zuweisen
+        # Funktionen der ButtonBox zuordnen
         self.buttonBox.clicked.connect(self.__button_clicked)
+
+        # Funktion vom Button zuordnen
+        self.b_impfzentren_waehlen.clicked.connect(self.__open_impfzentren)
 
     def setup(self):
         """
@@ -119,7 +126,7 @@ class QtKontakt(QtWidgets.QDialog):
         speichern(speicherpfad, data)
         return speicherpfad
 
-    def __button_clicked(self, button):
+    def __button_clicked(self, button: QtWidgets.QPushButton):
         """
         Zuweisung der einzelnen Funktionen der Buttons in der ButtonBox
 
@@ -134,6 +141,26 @@ class QtKontakt(QtWidgets.QDialog):
             self.__reset()
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
             self.close()
+
+    def __open_impfzentren(self):
+        """
+        Öffnet den Dialog um PLZ auszuwählen
+        """
+
+        impfzentren_dialog = QtImpfzentren(self)
+        impfzentren_dialog.update_impfzentren_plz.connect(self.__set_impzentren_plz)
+        impfzentren_dialog.show()
+        impfzentren_dialog.exec_()
+
+    def __set_impzentren_plz(self, plz: str):
+        """
+        Übergebener Text wird in das QLineEdit i_plz_impfzentren geschrieben
+
+        Args:
+            plz (str): Kommagetrennte PLZ der Impfzentren in einer Gruppe
+        """
+
+        self.i_plz_impfzentren.setText(plz)
 
     def __get_alle_werte(self) -> dict:
         """
@@ -230,11 +257,3 @@ class QtKontakt(QtWidgets.QDialog):
 
         # Telefon wieder mit Prefix befüllen
         self.i_telefon.setText("+49")
-
-
-# Zum schnellen einzeltesten
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(list())
-    window = QtKontakt("./kontaktdaten.json")
-    window.show()
-    app.exec_()
