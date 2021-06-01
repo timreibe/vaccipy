@@ -484,9 +484,12 @@ class ImpfterminService():
         """
 
         self.log.info("Browser-Cookies generieren")
-        with self.get_chromedriver(headless=True) as driver:
-            return self.driver_renew_cookies(driver, choice(self.plz_impfzentren))
-
+        driver = self.get_chromedriver(headless=True)
+        try:
+            cookies_erneuert = self.driver_renew_cookies(driver, choice(self.plz_impfzentren))
+        finally:
+            driver.quit()
+        return cookies_erneuert
           
     @retry_on_failure()
     def renew_cookies_code(self, manual=False):
@@ -496,10 +499,12 @@ class ImpfterminService():
         """
 
         self.log.info("Browser-Cookies generieren")
-        with self.get_chromedriver(headless=False) as driver:
-            return self.driver_renew_cookies_code(driver, choice(self.plz_impfzentren), manual)
-
-
+        driver = self.get_chromedriver(headless=False)
+        try:
+            cookies_erneuert = self.driver_renew_cookies_code(driver, choice(self.plz_impfzentren), manual)
+        finally:
+            driver.quit()
+        return cookies_erneuert
 
     @retry_on_failure()
     def book_appointment(self):
@@ -511,8 +516,12 @@ class ImpfterminService():
         """
 
         self.log.info("Termin über Selenium buchen")
-        with self.get_chromedriver(headless=False) as driver:
-            return self.driver_book_appointment(driver, self.plz_termin)
+        driver = self.get_chromedriver(headless=False)
+        try:
+            termin_gebucht = self.driver_book_appointment(driver, self.plz_termin)
+        finally:
+            driver.quit()
+        return termin_gebucht
 
     @retry_on_failure()
     def login(self):
