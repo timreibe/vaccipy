@@ -182,15 +182,24 @@ class ImpfterminService():
     def get_chromedriver(self, headless):
         chrome_options = Options()
 
+
+
         # deaktiviere Selenium Logging
         chrome_options.add_argument('disable-infobars')
         chrome_options.add_experimental_option('useAutomationExtension', False)
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
+        # Zur Behebung von "DevToolsActivePort file doesn't exist"
+        chrome_options.add_argument("--remote-debugging-port=9222")  # this
+
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
         chrome_options.add_argument("user-agent=Mozilla/5.0")
+        
+        chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
+        if chromebin_from_env:
+            chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
 
         chrome_options.headless = headless
 
@@ -200,6 +209,10 @@ class ImpfterminService():
         """
         TODO xpath code auslagern
         """
+
+        self.log.info("Code eintragen und Mausbewegung / Klicks simulieren. "
+                      "Dieser Vorgang kann einige Sekunden dauern.")
+
         url = f"{self.domain}impftermine/service?plz={plz_impfzentrum}"
 
         driver.get(url)
@@ -534,7 +547,7 @@ class ImpfterminService():
             return False
 
     @retry_on_failure()
-    def termin_suchen(self, plz: int, zeitspanne: dict):
+    def termin_suchen(self, plz: str, zeitspanne: dict):
         """Es wird nach einen verfügbaren Termin in der gewünschten PLZ gesucht.
         Ausgewählt wird der erstbeste Termin, welcher im entsprechenden Zeitraum liegt (!).
         Zurückgegeben wird das Ergebnis der Abfrage und der Status-Code.
