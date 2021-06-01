@@ -186,7 +186,7 @@ def validate_phone(phone):
     if not isinstance(phone, str):
         raise ValidationError("Muss eine Zeichenkette sein")
 
-    if not re.match(r"^(\+49){1}[0-9]+$", phone):
+    if not re.match(r"^\+49[1-9][0-9]+$", phone):
         raise ValidationError(
             f"Ungültige Telefonnummer {json.dumps(phone)}")
 
