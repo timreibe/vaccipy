@@ -7,23 +7,20 @@ from tools.exceptions import ValidationError, MissingValuesError
 from tools import Modus
 
 
-def get_kontaktdaten(filepath: str, mode: Modus):
+def get_kontaktdaten(filepath: str):
     """
     Lade Kontaktdaten aus Datei.
 
     :param filepath: Pfad zur JSON-Datei mit Kontaktdaten.
-    :param modus: Unterschiedliche Kriterien ob key / values vorhanden sein müssen
     :return: Dictionary mit Kontaktdaten
 
     :raise: ValidationError: Wird geworfen wenn eine Datei ungültige Values besitzt
-    :raise: MissingValuesError: Wird geworfen, wenn benötigte Key / Values nicht da sind
     """
 
     try:
         with open(filepath, encoding='utf-8') as f:
             try:
                 kontaktdaten = json.load(f)
-                check_kontaktdaten(kontaktdaten, mode)
                 validate_kontaktdaten(kontaktdaten)
                 return kontaktdaten
             except json.JSONDecodeError:
@@ -34,20 +31,19 @@ def get_kontaktdaten(filepath: str, mode: Modus):
 
 def check_kontaktdaten(kontaktdaten: dict, mode: Modus):
     """
-    Überprüft ob alle Keys vorhanden sind und ob die Values kein leeren String enthalten
+    Überprüft ob alle Keys vorhanden sind
 
     Args:
         mode (Modus): Entsprechend werden Daten überprüft
         kontaktdaten (dict): Inhalt der JSON
 
     Raises:
-        MissingValuesError: Es wird ein Key oder Value vermisst
+        MissingValuesError: Es wird ein Key vermisst
     """
 
-    if mode == Modus.TERMIN_SUCHEN:
-        try:
-            # Daten vorhanden
-            kontaktdaten["plz_impfzentren"]
+    try:
+        if mode == Modus.TERMIN_SUCHEN:
+            # Wird nur bei Terminsuche benötigt
             kontaktdaten["code"]
             kontaktdaten["kontakt"]["anrede"]
             kontaktdaten["kontakt"]["vorname"]
@@ -56,56 +52,21 @@ def check_kontaktdaten(kontaktdaten: dict, mode: Modus):
             kontaktdaten["kontakt"]["hausnummer"]
             kontaktdaten["kontakt"]["plz"]
             kontaktdaten["kontakt"]["ort"]
-            kontaktdaten["kontakt"]["phone"]
-            kontaktdaten["kontakt"]["notificationChannel"]
-            kontaktdaten["kontakt"]["notificationReceiver"]
 
-            # Daten enthalten kein leerer String
-            # PLZ
-            for plz in kontaktdaten["plz_impfzentren"]:
-                if not plz.strip():
-                    raise MissingValuesError("Wert fuer \"plz_impfzentren\" fehlerhaft!")
-            if not kontaktdaten["code"].strip():
-                raise MissingValuesError("Wert fuer \"code\" fehlt!")
+        # Rest wird immer benötigt
+        kontaktdaten["plz_impfzentren"]
+        kontaktdaten["kontakt"]["phone"]
+        kontaktdaten["kontakt"]["notificationChannel"]
+        kontaktdaten["kontakt"]["notificationReceiver"]
 
-            # 2. Ebene von Kontakt
-            for key, value in kontaktdaten["kontakt"].items():
-                if not value.strip():
-                    raise MissingValuesError(f"Wert fuer \"{key}\" fehlt!")
-        except KeyError as error:
-            raise MissingValuesError("Schluesselwort Fehlt!") from error
-
-    elif mode == Modus.CODE_GENERIEREN:
-        try:
-            # Daten vorhanden
-            kontaktdaten["plz_impfzentren"]
-            kontaktdaten["kontakt"]["phone"]
-            kontaktdaten["kontakt"]["notificationChannel"]
-            kontaktdaten["kontakt"]["notificationReceiver"]
-
-            # PLZ
-            for plz in kontaktdaten["plz_impfzentren"]:
-                if not plz.strip():
-                    raise MissingValuesError("Plz der Impfzentren fehlerhaft!")
-
-            # Daten enthalten kein leerer String
-            if kontaktdaten["kontakt"]["phone"].strip() == "":
-                raise MissingValuesError(f"Telefonnummer fehlt!")
-
-            if kontaktdaten["kontakt"]["notificationChannel"].strip() == "":
-                raise MissingValuesError(f"Wert fuer notificationChannel fehlt!")
-
-            if kontaktdaten["kontakt"]["notificationReceiver"].strip() == "":
-                raise MissingValuesError(f"Mail fehlt!")
-
-        except KeyError as error:
-            raise MissingValuesError("Schluesselwort Fehlt!") from error
+    except KeyError as error:
+        raise MissingValuesError("Schluesselwort Fehlt!") from error
 
 
-def validate_kontaktdaten(kontaktdaten):
+def validate_kontaktdaten(kontaktdaten: dict):
     """
     Erhebt ValidationError, falls Kontaktdaten ungültig sind.
-    Unvollständige Kontaktdaten sind ok und führen hier nicht zum Fehler.
+    Leere Werte werden als Fehler angesehen
 
     :param kontaktdaten: Dictionary mit Kontaktdaten
     """
@@ -128,7 +89,17 @@ def validate_kontaktdaten(kontaktdaten):
                 f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
 
 
-def validate_code(code):
+def validate_code(code: str):
+    """
+    Überprüft, ob der Code Valide ist
+
+    Args:
+        code (str): impf-code
+
+    Raises:
+        ValidationError: Code ist keine Zeichenkette oder entspricht nicht dem Schema
+    """
+
     if not isinstance(code, str):
         raise ValidationError("Muss eine Zeichenkette sein")
 
@@ -138,7 +109,17 @@ def validate_code(code):
             f"{json.dumps(code)} entspricht nicht dem Schema \"XXXX-XXXX-XXXX\"")
 
 
-def validate_plz_impfzentren(plz_impfzentren):
+def validate_plz_impfzentren(plz_impfzentren: list):
+    """
+    Validiert eine Gruppe von PLZs mithilfe con validate_plz
+
+    Args:
+        plz_impfzentren (dict): PLZs
+
+    Raises:
+        ValidationError: PLZs ist keine Liste
+    """
+
     if not isinstance(plz_impfzentren, list):
         raise ValidationError("Muss eine Liste sein")
 
@@ -146,7 +127,18 @@ def validate_plz_impfzentren(plz_impfzentren):
         validate_plz(plz)
 
 
-def validate_plz(plz):
+def validate_plz(plz: str):
+    """
+    Validiert die PLZ auf: Typ, Länge, "leer"
+
+    Args:
+        plz (str): PLZ
+
+    Raises:
+        ValidationError: PLZ ist kein String
+        ValidationError: Besteht nicht aus genau 5 Ziffern
+    """
+
     if not isinstance(plz, str):
         raise ValidationError("Muss eine Zeichenkette sein")
 
@@ -155,7 +147,20 @@ def validate_plz(plz):
             f"Ungültige PLZ {json.dumps(plz)} - muss aus genau 5 Ziffern bestehen")
 
 
-def validate_kontakt(kontakt):
+def validate_kontakt(kontakt: dict):
+    """
+    Validiert die Kontaktdaten auf Plausibilität.
+    Leere Werte werden als Fehler angesehen.
+    Wenn ein Key zu viel ist, wird dies nicht als Fehler erachtet
+
+    Args:
+        kontakt (dict): Kontakt Daten aus der JSON
+
+    Raises:
+        ValidationError: Kontakt ist kein dict
+        ValidationError: Einer der Values ist ungültig
+    """
+
     if not isinstance(kontakt, dict):
         raise ValidationError("Muss ein Dictionary sein")
 
@@ -164,6 +169,8 @@ def validate_kontakt(kontakt):
             if key in ["anrede", "vorname", "nachname", "strasse", "ort"]:
                 if not isinstance(value, str):
                     raise ValidationError("Muss eine Zeichenkette sein")
+                if value.strip() == "":
+                    raise ValidationError(f"Fehlende Daten bei {key}")
             elif key == "plz":
                 validate_plz(value)
             elif key == "hausnummer":
@@ -182,7 +189,18 @@ def validate_kontakt(kontakt):
                 f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
 
 
-def validate_phone(phone):
+def validate_phone(phone: str):
+    """
+    Validiert Telefonnummer auf: Typ, Präfix, "leer"
+
+    Args:
+        phone (str): Telefonnummer
+
+    Raises:
+        ValidationError: Typ ist nicht str
+        ValidationError: Telefonnummer ungültig
+    """
+
     if not isinstance(phone, str):
         raise ValidationError("Muss eine Zeichenkette sein")
 
@@ -191,7 +209,19 @@ def validate_phone(phone):
             f"Ungültige Telefonnummer {json.dumps(phone)}")
 
 
-def validate_hausnummer(hausnummer):
+def validate_hausnummer(hausnummer: str):
+    """
+    Validiert Hausnummer auf: Typ, Länge, "leer"
+
+    Args:
+        hausnummer (str): hausnummer
+
+    Raises:
+        ValidationError: Typ ist nicht str
+        ValidationError: Zeichenkette ist länger als 20 Zeichen
+        ValidationError: Zeichenkette ist leer
+    """
+
     if not isinstance(hausnummer, str):
         raise ValidationError("Muss eine Zeichenkette sein")
 
@@ -199,10 +229,28 @@ def validate_hausnummer(hausnummer):
         raise ValidationError(
             f"Hausnummer {json.dumps(hausnummer)} ist zu lang - maximal 20 Zeichen erlaubt")
 
+    if hausnummer.strip() == "":
+        raise ValidationError("Hausnummer ist leer")
 
-def validate_email(email):
+
+def validate_email(email: str):
+    """
+    Validiert eMail auf: Typ, gültigkeit, "leer"
+
+    Args:
+        email (str): email
+
+    Raises:
+        ValidationError: Typ ist nicht str
+        ValidationError: Zeichenkette enhält kein @
+        ValidationError: Zeichenkette ist leer
+    """
+
     if not isinstance(email, str):
         raise ValidationError("Muss eine Zeichenkette sein")
 
     if '@' not in parseaddr(email)[1]:
         raise ValidationError(f"Ungültige E-Mail-Adresse {json.dumps(email)}")
+
+    if email.strip() == "":
+        raise ValidationError("Mail ist leer")

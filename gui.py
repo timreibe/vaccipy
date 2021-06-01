@@ -193,7 +193,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         if not os.path.isfile(self.pfad_kontaktdaten):
             self.kontaktdaten_erstellen(modus)
 
-        kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten, modus)
+        kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
 
         return kontaktdaten
 

@@ -13,8 +13,7 @@ except:
 from tools.its import ImpfterminService
 from tools.kontaktdaten import get_kontaktdaten, validate_kontaktdaten
 from tools.utils import create_missing_dirs, remove_prefix
-from tools.exceptions import ValidationError, MissingValuesError
-from tools import Modus
+from tools.exceptions import ValidationError
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -149,7 +148,7 @@ def run_search_interactive(kontaktdaten_path, check_delay):
         daten_laden = input(
             f"> Sollen die vorhandenen Daten aus '{os.path.basename(kontaktdaten_path)}' geladen werden (y/n)?: ").lower()
         if daten_laden.lower() != "n":
-            kontaktdaten = get_kontaktdaten(kontaktdaten_path, Modus.TERMIN_SUCHEN)
+            kontaktdaten = get_kontaktdaten(kontaktdaten_path)
 
     print()
     kontaktdaten = update_kontaktdaten_interactive(
@@ -214,7 +213,7 @@ def gen_code_interactive(kontaktdaten_path):
         daten_laden = input(
             f"> Sollen die vorhandenen Daten aus '{os.path.basename(kontaktdaten_path)}' geladen werden (y/n)?: ").lower()
         if daten_laden.lower() != "n":
-            kontaktdaten = get_kontaktdaten(kontaktdaten_path, Modus.CODE_GENERIEREN)
+            kontaktdaten = get_kontaktdaten(kontaktdaten_path)
 
     print()
     kontaktdaten = update_kontaktdaten_interactive(
@@ -280,9 +279,9 @@ def gen_code(kontaktdaten):
 def subcommand_search(args):
     if args.configure_only:
         update_kontaktdaten_interactive(
-            get_kontaktdaten(args.file, Modus.TERMIN_SUCHEN), "search", args.file)
+            get_kontaktdaten(args.file), "search", args.file)
     elif args.read_only:
-        run_search(get_kontaktdaten(args.file, Modus.TERMIN_SUCHEN), check_delay=args.retry_sec)
+        run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec)
     else:
         run_search_interactive(args.file, check_delay=args.retry_sec)
 
@@ -290,9 +289,9 @@ def subcommand_search(args):
 def subcommand_code(args):
     if args.configure_only:
         update_kontaktdaten_interactive(
-            get_kontaktdaten(args.file, Modus.CODE_GENERIEREN), "code", args.file)
+            get_kontaktdaten(args.file), "code", args.file)
     elif args.read_only:
-        gen_code(get_kontaktdaten(args.file, Modus.CODE_GENERIEREN))
+        gen_code(get_kontaktdaten(args.file))
     else:
         gen_code_interactive(args.file)
 
@@ -367,7 +366,7 @@ def main():
                 subcommand_code(args)
             else:
                 assert False
-        except (ValidationError, MissingValuesError) as exc:
+        except ValidationError as exc:
             print(f"Fehler in {json.dumps(args.file)}:\n{str(exc)}")
 
     else:
