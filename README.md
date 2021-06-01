@@ -15,6 +15,7 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 * Suche bei mehreren Impfzentren gleichzeitig
 * Warteschlange umgehen
 * Dauerhaft Impf-Codes generieren - egal wo, egal für wen!
+* 🌟 **NEU:** [Jetzt mit GUI im Pre-Release! (Nur für Windows)](https://github.com/iamnotturner/vaccipy/releases/tag/v1.0.5) 
 
 **[Wusstest du: Du kannst mit einem Impf-Code in mehreren Impfzentren gleichzeitig nach freien Terminen suchen!](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)**
 
@@ -267,9 +268,11 @@ python3 main.py search -f max-mustermann.json
   
   Dies wird auch z.B. auf NixOS benötigt, um eine eigene chromedriver-Installation zu verwenden.
 
+* `VACCIPY_CHROME_BIN`:
+  Name oder relativer Pfad der einer alternativen chrome Programmdatei, die du verwenden möchtest.
+
 Für eine bessere Nutzererfahrung erstellen wir verschiedene Distributionen, die ohne Installation von Python direkt ausgeführt werden können. 
 Die Distributionen können im [neusten Release heruntergeladen werden](https://github.com/iamnotturner/vaccipy/releases/latest).
-
 
 #### [Informationen zu den Distributionen und Shipping findest du hier](https://github.com/iamnotturner/vaccipy/blob/master/docs/distribution.md)
 

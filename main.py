@@ -4,6 +4,8 @@ import argparse
 import copy
 import json
 import os
+import random
+import string
 
 try:
     import readline
@@ -153,7 +155,6 @@ def run_search_interactive(kontaktdaten_path, check_delay):
     print()
     kontaktdaten = update_kontaktdaten_interactive(
         kontaktdaten, "search", kontaktdaten_path)
-    print()
     return run_search(kontaktdaten, check_delay)
 
 
@@ -186,7 +187,7 @@ def run_search(kontaktdaten, check_delay):
             "deine Daten beim Programmstart erneut ein.\n") from exc
 
     ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                  check_delay=check_delay,PATH=PATH)
+                                  check_delay=check_delay, PATH=PATH)
 
 
 def gen_code_interactive(kontaktdaten_path):
@@ -218,7 +219,6 @@ def gen_code_interactive(kontaktdaten_path):
     print()
     kontaktdaten = update_kontaktdaten_interactive(
         kontaktdaten, "code", kontaktdaten_path)
-    print()
     return gen_code(kontaktdaten)
 
 
@@ -241,11 +241,20 @@ def gen_code(kontaktdaten):
             "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
             "deine Daten beim Programmstart erneut ein.\n") from exc
 
-    its = ImpfterminService("PLAT-ZHAL-TER1", [plz_impfzentrum], {},PATH)
+    # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
+    # für die Cookie-Generierung
+    code_chars = string.ascii_uppercase + string.digits
+    one = 'VACC'
+    two = 'IPY' + random.choice(code_chars)
+    three = ''.join(random.choices(code_chars, k=4))
+    random_code = f"{one}-{two}-{three}"
+    print(f"Für die Cookies-Generierung wird ein zufälliger Code verwendet ({random_code}).\n")
+
+    its = ImpfterminService(random_code, [plz_impfzentrum], {}, PATH)
 
     print("Wähle nachfolgend deine Altersgruppe aus (L920, L921, L922 oder L923).\n"
           "Es ist wichtig, dass du die Gruppe entsprechend deines Alters wählst, "
-          "ansonsten wird dir der Termin vor Ort abesagt.\n"
+          "ansonsten wird dir der Termin vor Ort abgesagt.\n"
           "In den eckigen Klammern siehst du, welche Impfstoffe den Gruppe jeweils zugeordnet sind.\n"
           "Beispiel: L921\n")
 
@@ -261,7 +270,7 @@ def gen_code(kontaktdaten):
 
     if token is not None:
         # code bestätigen
-        print("\nDu erhälst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
+        print("\nDu erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
               "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
               "Beispiel: 123-456\n")
 
@@ -302,7 +311,8 @@ def validate_args(args):
     """
 
     if args.configure_only and args.read_only:
-        raise ValueError("--configure-only und --read-only kann nicht gleichzeitig verwendet werden")
+        raise ValueError(
+            "--configure-only und --read-only kann nicht gleichzeitig verwendet werden")
 
 
 def main():
