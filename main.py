@@ -13,7 +13,7 @@ except:
     pass
 
 from tools.its import ImpfterminService
-from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, ValidationError
+from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten
 from tools.utils import create_missing_dirs, remove_prefix
 from tools.exceptions import ValidationError
 

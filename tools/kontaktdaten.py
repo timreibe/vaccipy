@@ -20,10 +20,6 @@ WOCHENTAG_NAMES = [
     "Sonntag"]
 
 
-class ValidationError(Exception):
-    pass
-
-
 def get_kontaktdaten(filepath: str):
     """
     Lade Kontaktdaten aus Datei.
@@ -296,7 +292,8 @@ def validate_zeitrahmen(zeitrahmen: dict):
             elif key == "wochentage":
                 if not isinstance(value, list):
                     raise ValidationError("Muss eine Liste sein")
-
+                if not value:
+                    raise ValidationError("Darf keine leere Liste sein")
                 for weekday in value:
                     validate_wochentag(weekday)
             elif key == "einhalten_bei":
@@ -306,6 +303,26 @@ def validate_zeitrahmen(zeitrahmen: dict):
         except ValidationError as exc:
             raise ValidationError(
                 f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
+
+    if "von_datum" in zeitrahmen and "bis_datum" in zeitrahmen:
+        von_datum = datetime.datetime.strptime(
+            zeitrahmen["von_datum"], "%d.%m.%Y")
+        bis_datum = datetime.datetime.strptime(
+            zeitrahmen["bis_datum"], "%d.%m.%Y")
+        if von_datum > bis_datum:
+            raise ValidationError(
+                "Ungültige Kombination von Datums: "
+                'von_datum" liegt nach "bis_datum"')
+
+    if "von_uhrzeit" in zeitrahmen and "bis_uhrzeit" in zeitrahmen:
+        von_uhrzeit = datetime.datetime.strptime(
+            zeitrahmen["von_uhrzeit"], "%H:%M")
+        bis_uhrzeit = datetime.datetime.strptime(
+            zeitrahmen["bis_uhrzeit"], "%H:%M")
+        if von_uhrzeit > bis_uhrzeit:
+            raise ValidationError(
+                "Ungültige Kombination von Uhrzeiten: "
+                '"von_uhrzeit" liegt nach "bis_uhrzeit"')
 
 
 def validate_datum(date: str):
