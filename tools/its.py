@@ -805,16 +805,16 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
 
     von_datum = datetime.strptime(
         zeitrahmen["von_datum"],
-        "%d.%m.%Y") if "von_datum" in zeitrahmen else date.min
+        "%d.%m.%Y").date() if "von_datum" in zeitrahmen else date.min
     bis_datum = datetime.strptime(
         zeitrahmen["bis_datum"],
-        "%d.%m.%Y") if "bis_datum" in zeitrahmen else date.max
+        "%d.%m.%Y").date() if "bis_datum" in zeitrahmen else date.max
     von_uhrzeit = datetime.strptime(
         zeitrahmen["von_uhrzeit"],
-        "%H:%M") if "von_uhrzeit" in zeitrahmen else dtime.min
+        "%H:%M").time() if "von_uhrzeit" in zeitrahmen else dtime.min
     bis_uhrzeit = datetime.strptime(
         zeitrahmen["bis_uhrzeit"],
-        "%H:%M") if "bis_uhrzeit" in zeitrahmen else dtime.max
+        "%H:%M").time() if "bis_uhrzeit" in zeitrahmen else dtime.max
     wochentage = [decode_wochentag(wt) for wt in set(
         zeitrahmen["wochentage"])] if "wochentage" in zeitrahmen else range(7)
 
