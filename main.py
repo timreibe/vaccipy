@@ -13,8 +13,9 @@ except:
     pass
 
 from tools.its import ImpfterminService
-from tools.kontaktdaten import get_kontaktdaten, validate_kontaktdaten, ValidationError
+from tools.kontaktdaten import get_kontaktdaten, validate_kontaktdaten
 from tools.utils import create_missing_dirs, remove_prefix
+from tools.exceptions import ValidationError
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
