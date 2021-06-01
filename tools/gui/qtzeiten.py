@@ -156,7 +156,7 @@ class QtZeiten(QtWidgets.QDialog):
         aktive_wochentage = list()
 
         # Alle Checkboxen der GUI selektieren und durchgehen
-        # BUG: Wenn die reihenfolge im Layout geändert wird, stimmen die Wochentage nicht mehr 0 = Mo ... 6 = So
+        # BUG: Wenn die Reihenfolge im Layout geändert wird, stimmen die Wochentage nicht mehr 0 = Mo ... 6 = So
         checkboxes = self.tage_frame.findChildren(QtWidgets.QCheckBox)
         for num, checkboxe in enumerate(checkboxes, 0):
             if checkboxe.isChecked():

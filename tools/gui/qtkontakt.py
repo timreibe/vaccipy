@@ -78,7 +78,7 @@ class QtKontakt(QtWidgets.QDialog):
             QtWidgets.QMessageBox.critical(self, "Fehlende Daten!", f"Bitte ergänzen!\n\n{error}")
         except AttributeError as error:
             # Parent hat i_kontaktdaten_pfad nicht
-            # Falls der Dialog ein anderer Parent hat soll kein Fehler kommen
+            # Falls der Dialog ein anderer Parent hat, soll kein Fehler kommen
             self.close()
 
     def speicher_einstellungen(self) -> str:
@@ -134,7 +134,7 @@ class QtKontakt(QtWidgets.QDialog):
         telefon = self.i_telefon.text().strip()
         mail = self.i_mail.text().strip()
 
-        # PLZ der Zentren in liste und "strippen"
+        # PLZ der Zentren in Liste und "strippen"
         plz_zentren = plz_zentrum_raw.split(",")
         plz_zentren = [plz.strip() for plz in plz_zentren]
 
