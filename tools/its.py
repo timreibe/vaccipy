@@ -80,8 +80,8 @@ class ImpfterminService():
         self.app_name = str(self)
 
     def __del__(self):
-        if( self._chromeInstance is not None ):
-             self._chromeInstance.quit()
+        if self._chromeInstance is not None:
+            self._chromeInstance.quit()
         
     def __str__(self) -> str:
         return "ImpfterminService"
@@ -187,8 +187,8 @@ class ImpfterminService():
             raise ValueError(f"Nicht unterstütztes Betriebssystem {self.operating_system}")
 
     def get_chromedriver(self, headless):
-        if( self._chromeInstance is not None ):
-             self._chromeInstance.quit()
+        if self._chromeInstance is not None:
+            self._chromeInstance.quit()
              
         chrome_options = Options()
 
@@ -213,8 +213,8 @@ class ImpfterminService():
 
         chrome_options.headless = headless
         
-        self._chromeInstance = Chrome(self.get_chromedriver_path(), options=chrome_options);
-        return  self._chromeInstance
+        self._chromeInstance = Chrome(self.get_chromedriver_path(), options=chrome_options)
+        return self._chromeInstance
 
     def driver_enter_code(self, driver, plz_impfzentrum):
         """
