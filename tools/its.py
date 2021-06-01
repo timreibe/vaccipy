@@ -582,11 +582,15 @@ class ImpfterminService():
             res_json = res.json()
             terminpaare = res_json.get("termine")
             if terminpaare:
-                terminpaare_angenommen = {
+                terminpaare_angenommen = [
                     tp for tp in terminpaare
                     if terminpaar_im_zeitrahmen(tp, zeitrahmen)
-                }
-                for tp_abgelehnt in set(terminpaare) - terminpaare_angenommen:
+                ]
+                terminpaare_abgelehnt = [
+                    tp for tp in terminpaare
+                    if tp not in terminpaare_angenommen
+                ]
+                for tp_abgelehnt in terminpaare_abgelehnt:
                     self.log.info(
                         "Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
                     for num, termin in enumerate(tp_abgelehnt, 1):
@@ -794,23 +798,23 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
     :param zeitrahmen: Zeitrahmen-Dictionary wie in ImpfterminService.termin_suchen
     :return: True oder False
     """
-    if zeitrahmen is None:
+    if not zeitrahmen: # Teste auf leeres dict
         return True
 
     assert zeitrahmen["einhalten_bei"] in ["1", "2", "beide"]
 
-    von_datum = datetime.datetime.strptime(
+    von_datum = datetime.strptime(
         zeitrahmen["von_datum"],
-        "%d.%m.%Y") if "von_datum" in zeitrahmen else datetime.date.min
-    bis_datum = datetime.datetime.strptime(
+        "%d.%m.%Y") if "von_datum" in zeitrahmen else date.min
+    bis_datum = datetime.strptime(
         zeitrahmen["bis_datum"],
-        "%d.%m.%Y") if "bis_datum" in zeitrahmen else datetime.date.max
-    von_uhrzeit = datetime.datetime.strptime(
+        "%d.%m.%Y") if "bis_datum" in zeitrahmen else date.max
+    von_uhrzeit = datetime.strptime(
         zeitrahmen["von_uhrzeit"],
-        "%H:%M") if "von_uhrzeit" in zeitrahmen else datetime.time.min
-    bis_uhrzeit = datetime.datetime.strptime(
+        "%H:%M") if "von_uhrzeit" in zeitrahmen else dtime.min
+    bis_uhrzeit = datetime.strptime(
         zeitrahmen["bis_uhrzeit"],
-        "%H:%M") if "bis_uhrzeit" in zeitrahmen else datetime.time.max
+        "%H:%M") if "bis_uhrzeit" in zeitrahmen else dtime.max
     wochentage = [decode_wochentag(wt) for wt in set(
         zeitrahmen["wochentage"])] if "wochentage" in zeitrahmen else range(7)
 
