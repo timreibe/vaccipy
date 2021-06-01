@@ -59,8 +59,8 @@ def check_kontaktdaten(kontaktdaten: dict, mode: Modus):
         kontaktdaten["kontakt"]["notificationChannel"]
         kontaktdaten["kontakt"]["notificationReceiver"]
 
-    except KeyError as error:
-        raise MissingValuesError("Schluesselwort Fehlt!") from error
+    except KeyError as exc:
+        raise MissingValuesError("Schlüsselwort fehlt!") from exc
 
 
 def validate_kontaktdaten(kontaktdaten: dict):
@@ -170,7 +170,7 @@ def validate_kontakt(kontakt: dict):
                 if not isinstance(value, str):
                     raise ValidationError("Muss eine Zeichenkette sein")
                 if value.strip() == "":
-                    raise ValidationError(f"Fehlende Daten bei {key}")
+                    raise ValidationError(f"Darf nicht leer sein")
             elif key == "plz":
                 validate_plz(value)
             elif key == "hausnummer":
@@ -253,4 +253,4 @@ def validate_email(email: str):
         raise ValidationError(f"Ungültige E-Mail-Adresse {json.dumps(email)}")
 
     if email.strip() == "":
-        raise ValidationError("Mail ist leer")
+        raise ValidationError("E-Mail-Adresse ist leer")
