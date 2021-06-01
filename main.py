@@ -253,7 +253,7 @@ def gen_code(kontaktdaten):
 
     print("Wähle nachfolgend deine Altersgruppe aus (L920, L921, L922 oder L923).\n"
           "Es ist wichtig, dass du die Gruppe entsprechend deines Alters wählst, "
-          "ansonsten wird dir der Termin vor Ort abesagt.\n"
+          "ansonsten wird dir der Termin vor Ort abgesagt.\n"
           "In den eckigen Klammern siehst du, welche Impfstoffe den Gruppe jeweils zugeordnet sind.\n"
           "Beispiel: L921\n")
 
@@ -269,7 +269,7 @@ def gen_code(kontaktdaten):
 
     if token is not None:
         # code bestätigen
-        print("\nDu erhälst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
+        print("\nDu erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
               "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
               "Beispiel: 123-456\n")
 
