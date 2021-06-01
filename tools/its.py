@@ -36,6 +36,9 @@ class ImpfterminService():
         self.splitted_code = self.code.split("-")
 
         self.PATH = PATH
+        
+        # hold only one chrome instance
+        self._chromeInstance = None
 
         # PLZ's zu String umwandeln
         self.plz_impfzentren = sorted([str(plz) for plz in plz_impfzentren])
@@ -76,6 +79,10 @@ class ImpfterminService():
         self.qualifikationen = []
         self.app_name = str(self)
 
+    def __del__(self):
+        if( self._chromeInstance is not None ):
+             self._chromeInstance.quit()
+        
     def __str__(self) -> str:
         return "ImpfterminService"
 
@@ -180,6 +187,9 @@ class ImpfterminService():
             raise ValueError(f"Nicht unterstütztes Betriebssystem {self.operating_system}")
 
     def get_chromedriver(self, headless):
+        if( self._chromeInstance is not None ):
+             self._chromeInstance.quit()
+             
         chrome_options = Options()
 
 
@@ -202,8 +212,9 @@ class ImpfterminService():
             chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
 
         chrome_options.headless = headless
-
-        return Chrome(self.get_chromedriver_path(), options=chrome_options)
+        
+        self._chromeInstance = Chrome(self.get_chromedriver_path(), options=chrome_options);
+        return  self._chromeInstance
 
     def driver_enter_code(self, driver, plz_impfzentrum):
         """
