@@ -20,7 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from tools.clog import CLogger
-from tools.kontaktdaten import validate_kontakt, validate_zeitrahmen
+from tools.kontaktdaten import decode_wochentag, validate_kontakt, validate_zeitrahmen
 from tools.utils import retry_on_failure, desktop_notification
 
 try:
@@ -816,10 +816,10 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
 
     # Einzelne Termine durchgehen
     for num, termin in enumerate(terminpaar, 1):
-        if einhalten_bei in ["beide", str(num)]:
+        if zeitrahmen["einhalten_bei"] in ["beide", str(num)]:
             termin_zeit = datetime.fromtimestamp(int(termin["begin"]) / 1000)
 
-            if not (von_datum <= termin.date() <= bis_datum):
+            if not (von_datum <= termin_zeit.date() <= bis_datum):
                 return False
 
             if not (von_uhrzeit <= termin_zeit.time() <= bis_uhrzeit):
