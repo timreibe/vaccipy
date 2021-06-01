@@ -113,16 +113,20 @@ def update_kontaktdaten_interactive(
                     "> Für welchen Impftermin soll der Zeitrahmen gelten? (1/2/beide): ")
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "von_datum"],
-                    "> Von Datum: ")
+                    "> Von Datum (Leer lassen zum Überspringen): ",
+                    lambda x: x if x else None)  # Leeren String zu None umwandeln
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "bis_datum"],
-                    "> Bis Datum: ")
+                    "> Bis Datum (Leer lassen zum Überspringen): ",
+                    lambda x: x if x else None)  # Leeren String zu None umwandeln
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "von_uhrzeit"],
-                    "> Von Uhrzeit: ")
+                    "> Von Uhrzeit (Leer lassen zum Überspringen): ",
+                    lambda x: x if x else None)  # Leeren String zu None umwandeln
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "bis_uhrzeit"],
-                    "> Bis Uhrzeit: ")
+                    "> Bis Uhrzeit (Leer lassen zum Überspringen): ",
+                    lambda x: x if x else None)  # Leeren String zu None umwandeln
                 print(
                     "Trage nun die Wochentage ein, an denen die ausgewählten Impftermine liegen dürfen.\n"
                     "Mehrere Wochentage können durch Komma getrennt werden.\n"
@@ -141,10 +145,11 @@ def parse_wochentage(string):
     wochentage = [wt.strip() for wt in string.split(",")]
     # Leere strings durch "if wt" rausfiltern
     nums = [decode_wochentag(wt) for wt in wochentage if wt]
-    if nums:
-        nums = sorted(set(nums))
-    else:
-        nums = range(7) # Default: Alle Wochentage auswählen
+    if not nums:
+        # None zurückgeben, damit der Key nicht gesetzt wird.
+        # Folglich wird der Default genutzt: Alle Wochentage sind zulässig.
+        return None
+    nums = sorted(set(nums))
     return [encode_wochentag(num) for num in nums]
 
 
@@ -159,8 +164,11 @@ def input_kontaktdaten_key(
     key = path[-1]
     while True:
         try:
-            target[key] = transformer(input(prompt).strip())
-            validate_kontaktdaten(kontaktdaten)
+            value = transformer(input(prompt).strip())
+            # Wenn transformer None zurückgibt, setzen wir den Key nicht.
+            if value is not None:
+                target[key] = value
+                validate_kontaktdaten(kontaktdaten)
             break
         except ValidationError as exc:
             print(f"\n{str(exc)}\n")
