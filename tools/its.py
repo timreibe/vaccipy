@@ -582,17 +582,19 @@ class ImpfterminService():
             res_json = res.json()
             terminpaare = res_json.get("termine")
             if terminpaare:
-                terminpaare_angenommen = {
-                    tp for tp in terminpaare
-                    if terminpaar_im_zeitrahmen(tp, zeitrahmen)
-                }
-                for tp_abgelehnt in set(terminpaare) - terminpaare_angenommen:
-                    self.log.info(
-                        "Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
-                    for num, termin in enumerate(tp_abgelehnt, 1):
-                        ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
-                            '%d.%m.%Y um %H:%M Uhr')
-                        self.log.info(f"{num}. Termin: {ts}")
+                terminpaare_angenommen = list()
+                for tp in terminpaare:
+                    if terminpaar_im_zeitrahmen(tp, zeitrahmen):
+                        terminpaare_angenommen.append(tp)
+
+                for tp_abgelehnt in terminpaare:
+                    if terminpaare in terminpaare_angenommen:
+                        self.log.info(
+                            "Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
+                        for num, termin in enumerate(tp_abgelehnt, 1):
+                            ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
+                                '%d.%m.%Y um %H:%M Uhr')
+                            self.log.info(f"{num}. Termin: {ts}")
                 if terminpaare_angenommen:
                     # Auswahl des erstbesten Terminpaares
                     self.terminpaar = choice(terminpaare_angenommen)
@@ -794,23 +796,23 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
     :param zeitrahmen: Zeitrahmen-Dictionary wie in ImpfterminService.termin_suchen
     :return: True oder False
     """
-    if zeitrahmen is None:
+    if not zeitrahmen:
         return True
 
     assert zeitrahmen["einhalten_bei"] in ["1", "2", "beide"]
 
     von_datum = datetime.datetime.strptime(
         zeitrahmen["von_datum"],
-        "%d.%m.%Y") if "von_datum" in zeitrahmen else datetime.date.min
+        "%d.%m.%Y") if "von_datum" in zeitrahmen else datetime.date.min #BUG: AttributeError: 'method_descriptor' object has no attribute 'min'
     bis_datum = datetime.datetime.strptime(
         zeitrahmen["bis_datum"],
-        "%d.%m.%Y") if "bis_datum" in zeitrahmen else datetime.date.max
+        "%d.%m.%Y") if "bis_datum" in zeitrahmen else datetime.date.max #BUG: hier wahrscheinlich auch
     von_uhrzeit = datetime.datetime.strptime(
         zeitrahmen["von_uhrzeit"],
-        "%H:%M") if "von_uhrzeit" in zeitrahmen else datetime.time.min
+        "%H:%M") if "von_uhrzeit" in zeitrahmen else datetime.time.min #BUG: AttributeError: 'method_descriptor' object has no attribute 'min'
     bis_uhrzeit = datetime.datetime.strptime(
         zeitrahmen["bis_uhrzeit"],
-        "%H:%M") if "bis_uhrzeit" in zeitrahmen else datetime.time.max
+        "%H:%M") if "bis_uhrzeit" in zeitrahmen else datetime.time.max #BUG: hier wahrscheinlich auch
     wochentage = [decode_wochentag(wt) for wt in set(
         zeitrahmen["wochentage"])] if "wochentage" in zeitrahmen else range(7)
 
