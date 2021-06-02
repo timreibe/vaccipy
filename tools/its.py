@@ -500,10 +500,9 @@ class ImpfterminService():
         self.log.info("Browser-Cookies generieren")
         driver = self.get_chromedriver(headless=False)
         try:
-            cookies_erneuert = self.driver_renew_cookies_code(driver, choice(self.plz_impfzentren), manual)
+            return self.driver_renew_cookies_code(driver, choice(self.plz_impfzentren), manual)
         finally:
             driver.quit()
-        return cookies_erneuert
 
     @retry_on_failure()
     def book_appointment(self):
