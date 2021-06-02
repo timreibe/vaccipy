@@ -65,7 +65,9 @@ def check_kontaktdaten(kontaktdaten: dict, mode: Modus):
             kontaktdaten["kontakt"]["hausnummer"]
             kontaktdaten["kontakt"]["plz"]
             kontaktdaten["kontakt"]["ort"]
-            kontaktdaten["zeitspanne"]
+
+            #BUG: Erstmal auskommentiert lassen, bis die GUI entsprechend angepasst wurde
+            #kontaktdaten["zeitspanne"]
             # Subkeys von "zeitspanne" brauchen nicht gecheckt werden, da
             # `kontaktdaten["zeitspanne"] == {}` zulässig ist.
 
