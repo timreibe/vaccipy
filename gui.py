@@ -53,7 +53,7 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         super().__init__()
 
-        create_missing_dirs()
+        create_missing_dirs(PATH)
 
         # Laden der .ui Datei und Anpassungen
         uic.loadUi(pfad_fenster_layout, self)
