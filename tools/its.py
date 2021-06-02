@@ -517,10 +517,9 @@ class ImpfterminService():
         self.log.info("Termin über Selenium buchen")
         driver = self.get_chromedriver(headless=False)
         try:
-            termin_gebucht = self.driver_book_appointment(driver, self.plz_termin)
+            return self.driver_book_appointment(driver, self.plz_termin)
         finally:
             driver.quit()
-        return termin_gebucht
 
     @retry_on_failure()
     def login(self):
