@@ -3,7 +3,7 @@ import platform
 import sys
 import time
 from base64 import b64encode
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from datetime import time as dtime
 from random import choice, randint
 
@@ -804,7 +804,7 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
     :param zeitrahmen: Zeitrahmen-Dictionary wie in ImpfterminService.termin_suchen
     :return: True oder False
     """
-    if not zeitrahmen: # Teste auf leeres dict
+    if not zeitrahmen:  # Teste auf leeres dict
         return True
 
     assert zeitrahmen["einhalten_bei"] in ["1", "2", "beide"]
@@ -818,9 +818,10 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
     von_uhrzeit = datetime.strptime(
         zeitrahmen["von_uhrzeit"],
         "%H:%M").time() if "von_uhrzeit" in zeitrahmen else dtime.min
-    bis_uhrzeit = datetime.strptime(
-        zeitrahmen["bis_uhrzeit"],
-        "%H:%M").time() if "bis_uhrzeit" in zeitrahmen else dtime.max
+    bis_uhrzeit = (
+        datetime.strptime(zeitrahmen["bis_uhrzeit"], "%H:%M")
+        + timedelta(seconds=59)
+    ).time() if "bis_uhrzeit" in zeitrahmen else dtime.max
     wochentage = [decode_wochentag(wt) for wt in set(
         zeitrahmen["wochentage"])] if "wochentage" in zeitrahmen else range(7)
 
