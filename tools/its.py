@@ -219,20 +219,22 @@ class ImpfterminService():
         driver.get(url)
 
         # Queue Bypass
-        queue_cookie = driver.get_cookie("akavpwr_User_allowed")
-        if queue_cookie:
-            self.log.info("Im Warteraum, Seite neuladen")
+        while True:
+            queue_cookie = driver.get_cookie("akavpwr_User_allowed")
+            if not queue_cookie:
+                break
+            self.log.info("Im Warteraum, Seite neu laden")
             queue_cookie["name"] = "akavpau_User_allowed"
             driver.add_cookie(queue_cookie)
 
             # Seite neu laden
+            time.sleep(5)
             driver.get(url)
             driver.refresh()
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
-        # Warteraum-Support: Timeout auf 1 Stunde
         button_xpath = ".//html/body/app-root/div/div/div/div[2]/div[2]/div/div[1]/a"
-        button = WebDriverWait(driver, 60 * 60).until(
+        button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
