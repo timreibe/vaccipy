@@ -6,3 +6,4 @@ urllib3>=1.26.4
 pyinstaller>=4.3
 plyer>=2.0.0
 cloudscraper>=1.2.52
+python-telegram-bot

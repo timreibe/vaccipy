@@ -5,7 +5,7 @@ import time
 from base64 import b64encode
 from datetime import datetime
 from random import choice, randint
-
+from PythonTelegramWraper import bot as telegram_bot
 from typing import Dict, List
 
 import cloudscraper
@@ -29,7 +29,7 @@ except ImportError:
 
 
 class ImpfterminService():
-    def __init__(self, code: str, plz_impfzentren: list, kontakt: dict, PATH: str):
+    def __init__(self, code: str, plz_impfzentren: list, kontakt: dict, PATH: str, telegram: dict = None):
         self.code = str(code).upper()
         self.splitted_code = self.code.split("-")
 
@@ -73,6 +73,15 @@ class ImpfterminService():
         self.terminpaar = None
         self.qualifikationen = []
         self.app_name = str(self)
+
+        # set up telegram notification channel
+        self.use_telegram = False
+        self.telegram_chatID = None
+        if telegram is not None:
+            self.use_telegram = True
+            self.telegram_chatID=telegram["id"]
+            self.telegram_notification_channel = telegram_bot.Bot(False,telegram["token"])
+            self.telegram_notification_channel.start_Bot_Async()
 
     def __str__(self) -> str:
         return "ImpfterminService"
@@ -495,6 +504,7 @@ class ImpfterminService():
         """
 
         self.log.info("Termin über Selenium buchen")
+        self.send_to_telegram("Termin über Selenium buchen")
         with self.get_chromedriver(headless=False) as driver:
             return self.driver_book_appointment(driver, self.plz_termin)
 
@@ -579,6 +589,7 @@ class ImpfterminService():
                     ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                         '%d.%m.%Y um %H:%M Uhr')
                     self.log.success(f"{num}. Termin: {ts}")
+                    self.send_to_telegram(f"{num}. Termin: {ts}")
                 if ENABLE_BEEPY:
                     beepy.beep('coin')
                 else:
@@ -588,6 +599,7 @@ class ImpfterminService():
                 self.log.info(f"Keine Termine verfügbar in {plz}")
         else:
             self.log.error(f"Terminpaare können nicht geladen werden: {res.text}")
+            self.send_to_telegram(f"*Error:* Terminpaare können nicht geladen werden: {res.text}")
         return False, res.status_code
 
     @retry_on_failure()
@@ -613,17 +625,20 @@ class ImpfterminService():
         if res.status_code == 201:
             msg = "Termin erfolgreich gebucht!"
             self.log.success(msg)
+            self.send_to_telegram(msg)
             desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
             return True
 
         elif res.status_code == 429:
             msg = "Anfrage wurde von der Botprotection geblockt. Cookies werden erneuert und die Buchung wiederholt."
             self.log.error(msg)
+            self.send_to_telegram("*Error:* "+msg)
             self.renew_cookies_code()
             res = self.s.post(self.domain + path, json=data, timeout=15)
             if res.status_code == 201:
                 msg = "Termin erfolgreich gebucht!"
                 self.log.success(msg)
+                self.send_to_telegram(msg)
                 desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
                 return True
             else:
@@ -643,6 +658,7 @@ class ImpfterminService():
             msg = f"Unbekannter Statuscode: {res.status_code}"
 
         self.log.error(msg)
+        self.send_to_telegram("*Error:* "+msg)
         desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
         return False
 
@@ -709,7 +725,7 @@ class ImpfterminService():
                 return False
 
     @staticmethod
-    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH: str, check_delay: int = 30):
+    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH: str, check_delay: int = 30, telegram: dict = None):
         """
         Workflow für die Terminbuchung.
 
@@ -720,11 +736,12 @@ class ImpfterminService():
         :return:
         """
 
-        its = ImpfterminService(code, plz_impfzentren, kontakt, PATH)
+        its = ImpfterminService(code, plz_impfzentren, kontakt, PATH, telegram)
         its.renew_cookies()
 
         # login ist nicht zwingend erforderlich
         its.login()
+        its.send_to_telegram("Terminsuche gestartet...")
 
         while True:
             termin_gefunden = False
@@ -751,4 +768,11 @@ class ImpfterminService():
             # Cookies erneuern und pausieren, wenn Terminbuchung nicht möglich war
             # Anschließend nach neuem Termin suchen
             if its.book_appointment():
+                its.send_to_telegram("Buchung erfolgreich")
                 return True
+            else:
+                its.send_to_telegram("Buchung fehlgeschlagen")
+
+    def send_to_telegram(self,message):
+        if self.use_telegram:
+            self.telegram_notification_channel.sendMessage(self.telegram_chatID,message)
