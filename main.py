@@ -365,7 +365,7 @@ def validate_args(args):
 
 
 def main():
-    create_missing_dirs()
+    create_missing_dirs(PATH)
 
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(help="commands", dest="command")

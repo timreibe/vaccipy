@@ -1,13 +1,15 @@
+import os
 import time
 import traceback
-import requests
-from pathlib import Path
-
-from threading import Thread
-from plyer import notification
-from tools.exceptions import DesktopNotificationError
 from json import JSONDecodeError
+from pathlib import Path
+from threading import Thread
+
+import requests
+from plyer import notification
 from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
+
+from tools.exceptions import DesktopNotificationError
 
 
 def retry_on_failure(retries=10):
@@ -85,33 +87,34 @@ def remove_prefix(text, prefix):
     return text
 
 
-def desktop_notification(operating_system:str, title: str, message: str):
-        """
-        Starts a thread and creates a desktop notification using plyer.notification
-        """
+def desktop_notification(operating_system: str, title: str, message: str):
+    """
+    Starts a thread and creates a desktop notification using plyer.notification
+    """
 
-        if 'windows' not in operating_system:
-            return
+    if 'windows' not in operating_system:
+        return
 
-        try:
-            Thread(target=notification.notify(
-                app_name="Impfterminservice",
-                title=title,
-                message=message)
-            ).start()
-        except Exception as exc:
-            raise DesktopNotificationError(
-                "Error in _desktop_notification: " + str(exc.__class__.__name__)
-                + traceback.format_exc()
-                           ) from exc
-    
-def create_missing_dirs():
+    try:
+        Thread(target=notification.notify(
+            app_name="Impfterminservice",
+            title=title,
+            message=message)
+        ).start()
+    except Exception as exc:
+        raise DesktopNotificationError(
+            "Error in _desktop_notification: " + str(exc.__class__.__name__)
+            + traceback.format_exc()
+        ) from exc
+
+
+def create_missing_dirs(base_path):
     """
     Erstellt benötigte Ordner, falls sie fehlen:
 
     - ./data
     """
-    Path("./data").mkdir(parents=True, exist_ok=True)
+    Path(os.path.join(base_path, "data")).mkdir(parents=True, exist_ok=True)
 
 
 def get_grouped_impfzentren() -> dict:
