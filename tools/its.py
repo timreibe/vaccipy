@@ -58,7 +58,6 @@ class ImpfterminService():
 
         # Ausgewähltes Impfzentrum prüfen
         self.verfuegbare_impfzentren = {}
-        self.impfzentrum = {}
         self.domain = None
         if not self.impfzentren_laden():
             raise ValueError("Impfzentren laden fehlgeschlagen")
@@ -104,13 +103,12 @@ class ImpfterminService():
             # Prüfen, ob Impfzentren zur eingetragenen PLZ existieren
             plz_geprueft = []
             for plz in self.plz_impfzentren:
-                self.impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                if self.impfzentrum:
-                    self.domain = self.impfzentrum.get("URL")
-                    self.log.info("'{}' in {} {} ausgewählt".format(
-                        self.impfzentrum.get("Zentrumsname").strip(),
-                        self.impfzentrum.get("PLZ"),
-                        self.impfzentrum.get("Ort")))
+                impfzentrum = self.verfuegbare_impfzentren.get(plz)
+                if impfzentrum:
+                    self.domain = impfzentrum.get("URL")
+                    zentrumsname = impfzentrum.get("Zentrumsname")
+                    ort = impfzentrum.get("Ort")
+                    self.log.info(f"'{zentrumsname}' in {plz} {ort} ausgewählt")
                     plz_geprueft.append(plz)
 
             if plz_geprueft:
@@ -607,12 +605,11 @@ class ImpfterminService():
                     # Auswahl des erstbesten Terminpaares
                     self.terminpaar = choice(terminpaare_angenommen)
                     self.plz_termin = plz
-                    self.log.success(f"Terminpaar gefunden!")
-                    self.impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                    self.log.success("'{}' in {} {}".format(
-                        self.impfzentrum.get("Zentrumsname").strip(),
-                        self.impfzentrum.get("PLZ"),
-                        self.impfzentrum.get("Ort")))
+                    self.log.success(f"Termin gefunden!")
+                    impfzentrum = self.verfuegbare_impfzentren.get(plz)
+                    zentrumsname = impfzentrum.get('Zentrumsname').strip()
+                    ort = impfzentrum.get('Ort')
+                    self.log.success(f"'{zentrumsname}' in {plz} {ort}")
                     for num, termin in enumerate(self.terminpaar, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                             '%d.%m.%Y um %H:%M Uhr')
