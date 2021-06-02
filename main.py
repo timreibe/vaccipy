@@ -174,7 +174,7 @@ def input_kontaktdaten_key(
             print(f"\n{str(exc)}\n")
 
 
-def run_search_interactive(kontaktdaten_path, check_delay):
+def run_search_interactive(kontaktdaten_path, check_delay,telegram=None):
     """
     Interaktives Setup für die Terminsuche:
     1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen
@@ -202,10 +202,10 @@ def run_search_interactive(kontaktdaten_path, check_delay):
     print()
     kontaktdaten = update_kontaktdaten_interactive(
         kontaktdaten, "search", kontaktdaten_path)
-    return run_search(kontaktdaten, check_delay)
+    return run_search(kontaktdaten, check_delay,telegram)
 
 
-def run_search(kontaktdaten, check_delay):
+def run_search(kontaktdaten, check_delay, telegram=None):
     """
     Nicht-interaktive Terminsuche
 
@@ -236,7 +236,7 @@ def run_search(kontaktdaten, check_delay):
             "deine Daten beim Programmstart erneut ein.\n") from exc
 
     ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                  zeitrahmen=zeitrahmen, check_delay=check_delay, PATH=PATH)
+                                  zeitrahmen=zeitrahmen, check_delay=check_delay, PATH=PATH, telegram=telegram)
 
 
 def gen_code_interactive(kontaktdaten_path):
@@ -335,13 +335,19 @@ def gen_code(kontaktdaten):
 
 
 def subcommand_search(args):
+    telegram = None
+    if args.t_token is not None and args.t_id is not None:
+        telegram = dict()
+        telegram["token"] = args.t_token
+        telegram["id"] = args.t_id
+
     if args.configure_only:
         update_kontaktdaten_interactive(
             get_kontaktdaten(args.file), "search", args.file)
     elif args.read_only:
-        run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec)
+        run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec, telegram=telegram)
     else:
-        run_search_interactive(args.file, check_delay=args.retry_sec)
+        run_search_interactive(args.file, check_delay=args.retry_sec, telegram=telegram)
 
 
 def subcommand_code(args):
@@ -385,6 +391,12 @@ def main():
         "--read-only",
         action='store_true',
         help="Es wird nicht nach fehlenden Kontaktdaten gefragt. Stattdessen wird ein Fehler angezeigt, falls benötigte Kontaktdaten in der JSON-Datei fehlen.")
+    base_subparser.add_argument(
+        "--t-token",
+        help="Token des Telegram-Bot")
+    base_subparser.add_argument(
+        "--t-id",
+        help="ChatID an die die benachrichtigungen gesendet werden sollen")
 
     parser_search = subparsers.add_parser(
         "search", parents=[base_subparser], help="Termin suchen")
