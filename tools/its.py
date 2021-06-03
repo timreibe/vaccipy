@@ -319,7 +319,7 @@ class ImpfterminService():
 
         try:
             # Klick auf "Termin suchen"
-            button_xpath = "/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[1]/div[2]/div[2]/button"
+            button_xpath = "//*/button[@data-target=\"#itsSearchAppointmentsModal\"]"
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
