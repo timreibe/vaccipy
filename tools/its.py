@@ -219,8 +219,11 @@ class ImpfterminService():
         # Queue Bypass
         while True:
             queue_cookie = driver.get_cookie("akavpwr_User_allowed")
-            if not queue_cookie:
+
+            if not queue_cookie \
+                    or "Virtueller Warteraum" not in driver.page_source:
                 break
+
             self.log.info("Im Warteraum, Seite neu laden")
             queue_cookie["name"] = "akavpau_User_allowed"
             driver.add_cookie(queue_cookie)
