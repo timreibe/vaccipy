@@ -238,17 +238,14 @@ class ImpfterminService():
         action.move_to_element(button).click().perform()
 
         # Klick auf "Vermittlungscode bereits vorhanden"
-        button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
-                       "div/div/app-corona-vaccination/div[2]/div/div/label[1]/span"
+        button_xpath = "//*/input[@name=\"vaccination-approval-checked\"]/.."
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
 
         # Auswahl des ersten Code-Input-Feldes
-        input_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
-                      "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
-                      "form[1]/div[1]/label/app-ets-input-code/div/div[1]/label/input"
+        input_xpath = "//*/input[@name=\"ets-input-code-0\"]"
         input_field = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, input_xpath)))
         action = ActionChains(driver)
@@ -259,9 +256,7 @@ class ImpfterminService():
         time.sleep(.1)
 
         # Klick auf "Termin suchen"
-        button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
-                       "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
-                       "form[1]/div[2]/button"
+        button_xpath = "//*/button[@type=\"submit\"]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
