@@ -219,8 +219,11 @@ class ImpfterminService():
         # Queue Bypass
         while True:
             queue_cookie = driver.get_cookie("akavpwr_User_allowed")
-            if not queue_cookie:
+
+            if not queue_cookie \
+                    or "Virtueller Warteraum" not in driver.page_source:
                 break
+
             self.log.info("Im Warteraum, Seite neu laden")
             queue_cookie["name"] = "akavpau_User_allowed"
             driver.add_cookie(queue_cookie)
@@ -231,7 +234,7 @@ class ImpfterminService():
             driver.refresh()
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
-        button_xpath = ".//html/body/app-root/div/div/div/div[2]/div[2]/div/div[1]/a"
+        button_xpath = "//*/a[@class=\"cookies-info-close btn kv-btn btn-magenta\"]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
@@ -690,25 +693,28 @@ class ImpfterminService():
         return False
 
     @retry_on_failure()
-    def code_anfordern(self, mail, telefonnummer, plz_impfzentrum, leistungsmerkmal):
+    def code_anfordern(self, mail, telefonnummer, plz_impfzentrum, geburtsdatum):
         """
         SMS-Code beim Impfterminservice anfordern.
 
         :param mail: Mail für Empfang des Codes
         :param telefonnummer: Telefonnummer für SMS-Code, inkl. Präfix +49
         :param plz_impfzentrum: PLZ des Impfzentrums, für das ein Code erstellt werden soll
-        :param leistungsmerkmal: gewählte Impfgruppe (bspw. L921)
+        :param geburtsdatum: Geburtsdatum der Person
         :return:
         """
 
         path = "rest/smspin/anforderung"
 
         data = {
+            "plz": plz_impfzentrum,
             "email": mail,
-            "leistungsmerkmal": leistungsmerkmal,
             "phone": telefonnummer,
-            "plz": plz_impfzentrum
+            "birthday": "{}-{:02d}-{:02d}".format(*reversed([int(d) for d
+                                                             in geburtsdatum.split(".")])),
+            "einzeltermin": False
         }
+
         while True:
             res = self.s.post(self.domain + path, json=data, timeout=15)
             if res.ok:
