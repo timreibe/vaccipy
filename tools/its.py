@@ -190,7 +190,8 @@ class ImpfterminService():
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
-        chrome_options.add_argument("--remote-debugging-port=9222")  # this
+        chrome_options.add_argument("-no-sandbox");
+        chrome_options.add_argument("-disable-dev-shm-usage");
 
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
