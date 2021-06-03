@@ -83,7 +83,7 @@ class ImpfterminService():
             self.use_telegram = True
             self.telegram_chatID=telegram["id"]
             self.telegram_notification_channel = telegram_bot.Bot(False,telegram["token"])
-            self.telegram_notification_channel.start_Bot_Async()
+            #self.telegram_notification_channel.start_Bot_Async()
 
     def __str__(self) -> str:
         return "ImpfterminService"
