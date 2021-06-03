@@ -231,8 +231,7 @@ class ImpfterminService():
             driver.refresh()
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
-        # as alternative button_xpath = "//a[contains(text(),'Auswahl bestätigen')]"
-        button_xpath = "//*/a[@class=\"cookies-info-close btn kv-btn btn-magenta\"]"
+        button_xpath = "//a[contains(text(),'Auswahl bestätigen')]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
@@ -377,19 +376,19 @@ class ImpfterminService():
             pass
         try:
             # Klick Anrede
-            if self.kontakt['anrede'] == "Herr":
-                button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div/label[1]/span'
-            elif self.kontakt['anrede'] == "Frau":
-                button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div/label[2]/span'
+            arrAnreden = ["Herr","Frau","Kind","Divers"]
+            if self.kontakt['anrede'] in arrAnreden:
+                button_xpath = '//*[@id="itsSearchContactModal"]/*/app-booking-contact-form/*/div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"'+self.kontakt['anrede']+'")]'
             else:
-                button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div/label[3]/span'
+                button_xpath = '//*[@id="itsSearchContactModal"]/*/app-booking-contact-form/*/div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"Divers")]'
+                
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
             action.move_to_element(button).click().perform()
 
             # Input Vorname
-            input_xpath = '/html/body/app-root/div/app-page-its-search/app-its-search-contact-modal/div/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[2]/div[1]/div/label/input'
+            input_xpath = '//*[@id="itsSearchContactModal"]/*/app-booking-contact-form/*/input[@formcontrolname="firstname"]'
             input_field = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, input_xpath)))
             action.move_to_element(input_field).click().perform()
@@ -397,37 +396,37 @@ class ImpfterminService():
 
             # Input Nachname
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[2]/div[2]/div/label/input')
+                '//*[@id="itsSearchContactModal"]/*/app-booking-contact-form/*/input[@formcontrolname="lastname"]')
             input_field.send_keys(self.kontakt['nachname'])
 
             # Input PLZ
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[3]/div[1]/div/label/input')
+                '//*[@id="itsSearchContactModal"]/*/app-booking-contact-form/*/input[@formcontrolname="zip"]')
             input_field.send_keys(self.kontakt['plz'])
 
             # Input City
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[3]/div[2]/div/label/input')
+                '//*[@id="itsSearchContactModal"]/*/app-booking-contact-form/*/input[@formcontrolname="city"]')
             input_field.send_keys(self.kontakt['ort'])
 
             # Input Strasse
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[1]/div/label/input')
+                '//*[@id="itsSearchContactModal"]/*/app-booking-contact-form/*/input[@formcontrolname="street"]')
             input_field.send_keys(self.kontakt['strasse'])
 
             # Input Hasunummer
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[2]/div/label/input')
+                '//*[@id="itsSearchContactModal"]/*/app-booking-contact-form/*/input[@formcontrolname="housenumber"]')
             input_field.send_keys(self.kontakt['hausnummer'])
 
             # Input Telefonnummer
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[3]/div/label/div/input')
+                '//*[@id="itsSearchContactModal"]/*/app-booking-contact-form/*/input[@formcontrolname="phone"]')
             input_field.send_keys(self.kontakt['phone'].replace("+49", ""))
 
             # Input Mail
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[5]/div/div/label/input')
+                '//*[@id="itsSearchContactModal"]/*/app-booking-contact-form/*/input[@formcontrolname="notificationReceiver"]')
             input_field.send_keys(self.kontakt['notificationReceiver'])
         except:
             self.log.error("Kontaktdaten können nicht eingegeben werden")
