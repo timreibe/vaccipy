@@ -231,6 +231,7 @@ class ImpfterminService():
             driver.refresh()
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
+        # as alternative button_xpath = "//a[contains(text(),'Auswahl bestätigen')]"
         button_xpath = "//*/a[@class=\"cookies-info-close btn kv-btn btn-magenta\"]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
@@ -353,7 +354,7 @@ class ImpfterminService():
 
         # Klick Button "AUSWÄHLEN"
         try:
-            button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[2]/button[1]'
+            button_xpath = '//*[@id="itsSearchAppointmentsModal"]/*/button[@type="submit"]'
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
@@ -438,7 +439,7 @@ class ImpfterminService():
 
         # Klick Button "ÜBERNEHMEN"
         try:
-            button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[2]/button[1]'
+            button_xpath = '//*[@id="itsSearchContactModal"]/*/button[@type="submit"]'
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
