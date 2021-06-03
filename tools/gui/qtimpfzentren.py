@@ -1,6 +1,7 @@
 import os
 from PyQt5 import QtWidgets, uic, QtGui, QtCore
 from tools.utils import get_grouped_impfzentren
+from typing import Tuple, List
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -84,7 +85,7 @@ class QtImpfzentren(QtWidgets.QDialog):
 
         return linie
 
-    def get_zentrum_widgets(self, gruppe: str, zentrum: dict) -> list[QtWidgets.QCheckBox, QtWidgets.QGridLayout]:
+    def get_zentrum_widgets(self, gruppe: str, zentrum: dict) -> Tuple[QtWidgets.QCheckBox, QtWidgets.QGridLayout]:
         """
         Erstellt ein Widget Paket für die Checkbox mit entsprechendem Layout welches die Labels enhalten
 
@@ -93,8 +94,8 @@ class QtImpfzentren(QtWidgets.QDialog):
             zentrum (dict): Zentrum Daten
 
         Returns:
-            list[QtWidgets.QCheckBox, QtWidgets.QGridLayout]: Checkbox mit den propertys PLZ und GRUPPE
-                                                              Layout mit entsprechenden Labels und beschriftungen
+            tuple[QtWidgets.QCheckBox, QtWidgets.QGridLayout]: Checkbox mit den propertys PLZ und GRUPPE
+                                                               Layout mit entsprechenden Labels und beschriftungen
         """
 
         # Form und Layout erstellen
@@ -173,7 +174,7 @@ class QtImpfzentren(QtWidgets.QDialog):
         plz_string = ",".join(self.get_all_plz_from_checked_boxes())
         self.update_impfzentren_plz.emit(plz_string)
 
-    def get_all_plz_from_checked_boxes(self) -> list[str]:
+    def get_all_plz_from_checked_boxes(self) -> List[str]:
         """
         Liste mit allen aktiven PLZ
 
@@ -205,7 +206,7 @@ class QtImpfzentren(QtWidgets.QDialog):
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
             self.close()
 
-    def get_all_checked_boxes(self) -> list[QtWidgets.QCheckBox]:
+    def get_all_checked_boxes(self) -> List[QtWidgets.QCheckBox]:
         """
         Gibt alle checked checkboxes zurück
 
