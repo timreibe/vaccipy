@@ -430,7 +430,7 @@ class ImpfterminService():
             # Input Telefonnummer
             input_field = driver.find_element_by_xpath(
                 '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[3]/div/label/div/input')
-            input_field.send_keys(self.kontakt['phone'].replace("+49", ""))
+            input_field.send_keys(self.kontakt['phone'].replace("+490", "0").replace("+49", "0"))
 
             # Input Mail
             input_field = driver.find_element_by_xpath(
