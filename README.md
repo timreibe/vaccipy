@@ -24,7 +24,14 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 
 > ⚠️ Google Chrome muss auf dem PC installiert sein (Windows, Mac und Linux)  
 
-Download neuste Version:
+### GUI Version (mit Programmoberfläche)
+
+<a href="https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy_gui_installer.exe">
+<img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
+</a>
+
+
+### CLI Version (Kommandozeile)
 
 <a href="https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy_installer.exe">
 <img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
@@ -34,8 +41,11 @@ Download neuste Version:
 <img width="90" heigth="30" src=https://logos-world.net/wp-content/uploads/2020/11/Ubuntu-Emblem.png>
 </a></br></br>
 
+
 #### Probleme beim Ausführen des Windows-Installers?
-[Hier kannst du dir das Projekt komprimiert als `.zip` herunterladen.](https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy-windows.zip)
+Hier kannst du dir das [Projekt (GUI) komprimiert als `.zip` herunterladen.](https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy-windows-gui.zip)
+
+Hier kannst du dir das [Projekt (CLI) komprimiert als `.zip` herunterladen.](https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy-windows.zip)
 
 #### Releases
 
