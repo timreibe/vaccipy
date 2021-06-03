@@ -1,7 +1,7 @@
 import os
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QTime
+from PyQt5.QtCore import QTime, QDate, QDateTime, pyqtSignal
 from PyQt5.QtGui import QIcon
 
 from tools.gui import *
@@ -24,6 +24,24 @@ from tools.exceptions import ValidationError, MissingValuesError
 # i_telefon
 # i_mail
 
+### Checkboxes ###
+# i_mo_check_box
+# i_di_check_box
+# i_mi_check_box
+# i_do_check_box
+# i_fr_check_box
+# i_so_check_box
+# i_sa_check_box
+# i_erster_termin_check_box
+# i_zweiter_termin_check_box
+
+### QTimeEdit ###
+# i_start_time_qtime
+# i_end_time_qtime
+
+### QDateEdit ###
+# i_start_datum_qdate
+
 ### QComboBox ###
 # i_anrede_combo_box
 
@@ -43,6 +61,11 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class QtKontakt(QtWidgets.QDialog):
+
+    # Signal welches geworfen wird, wenn man gespeichert hat
+    # Gibt einen String mit dem Speicherort der Datei
+    update_path = pyqtSignal(str)
+
     def __init__(self, parent: QtWidgets.QWidget, modus: Modus, standard_speicherpfad: str, ROOT_PATH: str, pfad_fenster_layout=os.path.join(PATH, "kontaktdaten.ui")):
         super().__init__(parent=parent)
 
@@ -69,6 +92,9 @@ class QtKontakt(QtWidgets.QDialog):
             RuntimeError: Modus ungültig
         """
 
+        # Startdatum setzten auf heute
+        self.i_start_datum_qdate.setMinimumDateTime(QDateTime.currentDateTime())
+
         if self.modus == Modus.TERMIN_SUCHEN:
             # Default - Alle Felder aktiv
             pass
@@ -88,13 +114,12 @@ class QtKontakt(QtWidgets.QDialog):
 
         try:
             data = self.__get_alle_werte()
-
             self.__check_werte(data)
 
             # Daten speichern
             speicherpfad = self.speicher_einstellungen(data)
             QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
-            self.parent().i_kontaktdaten_pfad.setText(speicherpfad)
+            self.update_path.emit(speicherpfad)
             self.close()
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
@@ -200,7 +225,8 @@ class QtKontakt(QtWidgets.QDialog):
                 "phone": telefon,
                 "notificationChannel": "email",
                 "notificationReceiver": mail
-            }
+            },
+            "zeitrahmen": self.__get_zeitrahmen()
         }
         return kontaktdaten
 
@@ -243,6 +269,97 @@ class QtKontakt(QtWidgets.QDialog):
             if line_edit.objectName() not in ausgeschlossen:
                 line_edit.setReadOnly(True)
                 line_edit.setPlaceholderText("Daten werden nicht benötigt")
+
+
+    ##############################
+    #        Zeitrahmen          #
+    ##############################
+
+    def __get_zeitrahmen(self) -> dict:
+        """
+        Gibt alle nötigen Daten richtig formatiert zum abspeichern
+
+        Returns:
+            dict: alle Daten
+        """
+
+        aktive_wochentage = self.__get_aktive_wochentage()
+        uhrzeiten = self.__get_uhrzeiten()
+        termine = self.__get_aktive_termine()
+        start_datum = self.i_start_datum_qdate.date()
+
+        if termine:
+            return {
+                "von_datum": f"{start_datum.day()}.{start_datum.month()}.{start_datum.year()}",
+                "von_uhrzeit": f"{uhrzeiten['startzeit']['h']}:{uhrzeiten['startzeit']['m']}",
+                "bis_uhrzeit": f"{uhrzeiten['endzeit']['h']}:{uhrzeiten['endzeit']['m']}",
+                "wochentage": aktive_wochentage,
+                "einhalten_bei": "beide" if len(termine) > 1 else str(termine[0]),
+            }
+        else:
+            return {}
+
+    def __get_aktive_wochentage(self) -> list:
+        """
+        Alle "checked" Wochentage in der GUI
+
+        Returns:
+            list: Alle aktiven Wochentage
+        """
+
+        # Leere liste
+        aktive_wochentage = list()
+
+        # Alle Checkboxen der GUI selektieren und durchgehen
+        checkboxes = self.tage_frame.findChildren(QtWidgets.QCheckBox)
+        for num, checkboxe in enumerate(checkboxes, 0):
+            if checkboxe.isChecked():
+                aktive_wochentage.append(checkboxe.property("weekday"))
+
+        return aktive_wochentage
+
+    def __get_uhrzeiten(self) -> dict:
+        """
+        Erstellt ein Dict mit ensprechenden start und endzeiten
+
+        Raises:
+            ValueError: start uhrzeit < end uhrzeit
+
+        Returns:
+            dict: fertiges dict zum speichern mit startzeit und endzeit
+        """
+
+        start_uhrzeit: QTime = self.i_start_time_qtime.time()
+        end_uhrzeit: QTime = self.i_end_time_qtime.time()
+
+        uhrzeiten = {
+            "startzeit": {
+                "h": start_uhrzeit.hour(),
+                "m": start_uhrzeit.minute()
+            },
+            "endzeit": {
+                "h": end_uhrzeit.hour(),
+                "m": end_uhrzeit.minute()
+            }
+        }
+        return uhrzeiten
+
+    def __get_aktive_termine(self) -> list:
+        """
+        Liste mit den aktiven Terminen 1 = 1. Termin 2 = 2. Termin
+
+        Returns:
+            list: Termine
+        """
+
+        aktive_termine = list()
+
+        if self.i_erster_termin_check_box.isChecked():
+            aktive_termine.append(1)
+        if self.i_zweiter_termin_check_box.isChecked():
+            aktive_termine.append(2)
+        return aktive_termine
+
 
     def __reset(self):
         """
