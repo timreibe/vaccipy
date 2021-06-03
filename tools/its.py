@@ -598,7 +598,7 @@ class ImpfterminService():
                 ]
                 for tp_abgelehnt in terminpaare_abgelehnt:
                     self.log.warn(
-                        "Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
+                        "Termin gefunden - jedoch nicht im entsprechenden Zeitraum:")
                     self.log.info('-' * 50)
                     impfzentrum = self.verfuegbare_impfzentren.get(plz)
                     zentrumsname = impfzentrum.get('Zentrumsname').strip()
