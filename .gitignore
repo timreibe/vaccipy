@@ -9,6 +9,7 @@ log/
 
 # data
 kontaktdaten.json
+zeitspanne.json
 
 #building: 
 installer/

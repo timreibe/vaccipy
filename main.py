@@ -4,6 +4,8 @@ import argparse
 import copy
 import json
 import os
+import random
+import string
 
 try:
     import readline
@@ -11,8 +13,9 @@ except:
     pass
 
 from tools.its import ImpfterminService
-from tools.kontaktdaten import get_kontaktdaten, validate_kontaktdaten, ValidationError
+from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten
 from tools.utils import create_missing_dirs, remove_prefix
+from tools.exceptions import ValidationError
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -101,9 +104,53 @@ def update_kontaktdaten_interactive(
             input_kontaktdaten_key(
                 kontaktdaten, ["kontakt", "notificationReceiver"], "> Mail: ")
 
+        if "zeitrahmen" not in kontaktdaten and command == "search":
+            kontaktdaten["zeitrahmen"] = {}
+            if input("> Zeitrahmen festlegen? (y/n): ").lower() != "n":
+                print()
+                input_kontaktdaten_key(
+                    kontaktdaten, ["zeitrahmen", "einhalten_bei"],
+                    "> Für welchen Impftermin soll der Zeitrahmen gelten? (1/2/beide): ")
+                input_kontaktdaten_key(
+                    kontaktdaten, ["zeitrahmen", "von_datum"],
+                    "> Von Datum (Leer lassen zum Überspringen): ",
+                    lambda x: x if x else None)  # Leeren String zu None umwandeln
+                input_kontaktdaten_key(
+                    kontaktdaten, ["zeitrahmen", "bis_datum"],
+                    "> Bis Datum (Leer lassen zum Überspringen): ",
+                    lambda x: x if x else None)  # Leeren String zu None umwandeln
+                input_kontaktdaten_key(
+                    kontaktdaten, ["zeitrahmen", "von_uhrzeit"],
+                    "> Von Uhrzeit (Leer lassen zum Überspringen): ",
+                    lambda x: x if x else None)  # Leeren String zu None umwandeln
+                input_kontaktdaten_key(
+                    kontaktdaten, ["zeitrahmen", "bis_uhrzeit"],
+                    "> Bis Uhrzeit (Leer lassen zum Überspringen): ",
+                    lambda x: x if x else None)  # Leeren String zu None umwandeln
+                print(
+                    "Trage nun die Wochentage ein, an denen die ausgewählten Impftermine liegen dürfen.\n"
+                    "Mehrere Wochentage können durch Komma getrennt werden.\n"
+                    "Beispiel: Mo, Di, Mi, Do, Fr, Sa, So\n"
+                    "Leer lassen, um alle Wochentage auszuwählen.")
+                input_kontaktdaten_key(
+                    kontaktdaten, ["zeitrahmen", "wochentage"],
+                    "> Erlaubte Wochentage: ", parse_wochentage)
+
         json.dump(kontaktdaten, file, ensure_ascii=False, indent=4)
 
     return kontaktdaten
+
+
+def parse_wochentage(string):
+    wochentage = [wt.strip() for wt in string.split(",")]
+    # Leere strings durch "if wt" rausfiltern
+    nums = [decode_wochentag(wt) for wt in wochentage if wt]
+    if not nums:
+        # None zurückgeben, damit der Key nicht gesetzt wird.
+        # Folglich wird der Default genutzt: Alle Wochentage sind zulässig.
+        return None
+    nums = sorted(set(nums))
+    return [encode_wochentag(num) for num in nums]
 
 
 def input_kontaktdaten_key(
@@ -116,9 +163,12 @@ def input_kontaktdaten_key(
         target = target[key]
     key = path[-1]
     while True:
-        target[key] = transformer(input(prompt).strip())
         try:
-            validate_kontaktdaten(kontaktdaten)
+            value = transformer(input(prompt).strip())
+            # Wenn transformer None zurückgibt, setzen wir den Key nicht.
+            if value is not None:
+                target[key] = value
+                validate_kontaktdaten(kontaktdaten)
             break
         except ValidationError as exc:
             print(f"\n{str(exc)}\n")
@@ -145,14 +195,13 @@ def run_search_interactive(kontaktdaten_path, check_delay):
     kontaktdaten = {}
     if os.path.isfile(kontaktdaten_path):
         daten_laden = input(
-            f"> Sollen die vorhandenen Daten aus '{os.path.basename(kontaktdaten_path)}' geladen werden (y/n)?: ").lower()
+            f"> Sollen die vorhandenen Daten aus '{os.path.basename(kontaktdaten_path)}' geladen werden? (y/n): ").lower()
         if daten_laden.lower() != "n":
             kontaktdaten = get_kontaktdaten(kontaktdaten_path)
 
     print()
     kontaktdaten = update_kontaktdaten_interactive(
         kontaktdaten, "search", kontaktdaten_path)
-    print()
     return run_search(kontaktdaten, check_delay)
 
 
@@ -178,6 +227,8 @@ def run_search(kontaktdaten, check_delay):
         kontakt = kontaktdaten["kontakt"]
         print(
             f"Kontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
+
+        zeitrahmen = kontaktdaten["zeitrahmen"]
     except KeyError as exc:
         raise ValueError(
             "Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
@@ -185,7 +236,7 @@ def run_search(kontaktdaten, check_delay):
             "deine Daten beim Programmstart erneut ein.\n") from exc
 
     ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                  check_delay=check_delay,PATH=PATH)
+                                  zeitrahmen=zeitrahmen, check_delay=check_delay, PATH=PATH)
 
 
 def gen_code_interactive(kontaktdaten_path):
@@ -217,7 +268,6 @@ def gen_code_interactive(kontaktdaten_path):
     print()
     kontaktdaten = update_kontaktdaten_interactive(
         kontaktdaten, "code", kontaktdaten_path)
-    print()
     return gen_code(kontaktdaten)
 
 
@@ -240,11 +290,20 @@ def gen_code(kontaktdaten):
             "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
             "deine Daten beim Programmstart erneut ein.\n") from exc
 
-    its = ImpfterminService("PLAT-ZHAL-TER1", [plz_impfzentrum], {},PATH)
+    # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
+    # für die Cookie-Generierung
+    code_chars = string.ascii_uppercase + string.digits
+    one = 'VACC'
+    two = 'IPY' + random.choice(code_chars)
+    three = ''.join(random.choices(code_chars, k=4))
+    random_code = f"{one}-{two}-{three}"
+    print(f"Für die Cookies-Generierung wird ein zufälliger Code verwendet ({random_code}).\n")
+
+    its = ImpfterminService(random_code, [plz_impfzentrum], {}, PATH)
 
     print("Wähle nachfolgend deine Altersgruppe aus (L920, L921, L922 oder L923).\n"
           "Es ist wichtig, dass du die Gruppe entsprechend deines Alters wählst, "
-          "ansonsten wird dir der Termin vor Ort abesagt.\n"
+          "ansonsten wird dir der Termin vor Ort abgesagt.\n"
           "In den eckigen Klammern siehst du, welche Impfstoffe den Gruppe jeweils zugeordnet sind.\n"
           "Beispiel: L921\n")
 
@@ -260,7 +319,7 @@ def gen_code(kontaktdaten):
 
     if token is not None:
         # code bestätigen
-        print("\nDu erhälst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
+        print("\nDu erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
               "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
               "Beispiel: 123-456\n")
 
@@ -301,11 +360,12 @@ def validate_args(args):
     """
 
     if args.configure_only and args.read_only:
-        raise ValueError("--configure-only und --read-only kann nicht gleichzeitig verwendet werden")
+        raise ValueError(
+            "--configure-only und --read-only kann nicht gleichzeitig verwendet werden")
 
 
 def main():
-    create_missing_dirs()
+    create_missing_dirs(PATH)
 
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(help="commands", dest="command")

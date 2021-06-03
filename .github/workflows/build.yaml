@@ -22,6 +22,8 @@ jobs:
           pip install -r requirements.txt
       - name: Build Windows
         run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec
+      - name: Build Windows GUI
+        run: pyinstaller --clean --noconfirm specs/windows-terminservice-gui.spec
   build-linux:
     runs-on: ubuntu-latest
     steps:

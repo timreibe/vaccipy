@@ -16,6 +16,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
+      - name: tagname
+        uses: olegtarasov/get-tag@v2.1
+      
       - name: Setup Python
         uses: actions/setup-python@v2.2.2
         with:
@@ -24,33 +27,57 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      
       - name: Build Windows
         run: pyinstaller --clean --noconfirm specs/windows-terminservice.spec
+      - name: Build Windows GUI
+        run: pyinstaller --clean --noconfirm specs/windows-terminservice-gui.spec
+      
       - name: Chocolatey install innosetup
         uses: crazy-max/ghaction-chocolatey@v1.5.0
         with:
           # Arguments to pass to Chocolatey
           args: install innosetup --install-arguments="'/DIR=../innosetup'" --force
-      - name: tagname
-        uses: olegtarasov/get-tag@v2.1
-      - name: Run innosetup
+      
+      - name: Innosetup windows-terminservice
         # Run innosetup and set application version to git tag
         run: ../innosetup/ISCC.exe specs/windows-terminservice.iss /DApplicationVersion=${{ env.GIT_TAG_NAME }}
-      - name: Zip
+      - name: Innosetup windows-terminservice-gui
+        # Run innosetup and set application version to git tag
+        run: ../innosetup/ISCC.exe specs/windows-terminservice-gui.iss /DApplicationVersion=${{ env.GIT_TAG_NAME }}
+      
+      - name: Zip Windows
         uses: papeloto/action-zip@v1
         with:
-          files: dist/
+          files: dist/windows-terminservice
           dest: vaccipy-windows.zip
+      - name: Zip Windows gui
+        uses: papeloto/action-zip@v1
+        with:
+          files: dist/windows-terminservice-gui
+          dest: vaccipy-windows-gui.zip
+      
       - name: Store windows zip as build artifact
         uses: actions/upload-artifact@v2
         with:
           name: vaccipy-windows
           path: vaccipy-windows.zip
+      - name: Store windows gui zip as build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: vaccipy-windows-gui
+          path: vaccipy-windows-gui.zip
+
       - name: Store windows installer as build artifact
         uses: actions/upload-artifact@v2
         with:
           name: vaccipy-windows-installer
           path: installers/vaccipy_installer.exe
+      - name: Store windows gui installer as build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: vaccipy-windows-gui-installer
+          path: installers/vaccipy_gui_installer.exe
           
   build-linux:
     runs-on: ubuntu-latest
@@ -72,7 +99,7 @@ jobs:
         with:
           files: dist/
           dest: vaccipy-ubuntu.zip
-      - name: Store windows build artifact
+      - name: Store ubuntu build artifact
         uses: actions/upload-artifact@v2
         with:
           name: vaccipy-ubuntu
@@ -90,5 +117,7 @@ jobs:
           prerelease: false
           files: |
             vaccipy-windows-installer/vaccipy_installer.exe
+            vaccipy-windows-gui-installer/vaccipy_gui_installer.exe
             vaccipy-windows/vaccipy-windows.zip
+            vaccipy-windows-gui/vaccipy-windows-gui.zip
             vaccipy-ubuntu/vaccipy-ubuntu.zip
