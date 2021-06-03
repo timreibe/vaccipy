@@ -226,20 +226,22 @@ class ImpfterminService():
         driver.get(url)
 
         # Queue Bypass
-        queue_cookie = driver.get_cookie("akavpwr_User_allowed")
-        if queue_cookie:
-            self.log.info("Im Warteraum, Seite neuladen")
+        while True:
+            queue_cookie = driver.get_cookie("akavpwr_User_allowed")
+            if not queue_cookie:
+                break
+            self.log.info("Im Warteraum, Seite neu laden")
             queue_cookie["name"] = "akavpau_User_allowed"
             driver.add_cookie(queue_cookie)
 
             # Seite neu laden
+            time.sleep(5)
             driver.get(url)
             driver.refresh()
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
-        # Warteraum-Support: Timeout auf 1 Stunde
         button_xpath = ".//html/body/app-root/div/div/div/div[2]/div[2]/div/div[1]/a"
-        button = WebDriverWait(driver, 60 * 60).until(
+        button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
@@ -605,14 +607,21 @@ class ImpfterminService():
                     if tp not in terminpaare_angenommen
                 ]
                 for tp_abgelehnt in terminpaare_abgelehnt:
-                    self.log.info(
-                        "Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
+                    self.log.warn(
+                        "Termin gefunden - jedoch nicht im entsprechenden Zeitraum:")
+                    self.log.info('-' * 50)
                     self.send_to_telegram("Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
+                    impfzentrum = self.verfuegbare_impfzentren.get(plz)
+                    zentrumsname = impfzentrum.get('Zentrumsname').strip()
+                    ort = impfzentrum.get('Ort')
+                    self.log.warn(f"'{zentrumsname}' in {plz} {ort}")
                     for num, termin in enumerate(tp_abgelehnt, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                             '%d.%m.%Y um %H:%M Uhr')
+                        self.log.warn(f"{num}. Termin: {ts}")
                         self.send_to_telegram(f"{num}. Termin: {ts}")
-                        self.log.info(f"{num}. Termin: {ts}")
+                    self.log.info('-' * 50)
+
                 if terminpaare_angenommen:
                     # Auswahl des erstbesten Terminpaares
                     self.terminpaar = choice(terminpaare_angenommen)
