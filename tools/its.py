@@ -607,16 +607,18 @@ class ImpfterminService():
                 for tp_abgelehnt in terminpaare_abgelehnt:
                     self.log.info(
                         "Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
+                    self.send_to_telegram("Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
                     for num, termin in enumerate(tp_abgelehnt, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                             '%d.%m.%Y um %H:%M Uhr')
-                        self.log.info(f"{num}. Termin: {ts}")
                         self.send_to_telegram(f"{num}. Termin: {ts}")
+                        self.log.info(f"{num}. Termin: {ts}")
                 if terminpaare_angenommen:
                     # Auswahl des erstbesten Terminpaares
                     self.terminpaar = choice(terminpaare_angenommen)
                     self.plz_termin = plz
                     self.log.success(f"Termin gefunden!")
+                    self.send_to_telegram("Termin gefunden!")
                     impfzentrum = self.verfuegbare_impfzentren.get(plz)
                     zentrumsname = impfzentrum.get('Zentrumsname').strip()
                     ort = impfzentrum.get('Ort')
@@ -624,6 +626,7 @@ class ImpfterminService():
                     for num, termin in enumerate(self.terminpaar, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                             '%d.%m.%Y um %H:%M Uhr')
+                        self.send_to_telegram(f"{num}. Termin: {ts}")
                         self.log.success(f"{num}. Termin: {ts}")
                     if ENABLE_BEEPY:
                         beepy.beep('coin')
