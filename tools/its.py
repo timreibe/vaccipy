@@ -234,7 +234,7 @@ class ImpfterminService():
             driver.refresh()
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
-        button_xpath = "//*/a[@class=\"cookies-info-close btn kv-btn btn-magenta\"]"
+        button_xpath = "//a[contains(text(),'Auswahl bestätigen')]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
