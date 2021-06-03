@@ -597,12 +597,18 @@ class ImpfterminService():
                     if tp not in terminpaare_angenommen
                 ]
                 for tp_abgelehnt in terminpaare_abgelehnt:
-                    self.log.info(
+                    self.log.warn(
                         "Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
+                    self.log.info('-' * 50)
+                    impfzentrum = self.verfuegbare_impfzentren.get(plz)
+                    zentrumsname = impfzentrum.get('Zentrumsname').strip()
+                    ort = impfzentrum.get('Ort')
+                    self.log.warn(f"'{zentrumsname}' in {plz} {ort}")
                     for num, termin in enumerate(tp_abgelehnt, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                             '%d.%m.%Y um %H:%M Uhr')
-                        self.log.info(f"{num}. Termin: {ts}")
+                        self.log.warn(f"{num}. Termin: {ts}")
+                    self.log.info('-' * 50)
                 if terminpaare_angenommen:
                     # Auswahl des erstbesten Terminpaares
                     self.terminpaar = choice(terminpaare_angenommen)
