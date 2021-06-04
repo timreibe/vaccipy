@@ -53,22 +53,21 @@ class Worker(QObject):
         self.use_telegram=False
 
         try:
-            telegram_json=None
             with open('data/telegram.json') as f:
                 inp = f.read()
                 try:
                     telegram_json=json.loads(inp)
-                except:
-                    print("Error: Fehler beim parsen der telegram daten")
-            if "token" not in telegram_json or "chatid" not in telegram_json:
-                print("Error: telegram.json muss 'token' und 'chatid' beinhalten")
-                raise Exception
 
-            self.t_token=telegram_json["token"]
-            self.t_id=telegram_json["chatid"]
-            self.use_telegram=True
+                    self.t_token=telegram_json["token"]
+                    self.t_id=telegram_json["chatid"]
+                    self.use_telegram=True
+                except json.JSONDecodeError:
+                    print("Error: Fehler beim parsen der telegram daten")
+                except KeyError:
+                    print("Error: telegram.json muss 'token' und 'chatid' beinhalten")     
         except:
-            pass
+            self.t_token=None
+            self.t_id=None
 
 
     def suchen(self):
