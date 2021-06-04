@@ -13,7 +13,7 @@ except:
     pass
 
 from tools.its import ImpfterminService
-from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten
+from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
 from tools.utils import create_missing_dirs, remove_prefix
 from tools.exceptions import ValidationError
 
@@ -301,21 +301,21 @@ def gen_code(kontaktdaten):
 
     its = ImpfterminService(random_code, [plz_impfzentrum], {}, PATH)
 
-    print("Wähle nachfolgend deine Altersgruppe aus (L920, L921, L922 oder L923).\n"
-          "Es ist wichtig, dass du die Gruppe entsprechend deines Alters wählst, "
-          "ansonsten wird dir der Termin vor Ort abgesagt.\n"
-          "In den eckigen Klammern siehst du, welche Impfstoffe den Gruppe jeweils zugeordnet sind.\n"
-          "Beispiel: L921\n")
-
+    print("Bitte trage nachfolgend dein Geburtsdatum im Format DD.MM.YYYY ein.\n"
+          "Beispiel: 02.03.1982\n")
     while True:
-        leistungsmerkmal = input("> Leistungsmerkmal: ").upper()
-        if leistungsmerkmal in ["L920", "L921", "L922", "L923"]:
+        try:
+            geburtsdatum = input("> Geburtsdatum: ")
+            validate_datum(geburtsdatum)
             break
-        print("Falscheingabe! Bitte erneut versuchen:")
+        except ValidationError as exc:
+            print("Das Datum entspricht nicht dem richtigen Format (DD.MM.YYYY). "
+                  "Bitte erneut versuchen.")
 
+    print()
     # cookies erneuern und code anfordern
     its.renew_cookies_code()
-    token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, leistungsmerkmal)
+    token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, geburtsdatum)
 
     if token is not None:
         # code bestätigen
