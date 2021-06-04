@@ -424,19 +424,18 @@ def main():
         args.retry_sec = 60
     if not hasattr(args, "t_token") or args.t_token is None or not hasattr(args, "t_id") or args.t_id is None:
         try:
-            telegram_json=None
             with open('data/telegram.json') as f:
                 inp = f.read()
                 try:
                     telegram_json=json.loads(inp)
-                except:
-                    print("Error: Fehler beim parsen der telegram daten")
-            if "token" not in telegram_json or "chatid" not in telegram_json:
-                print("Error: telegram.json muss 'token' und 'chatid' beinhalten")
-                raise Exception
 
-            args.t_token=telegram_json["token"]
-            args.t_id=telegram_json["chatid"]
+                    args.t_token=telegram_json["token"]
+                    args.t_id=telegram_json["chatid"]
+                    
+                except json.JSONDecodeError:
+                    print("Error: Fehler beim parsen der telegram daten")
+                except KeyError:
+                    print("Error: telegram.json muss 'token' und 'chatid' beinhalten")     
         except:
             args.t_token=None
             args.t_id=None
