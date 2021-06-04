@@ -269,7 +269,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             else:
                 return True
 
-        QtWidgets.QMessageBox.critical(self, "Alter Version von Kontaktdaten!",
+        QtWidgets.QMessageBox.critical(self, "Alte Version von Kontaktdaten!",
                                        "Die Kontakdaten scheinen von einer älteren Version zu sein.\nKontakdaten und Zeitspanne sind nun in einer Datei.\n\nBitte Datei neu erstellen!")
         return False
 
