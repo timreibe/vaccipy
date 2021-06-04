@@ -600,13 +600,13 @@ class ImpfterminService():
                     tp for tp in terminpaare
                     if tp not in terminpaare_angenommen
                 ]
+                impfzentrum = self.verfuegbare_impfzentren.get(plz)
+                zentrumsname = impfzentrum.get('Zentrumsname').strip()
+                ort = impfzentrum.get('Ort')
                 for tp_abgelehnt in terminpaare_abgelehnt:
                     self.log.warn(
                         "Termin gefunden - jedoch nicht im entsprechenden Zeitraum:")
                     self.log.info('-' * 50)
-                    impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                    zentrumsname = impfzentrum.get('Zentrumsname').strip()
-                    ort = impfzentrum.get('Ort')
                     self.log.warn(f"'{zentrumsname}' in {plz} {ort}")
                     for num, termin in enumerate(tp_abgelehnt, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
@@ -618,9 +618,6 @@ class ImpfterminService():
                     self.terminpaar = choice(terminpaare_angenommen)
                     self.plz_termin = plz
                     self.log.success(f"Termin gefunden!")
-                    impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                    zentrumsname = impfzentrum.get('Zentrumsname').strip()
-                    ort = impfzentrum.get('Ort')
                     self.log.success(f"'{zentrumsname}' in {plz} {ort}")
                     for num, termin in enumerate(self.terminpaar, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
