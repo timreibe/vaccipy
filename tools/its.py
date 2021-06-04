@@ -675,7 +675,11 @@ class ImpfterminService():
                 desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
                 return True
             else:
-                return False
+                # Termin über Selenium Buchen
+                if self.book_appointment():
+                    return True
+                else:
+                    return False
 
         elif res.status_code >= 400:
             data = res.json()
@@ -685,6 +689,7 @@ class ImpfterminService():
                 error = ''
             if 'nicht mehr verfügbar' in error:
                 msg = f"Diesen Termin gibts nicht mehr: {error}"
+                #Bei Terminanzahl = 1 11 Minuten warten und danach fortsetzen.
                 if self.termin_anzahl == 1:
                     msg = f"Diesen Termin gibts nicht mehr: {error}. Die Suche wird in 11 Minuten fortgesetzt"
                     self.log.error(msg)
@@ -806,11 +811,6 @@ class ImpfterminService():
 
             # Programm beenden, wenn Termin gefunden wurde
             if its.termin_buchen():
-                return True
-
-            # Cookies erneuern und pausieren, wenn Terminbuchung nicht möglich war
-            # Anschließend nach neuem Termin suchen
-            if its.book_appointment():
                 return True
 
 
