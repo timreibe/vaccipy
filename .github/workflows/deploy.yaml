@@ -88,8 +88,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
+      - name: Print version
+        run: echo ${GIT_TAG_NAME}
+
+
       - name: Write version file
-        run: echo $GIT_TAG_NAME > version.txt
+        run: echo ${GIT_TAG_NAME} > version.txt
 
       - name: Print directory
         run: pwd
