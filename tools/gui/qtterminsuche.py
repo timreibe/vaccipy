@@ -9,6 +9,7 @@ from PyQt5.QtCore import QObject, QThread, pyqtSignal
 from PyQt5.QtGui import QIcon
 from tools.gui import *
 from tools.its import ImpfterminService
+import tools.telegramdaten
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -50,24 +51,14 @@ class Worker(QObject):
         self.zeitspanne = zeitspanne
         self.ROOT_PATH = ROOT_PATH
         self.check_delay = check_delay
+
         self.use_telegram=False
+        telegram_data=tools.telegramdaten.load("data/telegram.json")
 
-        try:
-            with open('data/telegram.json') as f:
-                inp = f.read()
-                try:
-                    telegram_json=json.loads(inp)
-
-                    self.t_token=telegram_json["token"]
-                    self.t_id=telegram_json["chatid"]
-                    self.use_telegram=True
-                except json.JSONDecodeError:
-                    print("Error: Fehler beim parsen der telegram daten")
-                except KeyError:
-                    print("Error: telegram.json muss 'token' und 'chatid' beinhalten")     
-        except:
-            self.t_token=None
-            self.t_id=None
+        if telegram_data is not None:
+            self.t_token=telegram_data["token"]
+            self.t_id=telegram_data["chatid"]
+            self.use_telegram=True
 
 
     def suchen(self):

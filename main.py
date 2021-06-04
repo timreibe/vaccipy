@@ -16,6 +16,7 @@ from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
 from tools.utils import create_missing_dirs, remove_prefix
 from tools.exceptions import ValidationError
+import tools.telegramdaten
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -423,22 +424,10 @@ def main():
     if not hasattr(args, "retry_sec"):
         args.retry_sec = 60
     if not hasattr(args, "t_token") or args.t_token is None or not hasattr(args, "t_id") or args.t_id is None:
-        try:
-            with open('data/telegram.json') as f:
-                inp = f.read()
-                try:
-                    telegram_json=json.loads(inp)
-
-                    args.t_token=telegram_json["token"]
-                    args.t_id=telegram_json["chatid"]
-                    
-                except json.JSONDecodeError:
-                    print("Error: Fehler beim parsen der telegram daten")
-                except KeyError:
-                    print("Error: telegram.json muss 'token' und 'chatid' beinhalten")     
-        except:
-            args.t_token=None
-            args.t_id=None
+        telegram_data=tools.telegramdaten.load("data/telegram.json")
+        if telegram_data is not None:
+            args.t_token=telegram_data["token"]
+            args.t_id=telegram_data["chatid"]
             
     try:
         validate_args(args)
