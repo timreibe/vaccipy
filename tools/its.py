@@ -190,7 +190,7 @@ class ImpfterminService():
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
-        chrome_options.add_argument("-no-sandbox");
+        #chrome_options.add_argument("-no-sandbox");
         chrome_options.add_argument("-disable-dev-shm-usage");
 
         # Chrome head is only required for the backup booking process.
@@ -586,6 +586,7 @@ class ImpfterminService():
         if res.ok:
             res_json = res.json()
             terminpaare = res_json.get("termine")
+            self.termin_anzahl=len(terminpaare)
             if terminpaare:
                 terminpaare_angenommen = [
                     tp for tp in terminpaare
@@ -670,7 +671,8 @@ class ImpfterminService():
                 desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
                 return True
             else:
-                return False
+                # Termin über Selenium Buchen
+                return self.book_appointment()
 
         elif res.status_code >= 400:
             data = res.json()
@@ -680,6 +682,12 @@ class ImpfterminService():
                 error = ''
             if 'nicht mehr verfügbar' in error:
                 msg = f"Diesen Termin gibts nicht mehr: {error}"
+                #Bei Terminanzahl = 1 11 Minuten warten und danach fortsetzen.
+                if self.termin_anzahl == 1:
+                    msg = f"Diesen Termin gibts nicht mehr: {error}. Die Suche wird in 11 Minuten fortgesetzt"
+                    self.log.error(msg)
+                    time.sleep(11*60)
+                    return False
             else:
                 msg = f"Termin konnte nicht gebucht werden: {data}"
         else:
@@ -796,11 +804,6 @@ class ImpfterminService():
 
             # Programm beenden, wenn Termin gefunden wurde
             if its.termin_buchen():
-                return True
-
-            # Cookies erneuern und pausieren, wenn Terminbuchung nicht möglich war
-            # Anschließend nach neuem Termin suchen
-            if its.book_appointment():
                 return True
 
 
