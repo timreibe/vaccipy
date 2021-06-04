@@ -306,7 +306,7 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
         if not self.__check_old_version(kontaktdaten):
-            raise ValidationError("Alte Version")
+            raise ValidationError("\"zeitrahmen\" fehlt -> Alte Version")
 
         return kontaktdaten
 
