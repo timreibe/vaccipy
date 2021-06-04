@@ -763,8 +763,7 @@ class ImpfterminService():
                 return False
 
     @staticmethod
-    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict,
-                    PATH: str, zeitrahmen: dict = dict(), check_delay: int = 30):
+    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH: str, zeitrahmen: dict = dict(), check_delay: int = 30):
         """
         Workflow für die Terminbuchung.
 
