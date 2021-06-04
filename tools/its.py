@@ -676,10 +676,7 @@ class ImpfterminService():
                 return True
             else:
                 # Termin über Selenium Buchen
-                if self.book_appointment():
-                    return True
-                else:
-                    return False
+                return self.book_appointment()
 
         elif res.status_code >= 400:
             data = res.json()
