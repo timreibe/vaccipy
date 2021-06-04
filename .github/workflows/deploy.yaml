@@ -87,6 +87,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
+      - name: tagname
+        uses: olegtarasov/get-tag@v2.1
 
       - name: Print version
         run: echo ${{ env.GIT_TAG_NAME }}
