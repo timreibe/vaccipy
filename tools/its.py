@@ -58,7 +58,6 @@ class ImpfterminService():
 
         # Ausgewähltes Impfzentrum prüfen
         self.verfuegbare_impfzentren = {}
-        self.impfzentrum = {}
         self.domain = None
         if not self.impfzentren_laden():
             raise ValueError("Impfzentren laden fehlgeschlagen")
@@ -104,13 +103,12 @@ class ImpfterminService():
             # Prüfen, ob Impfzentren zur eingetragenen PLZ existieren
             plz_geprueft = []
             for plz in self.plz_impfzentren:
-                self.impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                if self.impfzentrum:
-                    self.domain = self.impfzentrum.get("URL")
-                    self.log.info("'{}' in {} {} ausgewählt".format(
-                        self.impfzentrum.get("Zentrumsname").strip(),
-                        self.impfzentrum.get("PLZ"),
-                        self.impfzentrum.get("Ort")))
+                impfzentrum = self.verfuegbare_impfzentren.get(plz)
+                if impfzentrum:
+                    self.domain = impfzentrum.get("URL")
+                    zentrumsname = impfzentrum.get("Zentrumsname")
+                    ort = impfzentrum.get("Ort")
+                    self.log.info(f"'{zentrumsname}' in {plz} {ort} ausgewählt")
                     plz_geprueft.append(plz)
 
             if plz_geprueft:
@@ -192,7 +190,8 @@ class ImpfterminService():
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
-        chrome_options.add_argument("--remote-debugging-port=9222")  # this
+        chrome_options.add_argument("-no-sandbox");
+        chrome_options.add_argument("-disable-dev-shm-usage");
 
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
@@ -219,20 +218,25 @@ class ImpfterminService():
         driver.get(url)
 
         # Queue Bypass
-        queue_cookie = driver.get_cookie("akavpwr_User_allowed")
-        if queue_cookie:
-            self.log.info("Im Warteraum, Seite neuladen")
+        while True:
+            queue_cookie = driver.get_cookie("akavpwr_User_allowed")
+
+            if not queue_cookie \
+                    or "Virtueller Warteraum" not in driver.page_source:
+                break
+
+            self.log.info("Im Warteraum, Seite neu laden")
             queue_cookie["name"] = "akavpau_User_allowed"
             driver.add_cookie(queue_cookie)
 
             # Seite neu laden
+            time.sleep(5)
             driver.get(url)
             driver.refresh()
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
-        # Warteraum-Support: Timeout auf 1 Stunde
-        button_xpath = ".//html/body/app-root/div/div/div/div[2]/div[2]/div/div[1]/a"
-        button = WebDriverWait(driver, 60 * 60).until(
+        button_xpath = "//*/a[@class=\"cookies-info-close btn kv-btn btn-magenta\"]"
+        button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
@@ -597,22 +601,27 @@ class ImpfterminService():
                     if tp not in terminpaare_angenommen
                 ]
                 for tp_abgelehnt in terminpaare_abgelehnt:
-                    self.log.info(
-                        "Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
+                    self.log.warn(
+                        "Termin gefunden - jedoch nicht im entsprechenden Zeitraum:")
+                    self.log.info('-' * 50)
+                    impfzentrum = self.verfuegbare_impfzentren.get(plz)
+                    zentrumsname = impfzentrum.get('Zentrumsname').strip()
+                    ort = impfzentrum.get('Ort')
+                    self.log.warn(f"'{zentrumsname}' in {plz} {ort}")
                     for num, termin in enumerate(tp_abgelehnt, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                             '%d.%m.%Y um %H:%M Uhr')
-                        self.log.info(f"{num}. Termin: {ts}")
+                        self.log.warn(f"{num}. Termin: {ts}")
+                    self.log.info('-' * 50)
                 if terminpaare_angenommen:
                     # Auswahl des erstbesten Terminpaares
                     self.terminpaar = choice(terminpaare_angenommen)
                     self.plz_termin = plz
-                    self.log.success(f"Terminpaar gefunden!")
-                    self.impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                    self.log.success("'{}' in {} {}".format(
-                        self.impfzentrum.get("Zentrumsname").strip(),
-                        self.impfzentrum.get("PLZ"),
-                        self.impfzentrum.get("Ort")))
+                    self.log.success(f"Termin gefunden!")
+                    impfzentrum = self.verfuegbare_impfzentren.get(plz)
+                    zentrumsname = impfzentrum.get('Zentrumsname').strip()
+                    ort = impfzentrum.get('Ort')
+                    self.log.success(f"'{zentrumsname}' in {plz} {ort}")
                     for num, termin in enumerate(self.terminpaar, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                             '%d.%m.%Y um %H:%M Uhr')
@@ -685,25 +694,28 @@ class ImpfterminService():
         return False
 
     @retry_on_failure()
-    def code_anfordern(self, mail, telefonnummer, plz_impfzentrum, leistungsmerkmal):
+    def code_anfordern(self, mail, telefonnummer, plz_impfzentrum, geburtsdatum):
         """
         SMS-Code beim Impfterminservice anfordern.
 
         :param mail: Mail für Empfang des Codes
         :param telefonnummer: Telefonnummer für SMS-Code, inkl. Präfix +49
         :param plz_impfzentrum: PLZ des Impfzentrums, für das ein Code erstellt werden soll
-        :param leistungsmerkmal: gewählte Impfgruppe (bspw. L921)
+        :param geburtsdatum: Geburtsdatum der Person
         :return:
         """
 
         path = "rest/smspin/anforderung"
 
         data = {
+            "plz": plz_impfzentrum,
             "email": mail,
-            "leistungsmerkmal": leistungsmerkmal,
             "phone": telefonnummer,
-            "plz": plz_impfzentrum
+            "birthday": "{}-{:02d}-{:02d}".format(*reversed([int(d) for d
+                                                             in geburtsdatum.split(".")])),
+            "einzeltermin": False
         }
+
         while True:
             res = self.s.post(self.domain + path, json=data, timeout=15)
             if res.ok:
