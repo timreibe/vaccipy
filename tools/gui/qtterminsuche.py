@@ -2,6 +2,7 @@
 
 import sys
 import os
+import json
 
 from PyQt5 import QtWidgets, uic, QtCore, QtGui
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
@@ -49,6 +50,25 @@ class Worker(QObject):
         self.zeitspanne = zeitspanne
         self.ROOT_PATH = ROOT_PATH
         self.check_delay = check_delay
+        self.use_telegram=False
+
+        try:
+            telegram_json=None
+            with open('data/telegram.json') as f:
+                inp = f.read()
+                try:
+                    telegram_json=json.loads(inp)
+                except:
+                    print("Error: Fehler beim parsen der telegram daten")
+            if "token" not in telegram_json or "chatid" not in telegram_json:
+                print("Error: telegram.json muss 'token' und 'chatid' beinhalten")
+                raise Exception
+
+            self.t_token=telegram_json["token"]
+            self.t_id=telegram_json["chatid"]
+            self.use_telegram=True
+        except:
+            pass
 
 
     def suchen(self):
@@ -60,8 +80,12 @@ class Worker(QObject):
         code = self.kontaktdaten["code"]
         plz_impfzentren = self.kontaktdaten["plz_impfzentren"]
 
+        telegram_dict = None
+        if self.use_telegram:
+            telegram_dict = {"token" : self.t_token, "id" : self.t_id}
+
         erfolgreich = ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                                    PATH=self.ROOT_PATH, check_delay=self.check_delay, zeitrahmen=self.zeitspanne)
+                                                    PATH=self.ROOT_PATH, check_delay=self.check_delay, zeitrahmen=self.zeitspanne,telegram=telegram_dict)
 
         self.fertig.emit(erfolgreich)
 
