@@ -214,6 +214,17 @@ Dazu das Terminal zum `linux-64-terminservice`-Ordner navigieren und folgenden B
   `sudo -- sh -c 'chmod +x ./linux-64-terminservice; chmod +x ./tools/chromedriver/chromedriver-linux-64'`
 4) Im `linux-64-terminservice`-Ordner die `./linux-64-terminsvervice`-Executable per Terminal ausführen. 
 
+## GUI unter Linux
+1) benötigte packages installieren
+sudo apt update && sudo apt install libqt5gui5
+   
+2) Wenn Chrome noch fehlt:
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo dpkg -i google-chrome-stable_current_amd64.deb
+
+3) starten mittels 
+python3 gui.py
+
 ## Ausführung in der Kommandozeile
 
 `vaccipy` kannst du über die Kommandozeile oder in einer beliebigen python-Entwicklungsumgebung
