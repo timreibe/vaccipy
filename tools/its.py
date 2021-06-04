@@ -190,7 +190,7 @@ class ImpfterminService():
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
-        chrome_options.add_argument("-no-sandbox");
+        #chrome_options.add_argument("-no-sandbox");
         chrome_options.add_argument("-disable-dev-shm-usage");
 
         # Chrome head is only required for the backup booking process.
@@ -591,6 +591,7 @@ class ImpfterminService():
         if res.ok:
             res_json = res.json()
             terminpaare = res_json.get("termine")
+            self.termin_anzahl=len(terminpaare)
             if terminpaare:
                 terminpaare_angenommen = [
                     tp for tp in terminpaare
@@ -684,6 +685,11 @@ class ImpfterminService():
                 error = ''
             if 'nicht mehr verfügbar' in error:
                 msg = f"Diesen Termin gibts nicht mehr: {error}"
+                if self.termin_anzahl == 1:
+                    msg = f"Diesen Termin gibts nicht mehr: {error}. Die Suche wird in 11 Minuten fortgesetzt"
+                    self.log.error(msg)
+                    time.sleep(11*60)
+                    return False
             else:
                 msg = f"Termin konnte nicht gebucht werden: {data}"
         else:
