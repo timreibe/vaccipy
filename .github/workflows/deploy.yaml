@@ -24,9 +24,6 @@ jobs:
 
       - name: Write version file
         run: echo ${GIT_TAG_NAME} > version.txt
-
-      - name: Get the version
-        run: ls -lah
       
       - name: Setup Python
         uses: actions/setup-python@v2.2.2
