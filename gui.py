@@ -50,31 +50,8 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         super().__init__()
 
-        create_missing_dirs(PATH)
-
         # Laden der .ui Datei und Anpassungen
-        uic.loadUi(pfad_fenster_layout, self)
-        self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
-
-        # Funktionen den Buttons zuweisen
-        self.b_termin_suchen.clicked.connect(self.__termin_suchen)
-        self.b_code_generieren.clicked.connect(self.__code_generieren)
-        self.b_dateien_kontaktdaten.clicked.connect(self.__update_kontaktdaten_pfad)
-        self.b_neue_kontaktdaten.clicked.connect(lambda: self.kontaktdaten_erstellen(Modus.TERMIN_SUCHEN))
-
-        # Standard Pfade
-        self.pfad_kontaktdaten: str = os.path.join(PATH, "data", "kontaktdaten.json")
-
-        # Pfade in der GUI anzeigen
-        self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
-
-        # Speichert alle termin_suchen Prozesse
-        self.such_prozesse = list(list())
-        self.prozesse_counter = 0
-
-        # Überwachnung der Prozesse
-        self.prozess_bewacher = threading.Thread(target=self.__check_status_der_prozesse, daemon=True)
-        self.prozess_bewacher.start()
+        self.setup(pfad_fenster_layout)
 
         # GUI anzeigen
         self.show()
@@ -96,6 +73,44 @@ class HauptGUI(QtWidgets.QMainWindow):
         app.setAttribute(QtCore.Qt.AA_X11InitThreads)
         window = HauptGUI()
         app.exec_()
+
+    def setup(self, pfad_fenster_layout: str):
+        """
+        Standard Konfig für die GUI erstellen, bevor sie angezeigt werden kann
+
+        Args:
+            pfad_fenster_layout (str): Pfad zur .ui Datei
+        """
+
+        ### Allgemein ###
+        create_missing_dirs(PATH)
+
+        # Standard Pfade
+        self.pfad_kontaktdaten: str = os.path.join(PATH, "data", "kontaktdaten.json")
+
+        ### GUI ###
+        uic.loadUi(pfad_fenster_layout, self)
+        self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
+
+        # Meldung falls alte Daten von alter Version
+        self.__check_old_version()
+
+        # Funktionen den Buttons zuweisen
+        self.b_termin_suchen.clicked.connect(self.__termin_suchen)
+        self.b_code_generieren.clicked.connect(self.__code_generieren)
+        self.b_dateien_kontaktdaten.clicked.connect(self.__update_kontaktdaten_pfad)
+        self.b_neue_kontaktdaten.clicked.connect(lambda: self.kontaktdaten_erstellen(Modus.TERMIN_SUCHEN))
+
+        # Pfade in der GUI anpassen
+        self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
+
+        # Speichert alle termin_suchen Prozesse
+        self.such_prozesse = list(list())
+        self.prozesse_counter = 0
+
+        # Überwachnung der Prozesse
+        self.prozess_bewacher = threading.Thread(target=self.__check_status_der_prozesse, daemon=True)
+        self.prozess_bewacher.start()
 
     def __code_generieren(self):
         """
@@ -185,7 +200,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
         Die Prozesse werden in der GUI in dem prozesse_layout angezeigt
         """
-        # addRow(label, field)
+
         label = QtWidgets.QLabel(f"Prozess: {prozess.name}")
         button = QtWidgets.QPushButton("Stoppen")
         button.setObjectName(prozess.name)
@@ -228,6 +243,36 @@ class HauptGUI(QtWidgets.QMainWindow):
                     self.such_prozesse.remove(prozess)
             time.sleep(1)
 
+    def __check_old_version(self, kontaktdaten: dict = None) -> bool:
+        """
+        Schaut ob zeitspanne.json vorhanden ist - wenn ja löschen und Warnung ausgeben
+        Schaut ob ["zeitrahmen"] in den Kontakdaten ist - wenn ja Warnung ausgeben
+
+        Args:
+            kontaktdaten (dict, optional): Kontakdaten wo geladen werden. Defaults to None.
+
+        Returns:
+            bool: Alte Version -> False; Alles richtig -> True
+        """
+        if kontaktdaten:
+            try:
+                kontaktdaten["zeitrahmen"]
+                return True
+            except KeyError as error:
+                # Zeitrahmen nicht vorhanden - Warnung ausgeben
+                pass
+        else:
+            # Prüfen ob alte Datei vorhanden ist - ggf. löschen
+            old_zeitrahmen_path = os.path.join(PATH, "data", "zeitspanne.json")
+            if os.path.isfile(old_zeitrahmen_path):
+                os.remove(old_zeitrahmen_path)
+            else:
+                return True
+
+        QtWidgets.QMessageBox.critical(self, "Alter Version von Kontaktdaten!",
+                                       "Die Kontakdaten scheinen von einer älteren Version zu sein.\nKontakdaten und Zeitspanne sind nun in einer Datei.\n\nBitte Datei neu erstellen!")
+        return False
+
     ##############################
     #        Kontaktdaten        #
     ##############################
@@ -260,12 +305,10 @@ class HauptGUI(QtWidgets.QMainWindow):
             self.kontaktdaten_erstellen(modus)
 
         kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
+        if not self.__check_old_version(kontaktdaten):
+            raise ValidationError("Alte Version")
 
         return kontaktdaten
-
-    ##############################
-    #        Zeitrahmen          #
-    ##############################
 
 
 def main():

@@ -51,8 +51,9 @@ from tools.exceptions import ValidationError, MissingValuesError
 # Cancel
 # Reset
 
-### Layouts ###
-# kontakdaten_layout
+### QWidget ###
+# kontaktdaten_tab
+# zeitrahmen_tab
 
 ### Buttons ###
 # b_impfzentren_waehlen
@@ -79,14 +80,14 @@ class QtKontakt(QtWidgets.QDialog):
         self.setup()
 
         # Funktionen der ButtonBox zuordnen
-        self.buttonBox.clicked.connect(self.__button_clicked)
+        self.buttonBox.clicked.connect(self.__button_box_clicked)
 
         # Funktion vom Button zuordnen
         self.b_impfzentren_waehlen.clicked.connect(self.__open_impfzentren)
 
     def setup(self):
         """
-        Aktiviert abhänfig vom Modus die Eingabefelder
+        Aktiviert abhänig vom Modus die Eingabefelder
 
         Raises:
             RuntimeError: Modus ungültig
@@ -119,20 +120,23 @@ class QtKontakt(QtWidgets.QDialog):
             # Daten speichern
             speicherpfad = self.speicher_einstellungen(data)
             QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
+
+            # Neuer Pfad in der Main GUI übernehmen
             self.update_path.emit(speicherpfad)
+
+            # Fenster schließen
             self.close()
+
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
+
         except ValidationError as error:
             QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In den angegebenen Daten sind Fehler:\n\n{error}")
             return
+
         except MissingValuesError as error:
             QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Daten Fehlen Werte:\n\n{error}")
             return
-        except AttributeError as error:
-            # Parent hat i_kontaktdaten_pfad nicht
-            # Falls der Dialog ein anderer Parent hat, soll kein Fehler kommen
-            self.close()
 
     def speicher_einstellungen(self, data: dict) -> str:
         """
@@ -151,7 +155,7 @@ class QtKontakt(QtWidgets.QDialog):
         speichern(speicherpfad, data)
         return speicherpfad
 
-    def __button_clicked(self, button: QtWidgets.QPushButton):
+    def __button_box_clicked(self, button: QtWidgets.QPushButton):
         """
         Zuweisung der einzelnen Funktionen der Buttons in der ButtonBox
 
@@ -163,29 +167,10 @@ class QtKontakt(QtWidgets.QDialog):
         if clicked_button == QtWidgets.QDialogButtonBox.Save:
             self.bestaetigt()
         if clicked_button == QtWidgets.QDialogButtonBox.Reset:
-            self.__reset()
+            self.__reset_kontakdaten()
+            self.__reset_zeitrahmen()
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
             self.close()
-
-    def __open_impfzentren(self):
-        """
-        Öffnet den Dialog um PLZ auszuwählen
-        """
-
-        impfzentren_dialog = QtImpfzentren(self)
-        impfzentren_dialog.update_impfzentren_plz.connect(self.__set_impzentren_plz)
-        impfzentren_dialog.show()
-        impfzentren_dialog.exec_()
-
-    def __set_impzentren_plz(self, plz: str):
-        """
-        Übergebener Text wird in das QLineEdit i_plz_impfzentren geschrieben
-
-        Args:
-            plz (str): Kommagetrennte PLZ der Impfzentren in einer Gruppe
-        """
-
-        self.i_plz_impfzentren.setText(plz)
 
     def __get_alle_werte(self) -> dict:
         """
@@ -254,6 +239,30 @@ class QtKontakt(QtWidgets.QDialog):
             except ValidationError as error:
                 raise ValidationError("Telefonnummer: +49 nicht vergessen") from error
 
+    ##############################
+    #        Kontakdaten         #
+    ##############################
+
+    def __open_impfzentren(self):
+        """
+        Öffnet den Dialog um PLZ auszuwählen
+        """
+
+        impfzentren_dialog = QtImpfzentren(self)
+        impfzentren_dialog.update_impfzentren_plz.connect(self.__set_impzentren_plz)
+        impfzentren_dialog.show()
+        impfzentren_dialog.exec_()
+
+    def __set_impzentren_plz(self, plz: str):
+        """
+        Übergebener Text wird in das QLineEdit i_plz_impfzentren geschrieben
+
+        Args:
+            plz (str): Kommagetrennte PLZ der Impfzentren in einer Gruppe
+        """
+
+        self.i_plz_impfzentren.setText(plz)
+
     def readonly_alle_line_edits(self, ausgeschlossen: list):
         """
         Setzt alle QLineEdit auf "read only", ausgeschlossen der Widgets in ausgeschlossen.
@@ -269,6 +278,20 @@ class QtKontakt(QtWidgets.QDialog):
             if line_edit.objectName() not in ausgeschlossen:
                 line_edit.setReadOnly(True)
                 line_edit.setPlaceholderText("Daten werden nicht benötigt")
+
+    def __reset_kontakdaten(self):
+        """
+        Setzt alle Werte für die Kontaktdaten in der GUI zurück
+        """
+
+        for widget in self.kontaktdaten_tab.children():
+            if isinstance(widget, QtWidgets.QLineEdit):
+                widget.setText("")
+            elif isinstance(widget, QtWidgets.QComboBox):
+                widget.setCurrentText("Bitte Wählen")
+
+        # Telefon wieder mit Prefix befüllen
+        self.i_telefon.setText("+49")
 
 
     ##############################
@@ -360,17 +383,24 @@ class QtKontakt(QtWidgets.QDialog):
             aktive_termine.append(2)
         return aktive_termine
 
-
-    def __reset(self):
+    def __reset_zeitrahmen(self, widgets: list = None):
         """
-        Setzt alle Werte in der GUI zurück
+        Setzt alle Werte für den Zeitrahmen in der GUI zurück
         """
 
-        for widget in self.children():
-            if isinstance(widget, QtWidgets.QLineEdit):
-                widget.setText("")
-            elif isinstance(widget, QtWidgets.QComboBox):
-                widget.setCurrentText("Bitte Wählen")
+        if widgets is None:
+            self.__reset_zeitrahmen(self.zeitrahmen_tab.children())
+            return
 
-        # Telefon wieder mit Prefix befüllen
-        self.i_telefon.setText("+49")
+        for widget in widgets:
+            if isinstance(widget, QtWidgets.QCheckBox):
+                widget.setChecked(True)
+            elif isinstance(widget, QtWidgets.QDateEdit):
+                widget.setDate(QDateTime.currentDateTime().date())
+            elif isinstance(widget, QtWidgets.QTimeEdit):
+                if widget == self.i_start_time_qtime:
+                    widget.setTime(QTime(0, 1))
+                else:
+                    widget.setTime(QTime(23, 59))
+            elif isinstance(widget, QtWidgets.QFrame):
+                self.__reset_zeitrahmen(widget.children())
