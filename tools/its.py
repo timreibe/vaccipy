@@ -471,7 +471,7 @@ class ImpfterminService():
         else:
             self.log.error(
                 "Automatisierte Terminbuchung fehlgeschlagen. Termin manuell im Fenster oder im Browser buchen.")
-            print("Link für manuelle Buchung im Browser:", url)
+            print(f"Link für manuelle Buchung im Browser: {self.domain}impftermine/suche/{self.code}/{plz_impfzentrum}")
             time.sleep(10 * 60)
             return False
 
