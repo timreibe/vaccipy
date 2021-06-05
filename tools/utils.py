@@ -160,7 +160,7 @@ def update_available():
         return False
     else:
         print("Du verwendest eine alte Version von vaccipy.\n"
-        "Bitte installiere die aktuellste Version von\n"
+        "Bitte installiere die aktuellste Version. Link zum Download:\n"
         "https://github.com/iamnotturner/vaccipy/releases/tag/" + latest_version)
         return True
 
