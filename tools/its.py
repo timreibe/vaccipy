@@ -21,7 +21,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from tools.clog import CLogger
 from tools.kontaktdaten import decode_wochentag, validate_kontakt, validate_zeitrahmen
-from tools.utils import retry_on_failure, desktop_notification
+from tools.utils import retry_on_failure, desktop_notification, update_available
+from pathlib import Path
 
 try:
     import beepy
@@ -190,7 +191,8 @@ class ImpfterminService():
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
-        chrome_options.add_argument("--remote-debugging-port=9222")  # this
+        #chrome_options.add_argument("-no-sandbox");
+        chrome_options.add_argument("-disable-dev-shm-usage");
 
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
@@ -234,24 +236,21 @@ class ImpfterminService():
             driver.refresh()
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
-        button_xpath = "//*/a[@class=\"cookies-info-close btn kv-btn btn-magenta\"]"
+        button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
 
         # Klick auf "Vermittlungscode bereits vorhanden"
-        button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
-                       "div/div/app-corona-vaccination/div[2]/div/div/label[1]/span"
+        button_xpath = "//input[@name=\"vaccination-approval-checked\"]/.."
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
 
         # Auswahl des ersten Code-Input-Feldes
-        input_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
-                      "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
-                      "form[1]/div[1]/label/app-ets-input-code/div/div[1]/label/input"
+        input_xpath = "//input[@name=\"ets-input-code-0\"]"
         input_field = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, input_xpath)))
         action = ActionChains(driver)
@@ -262,9 +261,7 @@ class ImpfterminService():
         time.sleep(.1)
 
         # Klick auf "Termin suchen"
-        button_xpath = "/html/body/app-root/div/app-page-its-login/div/div/div[2]/app-its-login-user/" \
-                       "div/div/app-corona-vaccination/div[3]/div/div/div/div[1]/app-corona-vaccination-yes/" \
-                       "form[1]/div[2]/button"
+        button_xpath = "//app-corona-vaccination-yes//button[@type=\"submit\"]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
@@ -327,7 +324,7 @@ class ImpfterminService():
 
         try:
             # Klick auf "Termin suchen"
-            button_xpath = "/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[1]/div[2]/div[2]/button"
+            button_xpath = "//button[@data-target=\"#itsSearchAppointmentsModal\"]"
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
@@ -361,7 +358,7 @@ class ImpfterminService():
 
         # Klick Button "AUSWÄHLEN"
         try:
-            button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[2]/button[1]'
+            button_xpath = '//*[@id="itsSearchAppointmentsModal"]//button[@type="submit"]'
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
@@ -384,19 +381,19 @@ class ImpfterminService():
             pass
         try:
             # Klick Anrede
-            if self.kontakt['anrede'] == "Herr":
-                button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div/label[1]/span'
-            elif self.kontakt['anrede'] == "Frau":
-                button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div/label[2]/span'
+            arrAnreden = ["Herr","Frau","Kind","Divers"]
+            if self.kontakt['anrede'] in arrAnreden:
+                button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"'+self.kontakt['anrede']+'")]'
             else:
-                button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[1]/div/div/div/label[3]/span'
+                button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"Divers")]'
+                
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
             action.move_to_element(button).click().perform()
 
             # Input Vorname
-            input_xpath = '/html/body/app-root/div/app-page-its-search/app-its-search-contact-modal/div/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[2]/div[1]/div/label/input'
+            input_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="firstname"]'
             input_field = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, input_xpath)))
             action.move_to_element(input_field).click().perform()
@@ -404,37 +401,37 @@ class ImpfterminService():
 
             # Input Nachname
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[2]/div[2]/div/label/input')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="lastname"]')
             input_field.send_keys(self.kontakt['nachname'])
 
             # Input PLZ
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[3]/div[1]/div/label/input')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="zip"]')
             input_field.send_keys(self.kontakt['plz'])
 
             # Input City
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[3]/div[2]/div/label/input')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="city"]')
             input_field.send_keys(self.kontakt['ort'])
 
             # Input Strasse
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[1]/div/label/input')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="street"]')
             input_field.send_keys(self.kontakt['strasse'])
 
             # Input Hasunummer
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[2]/div/label/input')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="housenumber"]')
             input_field.send_keys(self.kontakt['hausnummer'])
 
             # Input Telefonnummer
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[4]/div[3]/div/label/div/input')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="phone"]')
             input_field.send_keys(self.kontakt['phone'].replace("+49", ""))
 
             # Input Mail
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[1]/app-booking-contact-form/div[5]/div/div/label/input')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="notificationReceiver"]')
             input_field.send_keys(self.kontakt['notificationReceiver'])
         except:
             self.log.error("Kontaktdaten können nicht eingegeben werden")
@@ -446,7 +443,7 @@ class ImpfterminService():
 
         # Klick Button "ÜBERNEHMEN"
         try:
-            button_xpath = '//*[@id="itsSearchContactModal"]/div/div/div[2]/div/form/div[2]/button[1]'
+            button_xpath = '//*[@id="itsSearchContactModal"]//button[@type="submit"]'
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
@@ -475,7 +472,7 @@ class ImpfterminService():
         else:
             self.log.error(
                 "Automatisierte Terminbuchung fehlgeschlagen. Termin manuell im Fenster oder im Browser buchen.")
-            print("Link für manuelle Buchung im Browser:", url)
+            print(f"Link für manuelle Buchung im Browser: {self.domain}impftermine/suche/{self.code}/{plz_impfzentrum}")
             time.sleep(10 * 60)
             return False
 
@@ -590,6 +587,7 @@ class ImpfterminService():
         if res.ok:
             res_json = res.json()
             terminpaare = res_json.get("termine")
+            self.termin_anzahl=len(terminpaare)
             if terminpaare:
                 terminpaare_angenommen = [
                     tp for tp in terminpaare
@@ -599,13 +597,13 @@ class ImpfterminService():
                     tp for tp in terminpaare
                     if tp not in terminpaare_angenommen
                 ]
+                impfzentrum = self.verfuegbare_impfzentren.get(plz)
+                zentrumsname = impfzentrum.get('Zentrumsname').strip()
+                ort = impfzentrum.get('Ort')
                 for tp_abgelehnt in terminpaare_abgelehnt:
                     self.log.warn(
                         "Termin gefunden - jedoch nicht im entsprechenden Zeitraum:")
                     self.log.info('-' * 50)
-                    impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                    zentrumsname = impfzentrum.get('Zentrumsname').strip()
-                    ort = impfzentrum.get('Ort')
                     self.log.warn(f"'{zentrumsname}' in {plz} {ort}")
                     for num, termin in enumerate(tp_abgelehnt, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
@@ -617,9 +615,6 @@ class ImpfterminService():
                     self.terminpaar = choice(terminpaare_angenommen)
                     self.plz_termin = plz
                     self.log.success(f"Termin gefunden!")
-                    impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                    zentrumsname = impfzentrum.get('Zentrumsname').strip()
-                    ort = impfzentrum.get('Ort')
                     self.log.success(f"'{zentrumsname}' in {plz} {ort}")
                     for num, termin in enumerate(self.terminpaar, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
@@ -632,6 +627,10 @@ class ImpfterminService():
                     return True, 200
             else:
                 self.log.info(f"Keine Termine verfügbar in {plz}")
+        elif res.status_code == 401:
+            self.log.error(f"Terminpaare können nicht geladen werden: Impf-Code kann nicht für "
+                           f"die PLZ '{plz}' verwendet werden.")
+            quit()
         else:
             self.log.error(f"Terminpaare können nicht geladen werden: {res.text}")
         return False, res.status_code
@@ -673,7 +672,8 @@ class ImpfterminService():
                 desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
                 return True
             else:
-                return False
+                # Termin über Selenium Buchen
+                return self.book_appointment()
 
         elif res.status_code >= 400:
             data = res.json()
@@ -683,6 +683,12 @@ class ImpfterminService():
                 error = ''
             if 'nicht mehr verfügbar' in error:
                 msg = f"Diesen Termin gibts nicht mehr: {error}"
+                #Bei Terminanzahl = 1 11 Minuten warten und danach fortsetzen.
+                if self.termin_anzahl == 1:
+                    msg = f"Diesen Termin gibts nicht mehr: {error}. Die Suche wird in 11 Minuten fortgesetzt"
+                    self.log.error(msg)
+                    time.sleep(11*60)
+                    return False
             else:
                 msg = f"Termin konnte nicht gebucht werden: {data}"
         else:
@@ -693,25 +699,28 @@ class ImpfterminService():
         return False
 
     @retry_on_failure()
-    def code_anfordern(self, mail, telefonnummer, plz_impfzentrum, leistungsmerkmal):
+    def code_anfordern(self, mail, telefonnummer, plz_impfzentrum, geburtsdatum):
         """
         SMS-Code beim Impfterminservice anfordern.
 
         :param mail: Mail für Empfang des Codes
         :param telefonnummer: Telefonnummer für SMS-Code, inkl. Präfix +49
         :param plz_impfzentrum: PLZ des Impfzentrums, für das ein Code erstellt werden soll
-        :param leistungsmerkmal: gewählte Impfgruppe (bspw. L921)
+        :param geburtsdatum: Geburtsdatum der Person
         :return:
         """
 
         path = "rest/smspin/anforderung"
 
         data = {
+            "plz": plz_impfzentrum,
             "email": mail,
-            "leistungsmerkmal": leistungsmerkmal,
             "phone": telefonnummer,
-            "plz": plz_impfzentrum
+            "birthday": "{}-{:02d}-{:02d}".format(*reversed([int(d) for d
+                                                             in geburtsdatum.split(".")])),
+            "einzeltermin": False
         }
+
         while True:
             res = self.s.post(self.domain + path, json=data, timeout=15)
             if res.ok:
@@ -755,8 +764,7 @@ class ImpfterminService():
                 return False
 
     @staticmethod
-    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict,
-                    PATH: str, zeitrahmen: dict = dict(), check_delay: int = 30):
+    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH: str, zeitrahmen: dict = dict(), check_delay: int = 30):
         """
         Workflow für die Terminbuchung.
 
@@ -796,11 +804,6 @@ class ImpfterminService():
 
             # Programm beenden, wenn Termin gefunden wurde
             if its.termin_buchen():
-                return True
-
-            # Cookies erneuern und pausieren, wenn Terminbuchung nicht möglich war
-            # Anschließend nach neuem Termin suchen
-            if its.book_appointment():
                 return True
 
 

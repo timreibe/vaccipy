@@ -66,10 +66,9 @@ def check_kontaktdaten(kontaktdaten: dict, mode: Modus):
             kontaktdaten["kontakt"]["plz"]
             kontaktdaten["kontakt"]["ort"]
 
-            #BUG: Erstmal auskommentiert lassen, bis die GUI entsprechend angepasst wurde
-            #kontaktdaten["zeitspanne"]
-            # Subkeys von "zeitspanne" brauchen nicht gecheckt werden, da
-            # `kontaktdaten["zeitspanne"] == {}` zulässig ist.
+            kontaktdaten["zeitrahmen"]
+            # Subkeys von "zeitrahmen" brauchen nicht gecheckt werden, da
+            # `kontaktdaten["zeitrahmen"] == {}` zulässig ist.
 
         # Rest wird immer benötigt
         kontaktdaten["plz_impfzentren"]

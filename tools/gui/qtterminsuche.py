@@ -33,23 +33,23 @@ class Worker(QObject):
     sobald die Suche beendet wurde, wird ein "fertig" Signal geworfen, welches den Rückgabewert von its übergibt
     """
 
-    # Signal wenn Suche abgeschlossen
-    fertig = pyqtSignal(bool)
+    # Signal wenn Suche abgeschlossen oder fehlgeschlagen
+    fertig = pyqtSignal()
+    fehlschlag = pyqtSignal(Exception)
 
-    def __init__(self, kontaktdaten: dict, zeitspanne: dict, ROOT_PATH: str, check_delay: int):
+    def __init__(self, kontaktdaten: dict, zeitrahmen: dict, ROOT_PATH: str, check_delay: int):
         """
         Args:
             kontaktdaten (dict): kontakdaten aus kontaktdaten.json
-            zeitspanne (dict): zeitspanne aus zeitspanne.json
+            zeitrahmen (dict): zeitrahmen
             ROOT_PATH (str): Pfad zur main.py / gui.py
         """
         super().__init__()
 
         self.kontaktdaten = kontaktdaten
-        self.zeitspanne = zeitspanne
+        self.zeitrahmen = zeitrahmen
         self.ROOT_PATH = ROOT_PATH
         self.check_delay = check_delay
-
 
     def suchen(self):
         """
@@ -60,10 +60,14 @@ class Worker(QObject):
         code = self.kontaktdaten["code"]
         plz_impfzentren = self.kontaktdaten["plz_impfzentren"]
 
-        erfolgreich = ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                                    PATH=self.ROOT_PATH, check_delay=self.check_delay, zeitrahmen=self.zeitspanne)
+        try:
+            ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
+                                          PATH=self.ROOT_PATH, check_delay=self.check_delay, zeitrahmen=self.zeitrahmen)
 
-        self.fertig.emit(erfolgreich)
+            self.fertig.emit()
+
+        except Exception as error:
+            self.fehlschlag.emit(error)
 
 
 class QtTerminsuche(QtWidgets.QMainWindow):
@@ -83,7 +87,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
     ### QTextEdit (readonly) ###
     # console_text_edit
 
-    def __init__(self, kontaktdaten: dict, zeitspanne: dict, ROOT_PATH: str,check_delay: int, pfad_fenster_layout=os.path.join(PATH, "terminsuche.ui")):
+    def __init__(self, kontaktdaten: dict, zeitrahmen: dict, ROOT_PATH: str, check_delay: int, pfad_fenster_layout=os.path.join(PATH, "terminsuche.ui")):
 
         super().__init__()
 
@@ -94,9 +98,8 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         self.buttonBox.rejected.connect(self.close)
 
         # Attribute erstellen
-        self.erfolgreich: bool = None
         self.kontaktdaten = kontaktdaten
-        self.zeitspanne = zeitspanne
+        self.zeitrahmen = zeitrahmen
         self.ROOT_PATH = ROOT_PATH
         self.check_delay = check_delay
 
@@ -117,19 +120,19 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         self.thread.start()
 
     @staticmethod
-    def start_suche(kontaktdaten: dict, zeitspanne: dict, ROOT_PATH: str, check_delay: int):
+    def start_suche(kontaktdaten: dict, zeitrahmen: dict, ROOT_PATH: str, check_delay: int):
         """
         Startet die Suche in einem eigenen Fenster mit Umlenkung der Konsolenausgabe in das Fenster
 
         Args:
             kontaktdaten (dict): kontaktdaten aus JSON
-            zeitspanne (dict): zeitspanne aus JSON
+            zeitrahmen (dict): zeitrahmen aus JSON
             ROOT_PATH (str): Pfad zum Root Ordner, damit dieser an its übergeben werden kann
             check_delay (int): Interval in Sekunden zwischen jeder Terminsuche
         """
         app = QtWidgets.QApplication(list())
         app.setAttribute(QtCore.Qt.AA_X11InitThreads)
-        window = QtTerminsuche(kontaktdaten, zeitspanne, ROOT_PATH, check_delay)
+        window = QtTerminsuche(kontaktdaten, zeitrahmen, ROOT_PATH, check_delay)
         app.exec_()
 
     def setup_infos(self):
@@ -147,7 +150,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         """
 
         self.thread = QThread(parent=self)
-        self.worker = Worker(self.kontaktdaten, self.zeitspanne, self.ROOT_PATH, self.check_delay)
+        self.worker = Worker(self.kontaktdaten, self.zeitrahmen, self.ROOT_PATH, self.check_delay)
 
         # Worker und Thread verbinden
         self.worker.moveToThread(self.thread)
@@ -157,8 +160,11 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         self.worker.fertig.connect(self.thread.quit)
         self.worker.fertig.connect(self.worker.deleteLater)
 
+        self.worker.fehlschlag.connect(self.suche_beendet)
+        self.worker.fehlschlag.connect(self.thread.quit)
+        self.worker.fehlschlag.connect(self.worker.deleteLater)
+
         self.thread.started.connect(self.worker.suchen)
-        self.thread.finished.connect(self.thread.deleteLater)
 
     def update_ausgabe(self, text):
         """
@@ -190,16 +196,19 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         self.console_text_edit.setTextCursor(cursor)
         self.console_text_edit.ensureCursorVisible()
 
-    def suche_beendet(self, erfolgreich: bool):
+    def suche_beendet(self, error: Exception = None):
         """
         Wird aufgerufen, sobald die Suche vom Worker beendet wurde
+        Entsprechend auf übergebenen Fehler wird eine Meldung auf erfolg oder Fehlschlag ausgegeben
 
         Args:
-            erfolgreich (bool): Bei erfolgreichen Beenden Hinweis ausgeben
+            error (Exception, optional): Fehler der bei der Suche auftauchte. Defaults to None.
         """
 
-        if erfolgreich:
-            QtWidgets.QMessageBox.information(self, "Termin gefunden!", "Die Suche wird beendet!\nVorher Ausgabe prüfen!")
+        if error:
+            QtWidgets.QMessageBox.critical(self, "Suche Fehlgeschlagen!", f"Suche wurde abgebrochen:\n{str(error)}")
+        else:
+            QtWidgets.QMessageBox.information(self, "Termin gefunden!", "Termin gefunden!\nAusgabe Prüfen!")
 
     def closeEvent(self, event):
         """
@@ -210,12 +219,17 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         """
 
         if self.thread.isRunning():
-            self.thread.quit()
+            res = QtWidgets.QMessageBox.warning(self, "Suche beenden", "Suche wirklich beenden?\n",
+                                                (QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel))
 
-        if self.erfolgreich is None:
-            QtWidgets.QMessageBox.warning(self, "Suche beenden", "Die Suche wird beendet!\nVorher Ausgabe Prüfen!")
+            if res != QMessageBox.StandardButton.Ok:
+                event.ignore()
+                return
+            else:
+                self.thread.quit()
 
         # Streams wieder korrigieren, damit kein Fehler kommt
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
-        super().closeEvent(event)
+
+        event.accept()
