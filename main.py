@@ -493,7 +493,7 @@ if __name__ == "__main__":
 
     # Auf aktuelle Version prüfen
     try:
-        if update_available:
+        if update_available():
             print("Bitte auf aktuellste Version updaten: " + get_latest_version())
         else:
             print("Version " + get_current_version())
