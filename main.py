@@ -510,11 +510,12 @@ if __name__ == "__main__":
         with open("version.txt") as f:
             contents = f.readlines()
             current_version = contents[0]
-
+            print("Installierte Version: " + current_version)
+            print("Aktuellste Version: " + latest_version)
             if latest_version.strip() == current_version.strip():
                 print('Du verwendest die aktuellste Version von vaccipy: '+current_version)
             else:
-                print('Du verwendest eine alte Version von vacciupy. Bitte installiere die aktuellste Version von https://github.com/iamnotturner/vaccipy/releases/tag/'+latest_version)
+                print('Du verwendest eine alte Version von vaccipy. Bitte installiere die aktuellste Version von https://github.com/iamnotturner/vaccipy/releases/tag/'+latest_version)
 
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
 
