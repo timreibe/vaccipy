@@ -490,11 +490,7 @@ if __name__ == "__main__":
                                    | |       __/ |
                                    |_|      |___/ 
 """)
-    print("Automatische Terminbuchung für den Corona Impfterminservice\n")
 
-    print("Vor der Ausführung des Programms ist die Berechtigung zur Impfung zu prüfen.\n"
-          "Ob Anspruch auf eine Impfung besteht, kann hier nachgelesen werden:\n"
-          "https://www.impfterminservice.de/terminservice/faq\n")
     # Auf aktuelle Version prüfen
     jsonurl = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
     response = urlopen(jsonurl)
@@ -519,4 +515,10 @@ if __name__ == "__main__":
                 print('Du verwendest die aktuellste Version von vaccipy: '+current_version)
             else:
                 print('Du verwendest eine alte Version von vacciupy. Bitte installiere die aktuellste Version von https://github.com/iamnotturner/vaccipy/releases/tag/'+latest_version)
+
+    print("Automatische Terminbuchung für den Corona Impfterminservice\n")
+
+    print("Vor der Ausführung des Programms ist die Berechtigung zur Impfung zu prüfen.\n"
+          "Ob Anspruch auf eine Impfung besteht, kann hier nachgelesen werden:\n"
+          "https://www.impfterminservice.de/terminservice/faq\n")
     main()
