@@ -162,13 +162,12 @@ def update_available():
 
 def get_current_version():
     try:
-        version_file = Path("../version.txt")
         with open("version.txt") as file:
                 file_contents = file.readlines()
                 current_version = file_contents[0]
                 return current_version
     except:
-        print("Cannot read file", sys.exc_info()[0])
+        pass
 
 def get_latest_version():
     json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/releases/latest'
