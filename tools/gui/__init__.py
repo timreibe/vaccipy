@@ -4,6 +4,7 @@ import platform
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QMessageBox
+from PyQt5.Qt import QUrl, QDesktopServices
 
 
 def oeffne_file_dialog_save(parent_widged: QtWidgets.QWidget, titel: str, standard_speicherpfad: str, dateityp="JSON Files (*.json)") -> str:
@@ -85,3 +86,15 @@ def speichern(speicherpfad: str, data: dict):
 
     with open(speicherpfad, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+def open_browser(url: str):
+    """
+    Öffnet den Standard Browser
+
+    Args:
+        url (str): URL welche geöffnet werden soll
+    """
+
+    qurl = QUrl(url)
+    QDesktopServices.openUrl(qurl)
