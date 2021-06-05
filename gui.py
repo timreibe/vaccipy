@@ -6,7 +6,6 @@ import os
 import threading
 import time
 from pathlib import Path
-from turtle import update
 from urllib.request import urlopen
 import sys
 
