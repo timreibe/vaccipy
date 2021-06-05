@@ -1,13 +1,15 @@
 import os
 import time
 import traceback
+import json
 from json import JSONDecodeError
 from pathlib import Path
-from threading import Thread
+from threading import Thread, currentThread
 
 import requests
 from plyer import notification
 from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
+from urllib.request import urlopen
 
 from tools.exceptions import DesktopNotificationError
 
@@ -145,3 +147,39 @@ def get_grouped_impfzentren() -> dict:
     for gruppe, impfzentren in enumerate(impfzentren_sortiert.values(), start=1):
         result[f"Gruppe {gruppe}"] = impfzentren
     return result
+
+def update_available():
+   
+    # 2 Zeichen Puffer für zukünftige Versionssprünge
+    current_version = get_current_version
+    latest_version = get_latest_version
+
+    print("Installierte Version: " + current_version + "\n")
+    print("Aktuellste Version: " + latest_version + "\n")
+
+    if latest_version.strip() == current_version.strip():
+        print('Du verwendest die aktuellste Version von vaccipy: '+current_version)
+        return False
+    else:
+        print("Du verwendest eine alte Version von vaccipy.\n"
+        "Bitte installiere die aktuellste Version von\n"
+        "https://github.com/iamnotturner/vaccipy/releases/tag/" + latest_version)
+        return True
+
+           
+
+def get_current_version():
+    version_file = Path("./version.txt")
+    with open("version.txt") as file:
+            file_contents = file.readlines()
+            current_version = file_contents[0]
+            return currentThread
+
+def get_latest_version():
+    json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
+    json_response = urlopen(json_url)
+
+    data_json = json.loads(json_response.read())
+    latest_release = data_json[-1]
+    latest_version = latest_release["ref"][10:18]
+    return latest_version

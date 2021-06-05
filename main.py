@@ -5,6 +5,7 @@ import copy
 import json
 import os
 import random
+from readline import get_current_history_length
 import string
 
 try:
@@ -13,11 +14,10 @@ except:
     pass
 
 from tools.its import ImpfterminService
-from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten
-from tools.utils import create_missing_dirs, remove_prefix
+from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
+from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version
 from tools.exceptions import ValidationError
 from pathlib import Path
-from urllib.request import urlopen
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -303,21 +303,21 @@ def gen_code(kontaktdaten):
 
     its = ImpfterminService(random_code, [plz_impfzentrum], {}, PATH)
 
-    print("Wähle nachfolgend deine Altersgruppe aus (L920, L921, L922 oder L923).\n"
-          "Es ist wichtig, dass du die Gruppe entsprechend deines Alters wählst, "
-          "ansonsten wird dir der Termin vor Ort abgesagt.\n"
-          "In den eckigen Klammern siehst du, welche Impfstoffe den Gruppe jeweils zugeordnet sind.\n"
-          "Beispiel: L921\n")
-
+    print("Bitte trage nachfolgend dein Geburtsdatum im Format DD.MM.YYYY ein.\n"
+          "Beispiel: 02.03.1982\n")
     while True:
-        leistungsmerkmal = input("> Leistungsmerkmal: ").upper()
-        if leistungsmerkmal in ["L920", "L921", "L922", "L923"]:
+        try:
+            geburtsdatum = input("> Geburtsdatum: ")
+            validate_datum(geburtsdatum)
             break
-        print("Falscheingabe! Bitte erneut versuchen:")
+        except ValidationError as exc:
+            print("Das Datum entspricht nicht dem richtigen Format (DD.MM.YYYY). "
+                  "Bitte erneut versuchen.")
 
+    print()
     # cookies erneuern und code anfordern
     its.renew_cookies_code()
-    token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, leistungsmerkmal)
+    token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, geburtsdatum)
 
     if token is not None:
         # code bestätigen
@@ -492,32 +492,14 @@ if __name__ == "__main__":
 """)
 
     # Auf aktuelle Version prüfen
-    json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
-    json_response = urlopen(json_url)
+    try:
+        if update_available:
+            print("Bitte auf aktuellste Version updaten: " + get_latest_version)
+        else:
+            print("Version " + get_current_version)
+    except:
+        print("An exception occurred")
 
-    data_json = json.loads(json_response.read())
-    latest_release = data_json[-1]
-
-    #print(data_json)
-    #print(data_json[-1])
-
-    # 2 Zeichen Puffer für zukünftige Versionssprünge
-    latest_version = latest_release["ref"][10:18]
-
-    version_file = Path("./version.txt")
-
-    if version_file.is_file():
-        with open("version.txt") as file:
-            file_contents = file.readlines()
-            current_version = file_contents[0]
-            print("Installierte Version: " + current_version + "\n")
-            print("Aktuellste Version: " + latest_version + "\n")
-            if latest_version.strip() == current_version.strip():
-                print('Du verwendest die aktuellste Version von vaccipy: '+current_version)
-            else:
-                print("Du verwendest eine alte Version von vaccipy.\n"
-                "Bitte installiere die aktuellste Version von\n"
-                "https://github.com/iamnotturner/vaccipy/releases/tag/" + latest_version)
 
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
 
