@@ -796,7 +796,7 @@ class ImpfterminService():
                     hasupdate = update_available
 
                     if hasupdate:
-                        print("Update verfügbar!")
+                        its.log.warn("Update verfügbar!")
 
                     # Durchlauf aller PLZ unterbrechen, wenn Termin gefunden wurde
                     if termin_gefunden:
