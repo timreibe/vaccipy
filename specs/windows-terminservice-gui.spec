@@ -6,7 +6,7 @@ block_cipher = None
 
 a = Analysis(['..\\gui.py'],
              pathex=['specs//'],
-             binaries=[('..\\tools\\chromedriver\\chromedriver-windows.exe', 'tools\\chromedriver\\'), ('..\\tools\\gui\\kontaktdaten.ui', 'tools\\gui\\'), ('..\\tools\\gui\\main.ui', 'tools\\gui\\'), ('..\\tools\\gui\\terminsuche.ui', 'tools\\gui\\'), ('..\\tools\\gui\\uhrzeiten.ui', 'tools\\gui\\'), ('..\\tools\\gui\\impfzentren.ui', 'tools\\gui\\'),('..\\images\\spritze.ico', 'images\\')],
+             binaries=[('..\\tools\\chromedriver\\chromedriver-windows.exe', 'tools\\chromedriver\\'), ('..\\tools\\gui\\kontaktdaten.ui', 'tools\\gui\\'), ('..\\tools\\gui\\main.ui', 'tools\\gui\\'), ('..\\tools\\gui\\terminsuche.ui', 'tools\\gui\\'), ('..\\tools\\gui\\impfzentren.ui', 'tools\\gui\\'),('..\\images\\spritze.ico', 'images\\')],
              datas=[('../tools/cloudscraper', './cloudscraper/'), ('../version.txt', '.')],
              hiddenimports=['plyer.platforms.win.notification', 'cloudscraper'],
              hookspath=[],
