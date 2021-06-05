@@ -10,9 +10,8 @@ import sys
 
 from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
-from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version
+from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version,load_telegram_data
 from tools.exceptions import ValidationError
-import tools.telegramdaten
 from pathlib import Path
 
 
@@ -422,7 +421,7 @@ def main():
     if not hasattr(args, "retry_sec"):
         args.retry_sec = 60
     if not hasattr(args, "t_token") or args.t_token is None or not hasattr(args, "t_id") or args.t_id is None:
-        telegram_data=tools.telegramdaten.load("data/telegram.json")
+        telegram_data = load_telegram_data("data/telegram.json")
         if telegram_data is not None:
             args.t_token=telegram_data["token"]
             args.t_id=telegram_data["chatid"]

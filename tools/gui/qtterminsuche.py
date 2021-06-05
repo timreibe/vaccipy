@@ -9,7 +9,7 @@ from PyQt5.QtCore import QObject, QThread, pyqtSignal
 from PyQt5.QtGui import QIcon
 from tools.gui import *
 from tools.its import ImpfterminService
-import tools.telegramdaten
+from tools.utils import load_telegram_data
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -53,7 +53,7 @@ class Worker(QObject):
         self.check_delay = check_delay
 
         self.use_telegram=False
-        telegram_data=tools.telegramdaten.load("data/telegram.json")
+        telegram_data=load_telegram_data("data/telegram.json")
 
         if telegram_data is not None:
             self.t_token=telegram_data["token"]
