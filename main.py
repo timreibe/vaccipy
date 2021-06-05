@@ -5,6 +5,7 @@ import copy
 import json
 import os
 import random
+from readline import get_current_history_length
 import string
 
 try:
@@ -14,7 +15,7 @@ except:
 
 from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
-from tools.utils import create_missing_dirs, remove_prefix, update_available
+from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version
 from tools.exceptions import ValidationError
 from pathlib import Path
 
@@ -491,7 +492,10 @@ if __name__ == "__main__":
 """)
 
     # Auf aktuelle Version prüfen
-    update_available
+    if update_available:
+        print("Bitte auf aktuellste Version updaten: " + get_latest_version)
+    else:
+        print("Version " + get_current_version)
 
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
 
