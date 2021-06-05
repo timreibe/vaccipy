@@ -36,17 +36,17 @@ class Worker(QObject):
     # Signal wenn Suche abgeschlossen
     fertig = pyqtSignal(bool)
 
-    def __init__(self, kontaktdaten: dict, zeitspanne: dict, ROOT_PATH: str, check_delay: int):
+    def __init__(self, kontaktdaten: dict, zeitrahmen: dict, ROOT_PATH: str, check_delay: int):
         """
         Args:
             kontaktdaten (dict): kontakdaten aus kontaktdaten.json
-            zeitspanne (dict): zeitspanne aus zeitspanne.json
+            zeitrahmen (dict): zeitrahmen
             ROOT_PATH (str): Pfad zur main.py / gui.py
         """
         super().__init__()
 
         self.kontaktdaten = kontaktdaten
-        self.zeitspanne = zeitspanne
+        self.zeitrahmen = zeitrahmen
         self.ROOT_PATH = ROOT_PATH
         self.check_delay = check_delay
 
@@ -61,7 +61,7 @@ class Worker(QObject):
         plz_impfzentren = self.kontaktdaten["plz_impfzentren"]
 
         erfolgreich = ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                                    PATH=self.ROOT_PATH, check_delay=self.check_delay, zeitrahmen=self.zeitspanne)
+                                                    PATH=self.ROOT_PATH, check_delay=self.check_delay, zeitrahmen=self.zeitrahmen)
 
         self.fertig.emit(erfolgreich)
 
@@ -83,7 +83,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
     ### QTextEdit (readonly) ###
     # console_text_edit
 
-    def __init__(self, kontaktdaten: dict, zeitspanne: dict, ROOT_PATH: str,check_delay: int, pfad_fenster_layout=os.path.join(PATH, "terminsuche.ui")):
+    def __init__(self, kontaktdaten: dict, zeitrahmen: dict, ROOT_PATH: str,check_delay: int, pfad_fenster_layout=os.path.join(PATH, "terminsuche.ui")):
 
         super().__init__()
 
@@ -96,7 +96,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         # Attribute erstellen
         self.erfolgreich: bool = None
         self.kontaktdaten = kontaktdaten
-        self.zeitspanne = zeitspanne
+        self.zeitrahmen = zeitrahmen
         self.ROOT_PATH = ROOT_PATH
         self.check_delay = check_delay
 
@@ -117,19 +117,19 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         self.thread.start()
 
     @staticmethod
-    def start_suche(kontaktdaten: dict, zeitspanne: dict, ROOT_PATH: str, check_delay: int):
+    def start_suche(kontaktdaten: dict, zeitrahmen: dict, ROOT_PATH: str, check_delay: int):
         """
         Startet die Suche in einem eigenen Fenster mit Umlenkung der Konsolenausgabe in das Fenster
 
         Args:
             kontaktdaten (dict): kontaktdaten aus JSON
-            zeitspanne (dict): zeitspanne aus JSON
+            zeitrahmen (dict): zeitrahmen aus JSON
             ROOT_PATH (str): Pfad zum Root Ordner, damit dieser an its übergeben werden kann
             check_delay (int): Interval in Sekunden zwischen jeder Terminsuche
         """
         app = QtWidgets.QApplication(list())
         app.setAttribute(QtCore.Qt.AA_X11InitThreads)
-        window = QtTerminsuche(kontaktdaten, zeitspanne, ROOT_PATH, check_delay)
+        window = QtTerminsuche(kontaktdaten, zeitrahmen, ROOT_PATH, check_delay)
         app.exec_()
 
     def setup_infos(self):
@@ -147,7 +147,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         """
 
         self.thread = QThread(parent=self)
-        self.worker = Worker(self.kontaktdaten, self.zeitspanne, self.ROOT_PATH, self.check_delay)
+        self.worker = Worker(self.kontaktdaten, self.zeitrahmen, self.ROOT_PATH, self.check_delay)
 
         # Worker und Thread verbinden
         self.worker.moveToThread(self.thread)
