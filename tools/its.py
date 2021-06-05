@@ -791,15 +791,6 @@ class ImpfterminService():
                 # durchlaufe jede eingegebene PLZ und suche nach Termin
                 for plz in its.plz_impfzentren:
                     termin_gefunden, status_code = its.termin_suchen(plz, zeitrahmen)
-                    
-                    try:
-                        # Updateprüfung
-                        hasupdate = update_available()
-
-                        if hasupdate:
-                            its.log.warn("Update verfügbar!")
-                    except Exception as exec:
-                        its.log.warn("Konnte nicht auf neuste Version geprüft werden")
 
                     # Durchlauf aller PLZ unterbrechen, wenn Termin gefunden wurde
                     if termin_gefunden:
