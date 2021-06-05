@@ -517,7 +517,7 @@ if __name__ == "__main__":
             else:
                 print("Du verwendest eine alte Version von vaccipy.\n"
                 "Bitte installiere die aktuellste Version von\n"
-                "https://github.com/iamnotturner/vaccipy/releases/tag/'+latest_version")
+                "https://github.com/iamnotturner/vaccipy/releases/tag/" + latest_version)
 
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
 
