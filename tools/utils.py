@@ -156,12 +156,8 @@ def update_available():
 
 
     if latest_version.strip() == current_version.strip():
-        print('Du verwendest die aktuellste Version von vaccipy: '+current_version)
         return False
     else:
-        print("Du verwendest eine alte Version von vaccipy.\n"
-        "Bitte installiere die aktuellste Version. Link zum Download:\n"
-        "https://github.com/iamnotturner/vaccipy/releases/tag/" + latest_version)
         return True
 
 def get_current_version():

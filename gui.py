@@ -9,14 +9,16 @@ import sys
 
 from PyQt5 import QtCore, QtWidgets, uic
 from PyQt5.QtGui import QIcon
+from tools.exceptions import ValidationError, MissingValuesError
+from tools.gui import oeffne_file_dialog_select
+
 
 from tools import Modus
 from tools import kontaktdaten as kontak_tools
 from tools.exceptions import MissingValuesError, ValidationError
-from tools.gui import oeffne_file_dialog_select
+from tools.gui import oeffne_file_dialog_select, open_browser
 from tools.gui.qtkontakt import QtKontakt
 from tools.gui.qtterminsuche import QtTerminsuche
-from tools.gui.qtzeiten import QtZeiten
 from tools.utils import create_missing_dirs, update_available, get_latest_version, get_current_version
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -53,23 +55,18 @@ class HauptGUI(QtWidgets.QMainWindow):
         super().__init__()
 
         create_missing_dirs(PATH)
-        
+
         # Laden der .ui Datei und Anpassungen
         self.setup(pfad_fenster_layout)
-
-        # Auf Update prüfen
-        # Auf aktuelle Version prüfen
-        has_update = update_available()
-        self.setWindowTitle('vaccipy ' + get_current_version())
-
-        if has_update:
-            QtWidgets.QMessageBox.critical(self, "Bitte Update installieren", "Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest.")
 
         # GUI anzeigen
         self.show()
 
         # Workaround, damit das Fenster hoffentlich im Vordergrund ist
         self.activateWindow()
+
+        # Auf neuere Version prüfen
+        self.check_update()
 
     ##############################
     #     Allgemein Fenster      #
@@ -103,9 +100,10 @@ class HauptGUI(QtWidgets.QMainWindow):
         ### GUI ###
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
+        self.setWindowTitle('vaccipy ' + get_current_version())
 
         # Meldung falls alte Daten von alter Version
-        self.__check_old_version()
+        self.__check_old_kontakt_version()
 
         # Funktionen den Buttons zuweisen
         self.b_termin_suchen.clicked.connect(self.__termin_suchen)
@@ -123,6 +121,32 @@ class HauptGUI(QtWidgets.QMainWindow):
         # Überwachnung der Prozesse
         self.prozess_bewacher = threading.Thread(target=self.__check_status_der_prozesse, daemon=True)
         self.prozess_bewacher.start()
+
+    def check_update(self):
+        """
+        Prüft auf neuere Version und gibt evtl. ne Benachrichtigung an den User
+        """
+
+        try:
+            # Auf Update prüfen
+            if update_available():
+                url = f"https://github.com/iamnotturner/vaccipy/releases/tag/{get_latest_version()}"
+
+                msg = QtWidgets.QMessageBox()
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setWindowTitle("Alte Version!")
+                msg.setText("Bitte Update installieren")
+                msg.setInformativeText(f"Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest ({get_current_version()})")
+                msg.addButton(msg.Close)
+                btn_download = msg.addButton("Download", msg.ApplyRole)
+
+                btn_download.clicked.connect(lambda: open_browser(url))
+
+                msg.exec_()
+        except Exception as error:
+            # warum auch immer konnte nicht überprüft werden
+            # einfach nichts machen
+            pass
 
     def __code_generieren(self):
         """
@@ -254,9 +278,9 @@ class HauptGUI(QtWidgets.QMainWindow):
                 if not prozess.is_alive():
                     self.__remove_prozess_von_gui(prozess)
                     self.such_prozesse.remove(prozess)
-            time.sleep(1)
+            time.sleep(1.5)
 
-    def __check_old_version(self, kontaktdaten: dict = None) -> bool:
+    def __check_old_kontakt_version(self, kontaktdaten: dict = None) -> bool:
         """
         Schaut ob zeitspanne.json vorhanden ist - wenn ja löschen und Warnung ausgeben
         Schaut ob ["zeitrahmen"] in den Kontakdaten ist - wenn ja Warnung ausgeben
@@ -318,7 +342,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             self.kontaktdaten_erstellen(modus)
 
         kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
-        if not self.__check_old_version(kontaktdaten):
+        if not self.__check_old_kontakt_version(kontaktdaten):
             raise ValidationError("\"zeitrahmen\" fehlt -> Alte Version")
 
         return kontaktdaten
@@ -331,6 +355,7 @@ def main():
 
     multiprocessing.freeze_support()
     HauptGUI.start_gui()
+
 
 if __name__ == "__main__":
     main()
