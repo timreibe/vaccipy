@@ -6,7 +6,6 @@ from base64 import b64encode
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
 from random import choice, randint
-from turtle import update
 
 from typing import Dict, List
 
