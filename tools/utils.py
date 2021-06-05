@@ -10,7 +10,6 @@ from threading import Thread, currentThread
 import requests
 from plyer import notification
 from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
-from urllib.request import urlopen
 
 from tools.exceptions import DesktopNotificationError
 
@@ -178,10 +177,6 @@ def get_current_version():
         print("Cannot read file", sys.exc_info()[0])
 
 def get_latest_version():
-    json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
-    json_response = urlopen(json_url)
-
-    data_json = json.loads(json_response.read())
-    latest_release = data_json[-1]
-    latest_version = latest_release["ref"][10:18]
+    json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/releases/latest'
+    latest_version = requests.get(json_url).json()['tag_name']
     return latest_version
