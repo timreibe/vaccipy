@@ -16,6 +16,8 @@ from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten
 from tools.utils import create_missing_dirs, remove_prefix
 from tools.exceptions import ValidationError
+from pathlib import Path
+from urllib.request import urlopen
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -493,5 +495,28 @@ if __name__ == "__main__":
     print("Vor der Ausführung des Programms ist die Berechtigung zur Impfung zu prüfen.\n"
           "Ob Anspruch auf eine Impfung besteht, kann hier nachgelesen werden:\n"
           "https://www.impfterminservice.de/terminservice/faq\n")
+    # Auf aktuelle Version prüfen
+    jsonurl = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
+    response = urlopen(jsonurl)
 
+    data_json = json.loads(response.read())
+    last_item = data_json[-1]
+
+    #print(data_json)
+    #print(data_json[-1])
+
+    # 2 Zeichen Puffer für zukünftige Versionssprünge
+    latest_version = last_item["ref"][10:18]
+
+    my_file = Path("./version.txt")
+
+    if my_file.is_file():
+        with open("version.txt") as f:
+            contents = f.readlines()
+            current_version = contents[0]
+
+            if latest_version.strip() == current_version.strip():
+                print('Du verwendest die aktuellste Version von vaccipy: '+current_version)
+            else:
+                print('Du verwendest eine veraltete Version von vacciupy. Bitte installiere die aktuellste Version von https://github.com/iamnotturner/vaccipy/releases/tag/'+latest_version)
     main()

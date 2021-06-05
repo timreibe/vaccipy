@@ -16,6 +16,8 @@ from tools.gui.qtterminsuche import QtTerminsuche
 from tools.utils import create_missing_dirs
 from tools import kontaktdaten as kontak_tools
 from tools import Modus
+from pathlib import Path
+from urllib.request import urlopen
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -152,6 +154,34 @@ class HauptGUI(QtWidgets.QMainWindow):
             kontaktdaten (dict): kontakdaten aus kontaktdaten.json
             zeitspanne (dict): zeitspanne aus zeitspanne.json
         """
+
+         # Auf Update prüfen
+        # Auf aktuelle Version prüfen
+        jsonurl = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
+        response = urlopen(jsonurl)
+        isuptodate = False;
+        data_json = json.loads(response.read())
+        last_item = data_json[-1]
+
+        # 2 Zeichen Puffer für zukünftige Versionssprünge
+        latest_version = last_item["ref"][10:18]
+
+        my_file = Path("./version.txt")
+
+        if my_file.is_file():
+            with open("version.txt") as f:
+                contents = f.readlines()
+                current_version = contents[0]
+                if current_version!="":
+                    self.setWindowTitle('vaccipy '+current_version)
+
+                    if latest_version.strip() == current_version.strip():
+                        isuptodate = True
+                    else:
+                        isuptodate = False
+                        QtWidgets.QMessageBox.information(self, "Bitte Update installieren", "Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest.")
+
+
         check_delay = self.i_interval.value()
         code = kontaktdaten["code"]
         terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{code}-{self.prozesse_counter}", daemon=True, kwargs={
