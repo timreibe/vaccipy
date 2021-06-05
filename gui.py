@@ -6,6 +6,7 @@ import os
 import threading
 import time
 from pathlib import Path
+from turtle import update
 from urllib.request import urlopen
 
 from PyQt5 import QtCore, QtWidgets, uic
@@ -18,7 +19,7 @@ from tools.gui import oeffne_file_dialog_select
 from tools.gui.qtkontakt import QtKontakt
 from tools.gui.qtterminsuche import QtTerminsuche
 from tools.gui.qtzeiten import QtZeiten
-from tools.utils import create_missing_dirs
+from tools.utils import create_missing_dirs, update_available, get_latest_version, get_current_version
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -60,31 +61,11 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         # Auf Update prüfen
         # Auf aktuelle Version prüfen
-        json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
-        json_response = urlopen(json_url)
-        data_json = json.loads(json_response.read())
-        last_item = data_json[-1]
+        has_update = update_available
+        self.setWindowTitle('vaccipy ' + get_current_version)
 
-        # 2 Zeichen Puffer für zukünftige Versionssprünge
-        latest_version = last_item["ref"][10:18]
-
-        version_file = Path("./version.txt")
-
-        if version_file.is_file():
-            with open("version.txt") as file:
-                file_contents = file.readlines()
-                current_version = file_contents[0]
-                if current_version != "":
-                    self.setWindowTitle('vaccipy ' + current_version)
-
-                    if latest_version.strip() == current_version.strip():
-                        # Do something
-                        statusbar = self.findChild(QtGui.QStatusBar, "statusbar")
-                        statusbar.showMessage("Version: " + current_version)
-                    else:
-                        # Suchbutton disablen wenn alte Version genutzt wird?
-                        QtWidgets.QMessageBox.information(self, "Bitte Update installieren", "Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest.")
-
+        if has_update:
+            QtWidgets.QMessageBox.information(self, "Bitte Update installieren", "Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest.")
 
         # GUI anzeigen
         self.show()

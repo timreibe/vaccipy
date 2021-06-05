@@ -14,10 +14,9 @@ except:
 
 from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
-from tools.utils import create_missing_dirs, remove_prefix
+from tools.utils import create_missing_dirs, remove_prefix, update_available
 from tools.exceptions import ValidationError
 from pathlib import Path
-from urllib.request import urlopen
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -492,32 +491,7 @@ if __name__ == "__main__":
 """)
 
     # Auf aktuelle Version prüfen
-    json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
-    json_response = urlopen(json_url)
-
-    data_json = json.loads(json_response.read())
-    latest_release = data_json[-1]
-
-    #print(data_json)
-    #print(data_json[-1])
-
-    # 2 Zeichen Puffer für zukünftige Versionssprünge
-    latest_version = latest_release["ref"][10:18]
-
-    version_file = Path("./version.txt")
-
-    if version_file.is_file():
-        with open("version.txt") as file:
-            file_contents = file.readlines()
-            current_version = file_contents[0]
-            print("Installierte Version: " + current_version + "\n")
-            print("Aktuellste Version: " + latest_version + "\n")
-            if latest_version.strip() == current_version.strip():
-                print('Du verwendest die aktuellste Version von vaccipy: '+current_version)
-            else:
-                print("Du verwendest eine alte Version von vaccipy.\n"
-                "Bitte installiere die aktuellste Version von\n"
-                "https://github.com/iamnotturner/vaccipy/releases/tag/" + latest_version)
+    update_available
 
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
 
