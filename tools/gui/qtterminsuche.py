@@ -53,7 +53,7 @@ class Worker(QObject):
         self.check_delay = check_delay
 
         self.use_telegram=False
-        telegram_data=load_telegram_data("data/telegram.json")
+        telegram_data=load_telegram_data(os.path.join(ROOT_PATH, "data", "telegram.json"))
 
         if telegram_data is not None:
             self.t_token=telegram_data["token"]
