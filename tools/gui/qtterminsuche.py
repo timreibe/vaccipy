@@ -220,9 +220,9 @@ class QtTerminsuche(QtWidgets.QMainWindow):
 
         if self.thread.isRunning():
             res = QtWidgets.QMessageBox.warning(self, "Suche beenden", "Suche wirklich beenden?\n",
-                                                (QMessageBox.StandardButton.Apply | QMessageBox.StandardButton.Cancel))
+                                                (QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel))
 
-        if res == QMessageBox.StandardButton.Apply:
+        if res == QMessageBox.StandardButton.Ok:
             if self.thread.isRunning():
                 self.thread.quit()
 
