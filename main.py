@@ -488,10 +488,8 @@ if __name__ == "__main__":
 
     # Auf aktuelle Version prüfen
     try:
-        if update_available():
-            print("Bitte auf aktuellste Version updaten: " + get_latest_version())
-        else:
-            print("Version " + get_current_version())
+        update_available()
+        print("\n")
     except:
         print("An exception occurred", sys.exc_info()[0])
 
