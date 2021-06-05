@@ -165,7 +165,6 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         self.worker.fehlschlag.connect(self.worker.deleteLater)
 
         self.thread.started.connect(self.worker.suchen)
-        self.thread.finished.connect(self.thread.deleteLater)
 
     def update_ausgabe(self, text):
         """
@@ -208,10 +207,8 @@ class QtTerminsuche(QtWidgets.QMainWindow):
 
         if error:
             QtWidgets.QMessageBox.critical(self, "Suche Fehlgeschlagen!", f"Suche wurde abgebrochen:\n{str(error)}")
-            self.close()
         else:
             QtWidgets.QMessageBox.information(self, "Termin gefunden!", "Termin gefunden!\nAusgabe Prüfen!")
-            self.close()
 
     def closeEvent(self, event):
         """
@@ -222,12 +219,18 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         """
 
         if self.thread.isRunning():
-            QtWidgets.QMessageBox.warning(self, "Suche beenden", "Die Suche wird beendet!")
+            res = QtWidgets.QMessageBox.warning(self, "Suche beenden", "Suche wirklich beenden?\n",
+                                                (QMessageBox.StandardButton.Apply | QMessageBox.StandardButton.Cancel))
 
-        if self.thread.isRunning():
-            self.thread.quit()
+        if res == QMessageBox.StandardButton.Apply:
+            if self.thread.isRunning():
+                self.thread.quit()
 
-        # Streams wieder korrigieren, damit kein Fehler kommt
-        sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stderr__
-        super().closeEvent(event)
+            # Streams wieder korrigieren, damit kein Fehler kommt
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+
+            event.accept()
+
+        else:
+            event.ignore()
