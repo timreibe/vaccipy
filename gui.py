@@ -157,10 +157,9 @@ class HauptGUI(QtWidgets.QMainWindow):
 
          # Auf Update prüfen
         # Auf aktuelle Version prüfen
-        jsonurl = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
-        response = urlopen(jsonurl)
-        isuptodate = False;
-        data_json = json.loads(response.read())
+        json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
+        json_response = urlopen(json_url)
+        data_json = json.loads(json_response.read())
         last_item = data_json[-1]
 
         # 2 Zeichen Puffer für zukünftige Versionssprünge
@@ -172,13 +171,15 @@ class HauptGUI(QtWidgets.QMainWindow):
             with open("version.txt") as f:
                 contents = f.readlines()
                 current_version = contents[0]
-                if current_version!="":
+                if current_version != "":
                     self.setWindowTitle('vaccipy '+current_version)
 
                     if latest_version.strip() == current_version.strip():
-                        isuptodate = True
+                        # Do something
+                        statusbar = self.findChild(QtGui.QStatusBar, "statusbar")
+                        statusbar.showMessage("Version: " + current_version)
                     else:
-                        isuptodate = False
+                        # Suchbutton disablen wenn alte Version genutzt wird?
                         QtWidgets.QMessageBox.information(self, "Bitte Update installieren", "Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest.")
 
 

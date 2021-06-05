@@ -492,30 +492,32 @@ if __name__ == "__main__":
 """)
 
     # Auf aktuelle Version prüfen
-    jsonurl = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
-    response = urlopen(jsonurl)
+    json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
+    json_response = urlopen(json_url)
 
-    data_json = json.loads(response.read())
-    last_item = data_json[-1]
+    data_json = json.loads(json_response.read())
+    latest_release = data_json[-1]
 
     #print(data_json)
     #print(data_json[-1])
 
     # 2 Zeichen Puffer für zukünftige Versionssprünge
-    latest_version = last_item["ref"][10:18]
+    latest_version = latest_release["ref"][10:18]
 
-    my_file = Path("./version.txt")
+    version_file = Path("./version.txt")
 
-    if my_file.is_file():
-        with open("version.txt") as f:
-            contents = f.readlines()
-            current_version = contents[0]
-            print("Installierte Version: " + current_version)
-            print("Aktuellste Version: " + latest_version)
+    if version_file.is_file():
+        with open("version.txt") as file:
+            file_contents = file.readlines()
+            current_version = file_contents[0]
+            print("Installierte Version: " + current_version + "\n")
+            print("Aktuellste Version: " + latest_version + "\n")
             if latest_version.strip() == current_version.strip():
                 print('Du verwendest die aktuellste Version von vaccipy: '+current_version)
             else:
-                print('Du verwendest eine alte Version von vaccipy. Bitte installiere die aktuellste Version von https://github.com/iamnotturner/vaccipy/releases/tag/'+latest_version)
+                print("Du verwendest eine alte Version von vaccipy.\n"
+                "Bitte installiere die aktuellste Version von\n"
+                "https://github.com/iamnotturner/vaccipy/releases/tag/'+latest_version")
 
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
 
