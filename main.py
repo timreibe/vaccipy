@@ -498,7 +498,7 @@ if __name__ == "__main__":
         else:
             print("Version " + get_current_version())
     except:
-        print("An exception occurred")
+        print("An exception occurred", sys.exc_info()[0])
 
 
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")

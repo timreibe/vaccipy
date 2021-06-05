@@ -166,8 +166,6 @@ def update_available():
         "https://github.com/iamnotturner/vaccipy/releases/tag/" + latest_version)
         return True
 
-           
-
 def get_current_version():
     try:
         version_file = Path("../version.txt")
@@ -176,7 +174,7 @@ def get_current_version():
                 current_version = file_contents[0]
                 return current_version
     except:
-        print("Cannot read file!")
+        print("Cannot read file", sys.exc_info()[0])
 
 def get_latest_version():
     json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
