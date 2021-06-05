@@ -9,6 +9,9 @@ import sys
 
 from PyQt5 import QtCore, QtWidgets, uic
 from PyQt5.QtGui import QIcon
+from tools.exceptions import ValidationError, MissingValuesError
+from tools.gui import oeffne_file_dialog_select
+
 
 from tools import Modus
 from tools import kontaktdaten as kontak_tools
@@ -275,7 +278,7 @@ class HauptGUI(QtWidgets.QMainWindow):
                 if not prozess.is_alive():
                     self.__remove_prozess_von_gui(prozess)
                     self.such_prozesse.remove(prozess)
-            time.sleep(1)
+            time.sleep(1.5)
 
     def __check_old_kontakt_version(self, kontaktdaten: dict = None) -> bool:
         """
