@@ -65,7 +65,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         self.setWindowTitle('vaccipy ' + get_current_version)
 
         if has_update:
-            QtWidgets.QMessageBox.information(self, "Bitte Update installieren", "Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest.")
+            QtWidgets.QMessageBox.critical(self, "Bitte Update installieren", "Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest.")
 
         # GUI anzeigen
         self.show()
