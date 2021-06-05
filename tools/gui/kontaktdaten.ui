@@ -6,14 +6,29 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>727</width>
-    <height>428</height>
+    <width>735</width>
+    <height>472</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>vaccipy - Kontaktdaten</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
+   <item row="1" column="0">
+    <widget class="QLabel" name="subheader_label">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Gebe Bitte deine Persöhnliche Daten und Zeitrahmen ein</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="header_label">
      <property name="font">
@@ -29,21 +44,6 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="subheader_label">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Gebe Bitte deine Persöhnliche Daten ein</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="0">
     <widget class="Line" name="line">
      <property name="orientation">
@@ -51,7 +51,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="4" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -64,28 +64,71 @@
      </property>
     </spacer>
    </item>
+   <item row="5" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Reset|QDialogButtonBox::Save</set>
+     </property>
+    </widget>
+   </item>
    <item row="3" column="0">
-    <layout class="QGridLayout" name="main_grid">
-     <item row="1" column="1">
-      <layout class="QFormLayout" name="kontakdaten_layout">
-       <property name="leftMargin">
-        <number>6</number>
-       </property>
-       <property name="topMargin">
-        <number>6</number>
-       </property>
-       <property name="rightMargin">
-        <number>6</number>
-       </property>
-       <property name="bottomMargin">
-        <number>6</number>
-       </property>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="tabPosition">
+      <enum>QTabWidget::North</enum>
+     </property>
+     <property name="tabShape">
+      <enum>QTabWidget::Rounded</enum>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <property name="usesScrollButtons">
+      <bool>true</bool>
+     </property>
+     <property name="documentMode">
+      <bool>false</bool>
+     </property>
+     <property name="tabsClosable">
+      <bool>false</bool>
+     </property>
+     <widget class="QWidget" name="kontaktdaten_tab">
+      <attribute name="title">
+       <string>Kontaktdaten</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout">
        <item row="0" column="0">
         <widget class="QLabel" name="plz_impfzent_label">
          <property name="text">
           <string>PLZ's der Impfzentren:</string>
          </property>
         </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QGridLayout" name="plz_zentren_grid_layout">
+         <item row="0" column="0">
+          <widget class="QLineEdit" name="i_plz_impfzentren">
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>Beispiel: 68163, 69124, 69469</string>
+           </property>
+           <property name="clearButtonEnabled">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="b_impfzentren_waehlen">
+           <property name="text">
+            <string>Impfzentren auswählen</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="code_label">
@@ -333,47 +376,340 @@
          </property>
         </widget>
        </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="zeitrahmen_tab">
+      <attribute name="title">
+       <string>Zeitrahmen</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="6" column="1">
+        <widget class="QFrame" name="uhr_termin_datum_frame">
+         <property name="frameShape">
+          <enum>QFrame::Box</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="0" column="0">
+           <layout class="QFormLayout" name="formLayout_3">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetDefaultConstraint</enum>
+            </property>
+            <property name="fieldGrowthPolicy">
+             <enum>QFormLayout::ExpandingFieldsGrow</enum>
+            </property>
+            <property name="rowWrapPolicy">
+             <enum>QFormLayout::DontWrapRows</enum>
+            </property>
+            <property name="horizontalSpacing">
+             <number>6</number>
+            </property>
+            <property name="verticalSpacing">
+             <number>6</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="kalender_label">
+              <property name="text">
+               <string>Termin frühestens ab:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QDateEdit" name="i_start_datum_qdate">
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+              <property name="buttonSymbols">
+               <enum>QAbstractSpinBox::UpDownArrows</enum>
+              </property>
+              <property name="specialValueText">
+               <string/>
+              </property>
+              <property name="time">
+               <time>
+                <hour>0</hour>
+                <minute>0</minute>
+                <second>0</second>
+               </time>
+              </property>
+              <property name="currentSection">
+               <enum>QDateTimeEdit::DaySection</enum>
+              </property>
+              <property name="calendarPopup">
+               <bool>true</bool>
+              </property>
+              <property name="date">
+               <date>
+                <year>2021</year>
+                <month>5</month>
+                <day>25</day>
+               </date>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Start:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QTimeEdit" name="i_start_time_qtime">
+                <property name="currentSection">
+                 <enum>QDateTimeEdit::HourSection</enum>
+                </property>
+                <property name="calendarPopup">
+                 <bool>false</bool>
+                </property>
+                <property name="time">
+                 <time>
+                  <hour>0</hour>
+                  <minute>1</minute>
+                  <second>0</second>
+                 </time>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="uhr_start_label">
+                <property name="text">
+                 <string>Uhr</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Ende:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <widget class="QTimeEdit" name="i_end_time_qtime">
+                <property name="time">
+                 <time>
+                  <hour>23</hour>
+                  <minute>59</minute>
+                  <second>0</second>
+                 </time>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="uhr_end_label">
+                <property name="text">
+                 <string>Uhr</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="termine_anwenden_label">
+         <property name="text">
+          <string>Bei welchen Terminen sollen die Bedingungen gelten?</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="i_zweiter_termin_check_box">
+         <property name="text">
+          <string>2. Termin</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="1">
-        <layout class="QGridLayout" name="plz_zentren_grid_layout">
-         <item row="0" column="0">
-          <widget class="QLineEdit" name="i_plz_impfzentren">
-           <property name="inputMask">
-            <string/>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="placeholderText">
-            <string>Beispiel: 68163, 69124, 69469</string>
-           </property>
-           <property name="clearButtonEnabled">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
+        <widget class="QCheckBox" name="i_erster_termin_check_box">
+         <property name="text">
+          <string>1. Termin</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="1">
-          <widget class="QPushButton" name="b_impfzentren_waehlen">
-           <property name="text">
-            <string>Impfzentren auswählen</string>
+          <widget class="QFrame" name="tage_frame">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
+           <property name="frameShape">
+            <enum>QFrame::Box</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
+           </property>
+           <layout class="QGridLayout" name="tage_grig">
+            <property name="rightMargin">
+             <number>9</number>
+            </property>
+            <item row="9" column="0" colspan="2">
+             <widget class="QCheckBox" name="i_fr_check_box">
+              <property name="text">
+               <string>Freitags</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <string>Fr</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="0" colspan="2">
+             <widget class="QCheckBox" name="i_mi_check_box">
+              <property name="text">
+               <string>Mittwochs</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <string>Mi</string>
+              </property>
+             </widget>
+            </item>
+            <item row="11" column="0" colspan="2">
+             <widget class="QCheckBox" name="i_so_check_box">
+              <property name="text">
+               <string>Sonntags</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <string>So</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0" colspan="2">
+             <widget class="QCheckBox" name="i_di_check_box">
+              <property name="text">
+               <string>Dienstags</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <string>Di</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
+             <widget class="Line" name="line_4">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0" colspan="2">
+             <widget class="QCheckBox" name="i_mo_check_box">
+              <property name="text">
+               <string>Montags</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <string>Mo</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QCheckBox" name="i_do_check_box">
+              <property name="text">
+               <string>Donnerstags</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <string>Do</string>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="0" colspan="2">
+             <widget class="QCheckBox" name="i_sa_check_box">
+              <property name="text">
+               <string>Samstags</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <string>Sa</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0" colspan="2">
+             <widget class="QLabel" name="wochentage_label">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Nur an folgenden Tagen:</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
        </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
       </layout>
-     </item>
-    </layout>
-   </item>
-   <item row="6" column="0">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Reset|QDialogButtonBox::Save</set>
-     </property>
+     </widget>
     </widget>
    </item>
   </layout>
  </widget>
  <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>i_plz_impfzentren</tabstop>
+  <tabstop>b_impfzentren_waehlen</tabstop>
   <tabstop>i_code_impfzentren</tabstop>
   <tabstop>i_anrede_combo_box</tabstop>
   <tabstop>i_vorname</tabstop>
@@ -384,6 +720,18 @@
   <tabstop>i_wohnort</tabstop>
   <tabstop>i_telefon</tabstop>
   <tabstop>i_mail</tabstop>
+  <tabstop>i_erster_termin_check_box</tabstop>
+  <tabstop>i_zweiter_termin_check_box</tabstop>
+  <tabstop>i_mo_check_box</tabstop>
+  <tabstop>i_di_check_box</tabstop>
+  <tabstop>i_mi_check_box</tabstop>
+  <tabstop>i_do_check_box</tabstop>
+  <tabstop>i_fr_check_box</tabstop>
+  <tabstop>i_sa_check_box</tabstop>
+  <tabstop>i_so_check_box</tabstop>
+  <tabstop>i_start_datum_qdate</tabstop>
+  <tabstop>i_start_time_qtime</tabstop>
+  <tabstop>i_end_time_qtime</tabstop>
  </tabstops>
  <resources/>
  <connections/>
