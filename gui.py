@@ -29,15 +29,12 @@ class HauptGUI(QtWidgets.QMainWindow):
 
     ### QLineEdit ###
     # i_kontaktdaten_pfad
-    # i_zeitspanne_pfad
 
     ### Buttons ###
     # b_termin_suchen
     # b_code_generieren
     # b_dateien_kontaktdaten
-    # b_dateien_zeitspanne
     # b_neue_kontaktdaten
-    # b_neue_zeitspanne
 
     ### Layouts ###
     # prozesse_layout
@@ -59,32 +56,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         create_missing_dirs(PATH)
         
         # Laden der .ui Datei und Anpassungen
-        uic.loadUi(pfad_fenster_layout, self)
-        self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
-
-        # Funktionen den Buttons zuweisen
-        self.b_termin_suchen.clicked.connect(self.__termin_suchen)
-        self.b_code_generieren.clicked.connect(self.__code_generieren)
-        self.b_dateien_kontaktdaten.clicked.connect(self.__update_kontaktdaten_pfad)
-        self.b_dateien_zeitspanne.clicked.connect(self.__update_zeitspanne_pfad)
-        self.b_neue_kontaktdaten.clicked.connect(lambda: self.kontaktdaten_erstellen(Modus.TERMIN_SUCHEN))
-        self.b_neue_zeitspanne.clicked.connect(self.zeitspanne_erstellen)
-
-        # Standard Pfade
-        self.pfad_kontaktdaten: str = os.path.join(PATH, "data", "kontaktdaten.json")
-        self.pfad_zeitspanne: str = os.path.join(PATH, "data", "zeitspanne.json")
-
-        # Pfade in der GUI anzeigen
-        self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
-        self.i_zeitspanne_pfad.setText(self.pfad_zeitspanne)
-
-        # Speichert alle termin_suchen Prozesse
-        self.such_prozesse = list(list())
-        self.prozesse_counter = 0
-
-        # Überwachnung der Prozesse
-        self.prozess_bewacher = threading.Thread(target=self.__check_status_der_prozesse, daemon=True)
-        self.prozess_bewacher.start()
+        self.setup(pfad_fenster_layout)
 
         # Auf Update prüfen
         # Auf aktuelle Version prüfen
@@ -120,6 +92,10 @@ class HauptGUI(QtWidgets.QMainWindow):
         # Workaround, damit das Fenster hoffentlich im Vordergrund ist
         self.activateWindow()
 
+    ##############################
+    #     Allgemein Fenster      #
+    ##############################
+
     @staticmethod
     def start_gui():
         """
@@ -131,26 +107,51 @@ class HauptGUI(QtWidgets.QMainWindow):
         window = HauptGUI()
         app.exec_()
 
-    def kontaktdaten_erstellen(self, modus: Modus = Modus.TERMIN_SUCHEN):
+    def setup(self, pfad_fenster_layout: str):
         """
-        Ruft den Dialog für die Kontaktdaten auf
+        Standard Konfig für die GUI erstellen, bevor sie angezeigt werden kann
 
         Args:
-            modus (Modus): Abhängig vom Modus werden nicht alle Daten benötigt. Defalut TERMIN_SUCHEN
+            pfad_fenster_layout (str): Pfad zur .ui Datei
         """
 
-        dialog = QtKontakt(self, modus, self.pfad_kontaktdaten, PATH)
-        dialog.show()
-        dialog.exec_()
+        ### Allgemein ###
+        create_missing_dirs(PATH)
 
-    def zeitspanne_erstellen(self):
+        # Standard Pfade
+        self.pfad_kontaktdaten: str = os.path.join(PATH, "data", "kontaktdaten.json")
+
+        ### GUI ###
+        uic.loadUi(pfad_fenster_layout, self)
+        self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
+
+        # Meldung falls alte Daten von alter Version
+        self.__check_old_version()
+
+        # Funktionen den Buttons zuweisen
+        self.b_termin_suchen.clicked.connect(self.__termin_suchen)
+        self.b_code_generieren.clicked.connect(self.__code_generieren)
+        self.b_dateien_kontaktdaten.clicked.connect(self.__update_kontaktdaten_pfad)
+        self.b_neue_kontaktdaten.clicked.connect(lambda: self.kontaktdaten_erstellen(Modus.TERMIN_SUCHEN))
+
+        # Pfade in der GUI anpassen
+        self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
+
+        # Speichert alle termin_suchen Prozesse
+        self.such_prozesse = list(list())
+        self.prozesse_counter = 0
+
+        # Überwachnung der Prozesse
+        self.prozess_bewacher = threading.Thread(target=self.__check_status_der_prozesse, daemon=True)
+        self.prozess_bewacher.start()
+
+    def __code_generieren(self):
         """
-        Ruft den Dialog für die Zeitspanne auf
+        Startet den Prozess der Codegenerierung
         """
 
-        dialog = QtZeiten(self, self.pfad_zeitspanne, PATH)
-        dialog.show()
-        dialog.exec_()
+        # TODO: code generierung implementieren
+        QtWidgets.QMessageBox.information(self, "Noch nicht verfügbar", "Funktion nur über Konsolenanwendung verfügbar")
 
     def __termin_suchen(self):
         """
@@ -161,7 +162,7 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         try:
             kontaktdaten = self.__get_kontaktdaten(Modus.TERMIN_SUCHEN)
-            zeitspanne = self.__get_zeitspanne()
+            zeitrahmen = kontaktdaten["zeitrahmen"]
 
         except FileNotFoundError as error:
             QtWidgets.QMessageBox.critical(self, "Datei nicht gefunden!", f"Datei zum Laden konnte nicht gefunden werden\n\nBitte erstellen")
@@ -173,22 +174,22 @@ class HauptGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei Fehlen Daten:\n\n{error}")
             return
 
-        self.__start_terminsuche(kontaktdaten, zeitspanne)
+        self.__start_terminsuche(kontaktdaten, zeitrahmen)
 
-    def __start_terminsuche(self, kontaktdaten: dict, zeitspanne: dict):
+    def __start_terminsuche(self, kontaktdaten: dict, zeitrahmen: dict):
         """
         Startet die Terminsuche. Dies nur mit einem Thread starten, da die GUI sonst hängt
 
         Args:
             kontaktdaten (dict): kontakdaten aus kontaktdaten.json
-            zeitspanne (dict): zeitspanne aus zeitspanne.json
+            zeitrahmen (dict): zeitrahmen aus zeitrahmen.json
         """
 
         check_delay = self.i_interval.value()
         code = kontaktdaten["code"]
         terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{code}-{self.prozesse_counter}", daemon=True, kwargs={
                                                       "kontaktdaten": kontaktdaten,
-                                                      "zeitspanne": zeitspanne,
+                                                      "zeitrahmen": zeitrahmen,
                                                       "ROOT_PATH": PATH,
                                                       "check_delay": check_delay})
         try:
@@ -207,81 +208,33 @@ class HauptGUI(QtWidgets.QMainWindow):
             self.__add_prozess_in_gui(terminsuche_prozess)
             self.prozesse_counter += 1
 
-    def __code_generieren(self):
+    def __update_kontaktdaten_pfad(self, pfad: str):
         """
-        Startet den Prozess der Codegenerierung
-        """
+        Holt sich mithilfe des QFileDialogs eine bereits vorhandene Datei.
+        Dieser Pfad wird in der GUI ersetzt und im Attribut der Kasse gespeichert.
 
-        # TODO: code generierung implementieren
-        QtWidgets.QMessageBox.information(self, "Noch nicht verfügbar", "Funktion nur über Konsolenanwendung verfügbar")
-
-    def __get_kontaktdaten(self, modus: Modus) -> dict:
-        """
-        Ladet die Kontakdaten aus dem in der GUI hinterlegten Pfad
+        Wird ein Pfad bereits mit übergeben, wird dieser verwendet
 
         Args:
-            modus (Modus): Abhängig vom Modus werden nicht alle Daten benötigt.
-
-        Returns:
-            dict: Kontakdaten
+            pfad (str): if pfad - dann Wert übernehmen
         """
 
-        if not os.path.isfile(self.pfad_kontaktdaten):
-            self.kontaktdaten_erstellen(modus)
-
-        kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
-
-        return kontaktdaten
-
-    def __get_zeitspanne(self) -> dict:
-        """
-        Ladet die Zeitspanne aus dem in der GUI hinterlegtem Pfad
-
-        Returns:
-            dict: Zeitspanne
-        """
-
-        if not os.path.isfile(self.pfad_zeitspanne):
-            self.zeitspanne_erstellen()
-
-        with open(self.pfad_zeitspanne, "r", encoding='utf-8') as f:
-            zeitspanne = json.load(f)
-
-        # TODO: Prüfen ob Daten vollständig
-
-        return zeitspanne
-
-    def __update_kontaktdaten_pfad(self):
-        """
-        Holt sich mithilfe des QFileDialogs eine bereits vorhandene Datei.
-        Dieser Pfad wird in der GUI ersetzt und im Attribut der Kasse gespeichert
-        """
-
-        try:
-            pfad = oeffne_file_dialog_select(self, "Kontakdaten", self.pfad_kontaktdaten)
+        if pfad:
             self.pfad_kontaktdaten = pfad
-            self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
-        except FileNotFoundError:
-            pass
+        else:
+            try:
+                pfad = oeffne_file_dialog_select(self, "Kontakdaten", self.pfad_kontaktdaten)
+            except FileNotFoundError:
+                pass
 
-    def __update_zeitspanne_pfad(self):
-        """
-        Holt sich mithilfe des QFileDialogs eine bereits vorhandene Datei.
-        Dieser Pfad wird in der GUI ersetzt und im Attribut der Kasse gespeichert
-        """
-
-        try:
-            pfad = oeffne_file_dialog_select(self, "Zeitspanne", self.pfad_zeitspanne)
-            self.pfad_zeitspanne = pfad
-            self.i_zeitspanne_pfad.setText(self.pfad_zeitspanne)
-        except FileNotFoundError:
-            pass
+        self.pfad_kontaktdaten = pfad
+        self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
 
     def __add_prozess_in_gui(self, prozess: multiprocessing.Process):
         """
         Die Prozesse werden in der GUI in dem prozesse_layout angezeigt
         """
-        # addRow(label, field)
+
         label = QtWidgets.QLabel(f"Prozess: {prozess.name}")
         button = QtWidgets.QPushButton("Stoppen")
         button.setObjectName(prozess.name)
@@ -322,7 +275,74 @@ class HauptGUI(QtWidgets.QMainWindow):
                 if not prozess.is_alive():
                     self.__remove_prozess_von_gui(prozess)
                     self.such_prozesse.remove(prozess)
-            time.sleep(2)
+            time.sleep(1)
+
+    def __check_old_version(self, kontaktdaten: dict = None) -> bool:
+        """
+        Schaut ob zeitspanne.json vorhanden ist - wenn ja löschen und Warnung ausgeben
+        Schaut ob ["zeitrahmen"] in den Kontakdaten ist - wenn ja Warnung ausgeben
+
+        Args:
+            kontaktdaten (dict, optional): Kontakdaten wo geladen werden. Defaults to None.
+
+        Returns:
+            bool: Alte Version -> False; Alles richtig -> True
+        """
+        if kontaktdaten:
+            try:
+                kontaktdaten["zeitrahmen"]
+                return True
+            except KeyError as error:
+                # Zeitrahmen nicht vorhanden - Warnung ausgeben
+                pass
+        else:
+            # Prüfen ob alte Datei vorhanden ist - ggf. löschen
+            old_zeitrahmen_path = os.path.join(PATH, "data", "zeitspanne.json")
+            if os.path.isfile(old_zeitrahmen_path):
+                os.remove(old_zeitrahmen_path)
+            else:
+                return True
+
+        QtWidgets.QMessageBox.critical(self, "Alte Version von Kontaktdaten!",
+                                       "Die Kontakdaten scheinen von einer älteren Version zu sein.\nKontakdaten und Zeitspanne sind nun in einer Datei.\n\nBitte Datei neu erstellen!")
+        return False
+
+    ##############################
+    #        Kontaktdaten        #
+    ##############################
+
+    def kontaktdaten_erstellen(self, modus: Modus = Modus.TERMIN_SUCHEN):
+        """
+        Ruft den Dialog für die Kontaktdaten auf
+
+        Args:
+            modus (Modus): Abhängig vom Modus werden nicht alle Daten benötigt. Defalut TERMIN_SUCHEN
+        """
+
+        dialog = QtKontakt(self, modus, self.pfad_kontaktdaten, PATH)
+        dialog.update_path.connect(self.__update_kontaktdaten_pfad)
+        dialog.show()
+        dialog.exec_()
+
+    def __get_kontaktdaten(self, modus: Modus) -> dict:
+        """
+        Ladet die Kontakdaten aus dem in der GUI hinterlegten Pfad
+
+        Args:
+            modus (Modus): Abhängig vom Modus werden nicht alle Daten benötigt.
+
+        Returns:
+            dict: Kontakdaten
+        """
+
+        if not os.path.isfile(self.pfad_kontaktdaten):
+            self.kontaktdaten_erstellen(modus)
+
+        kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
+        if not self.__check_old_version(kontaktdaten):
+            raise ValidationError("\"zeitrahmen\" fehlt -> Alte Version")
+
+        return kontaktdaten
 
 
 def main():
