@@ -23,7 +23,6 @@ from tools.clog import CLogger
 from tools.kontaktdaten import decode_wochentag, validate_kontakt, validate_zeitrahmen
 from tools.utils import retry_on_failure, desktop_notification, update_available
 from pathlib import Path
-from urllib.request import urlopen
 
 try:
     import beepy
