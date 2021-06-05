@@ -294,10 +294,10 @@ def gen_code(kontaktdaten):
 
     # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
     # für die Cookie-Generierung
-    code_chars = string.ascii_uppercase + string.digits
+    #  code_chars = string.ascii_uppercase + string.digits
     one = 'VACC'
-    two = 'IPY' + random.choice(code_chars)
-    three = ''.join(random.choices(code_chars, k=4))
+    two = 'IPY' + random.choice(random.choices(string.ascii_uppercase + string.digits, k=1))
+    three = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
     random_code = f"{one}-{two}-{three}"
     print(f"Für die Cookies-Generierung wird ein zufälliger Code verwendet ({random_code}).\n")
 
