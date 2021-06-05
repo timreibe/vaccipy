@@ -222,15 +222,14 @@ class QtTerminsuche(QtWidgets.QMainWindow):
             res = QtWidgets.QMessageBox.warning(self, "Suche beenden", "Suche wirklich beenden?\n",
                                                 (QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel))
 
-        if res == QMessageBox.StandardButton.Ok:
-            if self.thread.isRunning():
+            if res != QMessageBox.StandardButton.Ok:
+                event.ignore()
+                return
+            else:
                 self.thread.quit()
 
-            # Streams wieder korrigieren, damit kein Fehler kommt
-            sys.stdout = sys.__stdout__
-            sys.stderr = sys.__stderr__
+        # Streams wieder korrigieren, damit kein Fehler kommt
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
 
-            event.accept()
-
-        else:
-            event.ignore()
+        event.accept()
