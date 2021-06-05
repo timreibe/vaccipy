@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 
-import os
 import json
-import time
-import threading
 import multiprocessing
+import os
+import threading
+import time
+import sys
 
 from PyQt5 import QtCore, QtWidgets, uic
 from PyQt5.QtGui import QIcon
-from tools.exceptions import ValidationError, MissingValuesError
+
+from tools import Modus
+from tools import kontaktdaten as kontak_tools
+from tools.exceptions import MissingValuesError, ValidationError
 from tools.gui import oeffne_file_dialog_select
-from tools.gui.qtzeiten import QtZeiten
 from tools.gui.qtkontakt import QtKontakt
 from tools.gui.qtterminsuche import QtTerminsuche
-from tools.utils import create_missing_dirs
-from tools import kontaktdaten as kontak_tools
-from tools import Modus
+from tools.gui.qtzeiten import QtZeiten
+from tools.utils import create_missing_dirs, update_available, get_latest_version, get_current_version
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -50,8 +52,18 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         super().__init__()
 
+        create_missing_dirs(PATH)
+        
         # Laden der .ui Datei und Anpassungen
         self.setup(pfad_fenster_layout)
+
+        # Auf Update prüfen
+        # Auf aktuelle Version prüfen
+        has_update = update_available()
+        self.setWindowTitle('vaccipy ' + get_current_version())
+
+        if has_update:
+            QtWidgets.QMessageBox.critical(self, "Bitte Update installieren", "Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest.")
 
         # GUI anzeigen
         self.show()
@@ -151,6 +163,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             kontaktdaten (dict): kontakdaten aus kontaktdaten.json
             zeitrahmen (dict): zeitrahmen aus zeitrahmen.json
         """
+
         check_delay = self.i_interval.value()
         code = kontaktdaten["code"]
         terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{code}-{self.prozesse_counter}", daemon=True, kwargs={
@@ -315,9 +328,9 @@ def main():
     """
     Startet die GUI-Anwendung
     """
+
     multiprocessing.freeze_support()
     HauptGUI.start_gui()
-
 
 if __name__ == "__main__":
     main()
