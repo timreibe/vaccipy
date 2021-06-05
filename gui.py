@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 from turtle import update
 from urllib.request import urlopen
+import sys
 
 from PyQt5 import QtCore, QtWidgets, uic
 from PyQt5.QtGui import QIcon

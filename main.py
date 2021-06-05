@@ -5,13 +5,8 @@ import copy
 import json
 import os
 import random
-from readline import get_current_history_length
 import string
-
-try:
-    import readline
-except:
-    pass
+import sys
 
 from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
