@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
 
-import os
 import json
-import time
-import threading
 import multiprocessing
+import os
+import threading
+import time
+from pathlib import Path
+from urllib.request import urlopen
 
 from PyQt5 import QtCore, QtWidgets, uic
 from PyQt5.QtGui import QIcon
-from tools.exceptions import ValidationError, MissingValuesError
+
+from tools import Modus
+from tools import kontaktdaten as kontak_tools
+from tools.exceptions import MissingValuesError, ValidationError
 from tools.gui import oeffne_file_dialog_select
-from tools.gui.qtzeiten import QtZeiten
 from tools.gui.qtkontakt import QtKontakt
 from tools.gui.qtterminsuche import QtTerminsuche
+from tools.gui.qtzeiten import QtZeiten
 from tools.utils import create_missing_dirs
-from tools import kontaktdaten as kontak_tools
-from tools import Modus
-from pathlib import Path
-from urllib.request import urlopen
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -301,6 +302,9 @@ def main():
     Startet die GUI-Anwendung
     """
 
+    multiprocessing.freeze_support()
+    HauptGUI.start_gui()
+
     # Auf Update prüfen
         # Auf aktuelle Version prüfen
     json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
@@ -327,10 +331,6 @@ def main():
                 else:
                     # Suchbutton disablen wenn alte Version genutzt wird?
                     QtWidgets.QMessageBox.information(self, "Bitte Update installieren", "Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest.")
-
-
-    multiprocessing.freeze_support()
-    HauptGUI.start_gui()
 
 
 if __name__ == "__main__":
