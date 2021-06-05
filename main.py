@@ -518,5 +518,5 @@ if __name__ == "__main__":
             if latest_version.strip() == current_version.strip():
                 print('Du verwendest die aktuellste Version von vaccipy: '+current_version)
             else:
-                print('Du verwendest eine veraltete Version von vacciupy. Bitte installiere die aktuellste Version von https://github.com/iamnotturner/vaccipy/releases/tag/'+latest_version)
+                print('Du verwendest eine alte Version von vacciupy. Bitte installiere die aktuellste Version von https://github.com/iamnotturner/vaccipy/releases/tag/'+latest_version)
     main()
