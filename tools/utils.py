@@ -154,8 +154,6 @@ def update_available():
     current_version = get_current_version()
     latest_version = get_latest_version()
 
-    print("Installierte Version: " + current_version + "\n")
-    print("Aktuellste Version: " + latest_version + "\n")
 
     if latest_version.strip() == current_version.strip():
         print('Du verwendest die aktuellste Version von vaccipy: '+current_version)
