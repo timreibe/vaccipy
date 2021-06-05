@@ -24,14 +24,14 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 
 > ⚠️ Google Chrome muss auf dem PC installiert sein (Windows, Mac und Linux)  
 
-### GUI Version (mit Programmoberfläche)
+### GUI Version (mit Programmoberfläche) [Funktionalitäten: Terminsuche]
 
 <a href="https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy_gui_installer.exe">
 <img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
 </a>
 
 
-### CLI Version (Kommandozeile)
+### CLI Version (Kommandozeile) [Funktionalitäten: Terminsuche und Impf-Codes generieren]
 
 <a href="https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy_installer.exe">
 <img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
