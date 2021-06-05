@@ -492,10 +492,14 @@ if __name__ == "__main__":
 """)
 
     # Auf aktuelle Version prüfen
-    if update_available:
-        print("Bitte auf aktuellste Version updaten: " + get_latest_version)
-    else:
-        print("Version " + get_current_version)
+    try:
+        if update_available:
+            print("Bitte auf aktuellste Version updaten: " + get_latest_version)
+        else:
+            print("Version " + get_current_version)
+    except:
+        print("An exception occurred")
+
 
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
 
