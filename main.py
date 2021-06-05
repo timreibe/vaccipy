@@ -488,12 +488,16 @@ if __name__ == "__main__":
 
     # Auf aktuelle Version prüfen
     try:
-        update_available()
-        print("\n")
+        if not update_available():
+            print('Du verwendest die aktuellste Version von vaccipy: ' + get_current_version())
+        else:
+            print("Du verwendest eine alte Version von vaccipy.\n"
+                  "Bitte installiere die aktuellste Version. Link zum Download:\n"
+                  "https://github.com/iamnotturner/vaccipy/releases/tag/" + get_latest_version())
     except:
         print("An exception occurred", sys.exc_info()[0])
 
-
+    print("\n")
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
 
     print("Vor der Ausführung des Programms ist die Berechtigung zur Impfung zu prüfen.\n"
