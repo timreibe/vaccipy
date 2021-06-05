@@ -58,33 +58,6 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         create_missing_dirs(PATH)
         
-        # Auf Update prüfen
-            # Auf aktuelle Version prüfen
-        json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
-        json_response = urlopen(json_url)
-        data_json = json.loads(json_response.read())
-        last_item = data_json[-1]
-
-        # 2 Zeichen Puffer für zukünftige Versionssprünge
-        latest_version = last_item["ref"][10:18]
-
-        version_file = Path("./version.txt")
-
-        if version_file.is_file():
-            with open("version.txt") as file:
-                file_contents = file.readlines()
-                current_version = file_contents[0]
-                if current_version != "":
-                    self.setWindowTitle('vaccipy ' + current_version)
-
-                    if latest_version.strip() == current_version.strip():
-                        # Do something
-                        statusbar = self.findChild(QtGui.QStatusBar, "statusbar")
-                        statusbar.showMessage("Version: " + current_version)
-                    else:
-                        # Suchbutton disablen wenn alte Version genutzt wird?
-                        QtWidgets.QMessageBox.information(self, "Bitte Update installieren", "Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest.")
-
         # Laden der .ui Datei und Anpassungen
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
@@ -112,6 +85,34 @@ class HauptGUI(QtWidgets.QMainWindow):
         # Überwachnung der Prozesse
         self.prozess_bewacher = threading.Thread(target=self.__check_status_der_prozesse, daemon=True)
         self.prozess_bewacher.start()
+
+        # Auf Update prüfen
+        # Auf aktuelle Version prüfen
+        json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/git/refs/tags'
+        json_response = urlopen(json_url)
+        data_json = json.loads(json_response.read())
+        last_item = data_json[-1]
+
+        # 2 Zeichen Puffer für zukünftige Versionssprünge
+        latest_version = last_item["ref"][10:18]
+
+        version_file = Path("./version.txt")
+
+        if version_file.is_file():
+            with open("version.txt") as file:
+                file_contents = file.readlines()
+                current_version = file_contents[0]
+                if current_version != "":
+                    self.setWindowTitle('vaccipy ' + current_version)
+
+                    if latest_version.strip() == current_version.strip():
+                        # Do something
+                        statusbar = self.findChild(QtGui.QStatusBar, "statusbar")
+                        statusbar.showMessage("Version: " + current_version)
+                    else:
+                        # Suchbutton disablen wenn alte Version genutzt wird?
+                        QtWidgets.QMessageBox.information(self, "Bitte Update installieren", "Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest.")
+
 
         # GUI anzeigen
         self.show()
