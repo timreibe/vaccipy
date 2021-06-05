@@ -495,7 +495,7 @@ if __name__ == "__main__":
                   "Bitte installiere die aktuellste Version. Link zum Download:\n"
                   "https://github.com/iamnotturner/vaccipy/releases/tag/" + get_latest_version())
     except:
-        print("An exception occurred", sys.exc_info()[0])
+        print("Konnte nicht auf neuste Version geprüft werden", sys.exc_info()[0])
 
     print("\n")
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
