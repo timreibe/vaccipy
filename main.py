@@ -6,16 +6,13 @@ import json
 import os
 import random
 import string
-
-try:
-    import readline
-except:
-    pass
+import sys
 
 from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
-from tools.utils import create_missing_dirs, remove_prefix
+from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version
 from tools.exceptions import ValidationError
+from pathlib import Path
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -488,10 +485,22 @@ if __name__ == "__main__":
                                    | |       __/ |
                                    |_|      |___/ 
 """)
+
+    # Auf aktuelle Version prüfen
+    try:
+        if not update_available():
+            print('Du verwendest die aktuellste Version von vaccipy: ' + get_current_version())
+        else:
+            print("Du verwendest eine alte Version von vaccipy.\n"
+                  "Bitte installiere die aktuellste Version. Link zum Download:\n"
+                  "https://github.com/iamnotturner/vaccipy/releases/tag/" + get_latest_version())
+    except:
+        print("vaccipy konnte nicht auf die neuste Version geprüft werden.")
+
+    print()
     print("Automatische Terminbuchung für den Corona Impfterminservice\n")
 
     print("Vor der Ausführung des Programms ist die Berechtigung zur Impfung zu prüfen.\n"
           "Ob Anspruch auf eine Impfung besteht, kann hier nachgelesen werden:\n"
           "https://www.impfterminservice.de/terminservice/faq\n")
-
     main()

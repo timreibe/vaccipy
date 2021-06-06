@@ -15,7 +15,7 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 * Suche bei mehreren Impfzentren gleichzeitig
 * Warteschlange umgehen
 * Dauerhaft Impf-Codes generieren - egal wo, egal für wen!
-* 🌟 **NEU:** [Jetzt mit GUI im Pre-Release! (Nur für Windows)](https://github.com/iamnotturner/vaccipy/releases/tag/v1.1.2) 
+* Programmoberfläche (GUI) für einfache Bedienung
 
 **[Wusstest du: Du kannst mit einem Impf-Code in mehreren Impfzentren gleichzeitig nach freien Terminen suchen!](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)**
 
@@ -98,7 +98,7 @@ Dazu musst du deinen Impf-Code, die PLZ's deiner gewählten Impfzentren und dein
 die Suche und fragt in regelmäßigen Abständen (alle 60 Sekunden) verfügbare Termine in den gewählten Impfzentren ab.
 
 Sobald ein Termin verfügbar ist, wird dieser direkt mit den Anfangs eingegeben Daten gebucht und die Suche beendet.
-Nach erfolgreicher Buchung erhälst du eine Bestätigungsmail vom Impfterminservice und kannst die Termine auch direkt unter [www.impfterminservice.de](https://www.impfterminservice.de/) einsehen (Bundesland wählen > Impfzentrum wählen > Buchung verwalten).
+Nach erfolgreicher Buchung erhältst du eine Bestätigungsmail vom Impfterminservice und kannst die Termine auch direkt unter [www.impfterminservice.de](https://www.impfterminservice.de/) einsehen (Bundesland wählen > Impfzentrum wählen > Buchung verwalten).
 
 Sollte der gebuchte Termin nicht passen, kannst du ihn einfach wieder stornieren und erneut die Suche beginnen.
 
@@ -118,7 +118,7 @@ Die folgenden Daten werden beim Programmstart benötigt:
 
 `vaccipy` kann neben der Terminbuchung dir auch einen Impf-Code generieren - dauerhaft, für jede Person, in jedem Impfzentrum. 
 Dazu musst du deine Mailadresse, deine Telefonnummer und die PLZ des gewünschten Impfzentrums eintragen. Anschließend fragt `vaccipy` einen Impf-Code
-an und du erhälst eine SMS mit einem Bestätigungscode. Diesen Bestätigungscode kannst du anschließend im Tool eintragen. Der Impf-Code wird dir 
+an und du erhältst eine SMS mit einem Bestätigungscode. Diesen Bestätigungscode kannst du anschließend im Tool eintragen. Der Impf-Code wird dir 
 anschließend per Mail zugesendet.
 
 > Es ist wichtig, dass du den Code entsprechend deiner Altersgruppe auswählst, ansonsten wird dir der Termin vor Ort abgesagt.
@@ -173,8 +173,8 @@ Beim nächsten Start kannst du deine Daten direkt laden und musst sie nicht erne
 
 ## Termin gebucht, was nun?
 
-Nachdem dein Termin erfolgreich gebucht wurde, erhälst du eine Mail, in der du zunächst deine 
-Mail-Adresse bestätigen musst. Nachdem du die Mail bestätigt hast, erhälst du zu jedem Termin 
+Nachdem dein Termin erfolgreich gebucht wurde, erhältst du eine Mail, in der du zunächst deine 
+Mail-Adresse bestätigen musst. Nachdem du die Mail bestätigt hast, erhältst du zu jedem Termin 
 eine Buchungsbestätigung. That's it!
 
 Du kannst alternativ deine Buchung auch im Browser einsehen. Dazu musst du dich auf

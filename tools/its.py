@@ -21,7 +21,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from tools.clog import CLogger
 from tools.kontaktdaten import decode_wochentag, validate_kontakt, validate_zeitrahmen
-from tools.utils import retry_on_failure, desktop_notification
+from tools.utils import retry_on_failure, desktop_notification, update_available
+from pathlib import Path
 
 try:
     import beepy
