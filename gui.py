@@ -100,7 +100,11 @@ class HauptGUI(QtWidgets.QMainWindow):
         ### GUI ###
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
-        self.setWindowTitle('vaccipy ' + get_current_version())
+        try:
+            self.setWindowTitle('vaccipy ' + get_current_version())
+        except Exception as error:
+            #Standardwert ist vaccipy
+            pass
 
         # Meldung falls alte Daten von alter Version
         self.__check_old_kontakt_version()
