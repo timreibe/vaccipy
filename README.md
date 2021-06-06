@@ -47,6 +47,15 @@ Hier kannst du dir das [Projekt (GUI) komprimiert als `.zip` herunterladen.](htt
 
 Hier kannst du dir das [Projekt (CLI) komprimiert als `.zip` herunterladen.](https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy-windows.zip)
 
+### MacOS
+
+Für die Ausführung auf MacOS gibt es bisher noch kein Build, also keine Datei, die man einfach ausführen kann. 
+Um `vaccipy` auf dem Mac auszuführen, musst du den [**Source Code** von `vaccipy` als `.zip` herunterladen](https://github.com/iamnotturner/vaccipy/releases/latest/) und die [notwendigen Requirements](#requirements) installieren. Anschließend kann das [Programm im Terminal](#ausführung-in-der-Kommandozeile) oder in einer beliebigen Python Entwicklungsumgebung ausgeführt werden.
+
+<a href="https://github.com/iamnotturner/vaccipy/releases/latest/">
+<img width="60" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/505px-Apple_logo_black.svg.png">
+</a>
+
 #### Releases
 
 [Hier findest du den neusten Release.](https://github.com/iamnotturner/vaccipy/releases/latest)  
