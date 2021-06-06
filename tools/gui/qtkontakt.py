@@ -85,6 +85,9 @@ class QtKontakt(QtWidgets.QDialog):
         # Funktion vom Button zuordnen
         self.b_impfzentren_waehlen.clicked.connect(self.__open_impfzentren)
 
+        # Versuche Kontakdaten zu laden 
+        self.__lade_alle_werte(modus)
+
     def setup(self):
         """
         Aktiviert abhänig vom Modus die Eingabefelder
@@ -238,6 +241,48 @@ class QtKontakt(QtWidgets.QDialog):
                 kontakt_tools.validate_phone(kontaktdaten["kontakt"]["phone"])
             except ValidationError as error:
                 raise ValidationError("Telefonnummer: +49 nicht vergessen") from error
+
+
+    def __lade_alle_werte(self, modus: Modus):
+
+        try:
+            kontaktdaten = kontakt_tools.get_kontaktdaten(self.standard_speicherpfad)
+
+        
+            if modus == Modus.TERMIN_SUCHEN:
+
+                #plz_zentrum_raw = self.i_plz_impfzentren.text()
+
+                # Wird nur bei Terminsuche benötigt
+                self.i_code_impfzentren.setText(kontaktdaten["code"])
+                self.i_anrede_combo_box.setEditText(kontaktdaten["kontakt"]["anrede"])
+                self.i_vorname.setText(kontaktdaten["kontakt"]["vorname"])
+                self.i_nachname.setText(kontaktdaten["kontakt"]["nachname"])
+                self.i_strasse.setText(kontaktdaten["kontakt"]["strasse"])
+                self.i_hausnummer.setText(kontaktdaten["kontakt"]["hausnummer"])
+                self.i_plz_wohnort.setText(kontaktdaten["kontakt"]["plz"])
+                self.i_wohnort.setText(kontaktdaten["kontakt"]["ort"])
+
+                kontaktdaten["zeitrahmen"]
+                # Subkeys von "zeitrahmen" brauchen nicht gecheckt werden, da
+                # `kontaktdaten["zeitrahmen"] == {}` zulässig ist.
+
+            # Rest wird immer benötigt
+        
+            plz_zentrum_raw = ''
+            for plz in kontaktdaten["plz_impfzentren"]:
+                plz_zentrum_raw += plz + ', '
+
+            self.i_plz_impfzentren.setText(plz_zentrum_raw[:-2])
+
+            self.i_telefon.setText(kontaktdaten["kontakt"]["phone"])
+            self.i_mail.setText(kontaktdaten["kontakt"]["notificationReceiver"])
+
+        except KeyError as exc:
+            raise MissingValuesError("Schlüsselwort fehlt!") from exc
+
+        except ValidationError as err:
+            raise
 
     ##############################
     #        Kontakdaten         #

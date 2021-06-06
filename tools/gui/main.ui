@@ -35,7 +35,7 @@
       <item row="3" column="0">
        <widget class="QPushButton" name="b_neue_kontaktdaten">
         <property name="text">
-         <string>Kontaktdaten erstellen</string>
+         <string>Kontaktdaten bearbeiten</string>
         </property>
        </widget>
       </item>
