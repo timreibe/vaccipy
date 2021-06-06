@@ -630,7 +630,7 @@ class ImpfterminService():
         elif res.status_code == 401:
             self.log.error(f"Terminpaare können nicht geladen werden: Impf-Code kann nicht für "
                            f"die PLZ '{plz}' verwendet werden.")
-            quit()
+            sys.exit()
         else:
             self.log.error(f"Terminpaare können nicht geladen werden: {res.text}")
         return False, res.status_code
