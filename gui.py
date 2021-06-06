@@ -59,7 +59,6 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         # Laden der .ui Datei und Anpassungen
         self.setup(pfad_fenster_layout)
-        
 
         # GUI anzeigen
         self.show()
@@ -82,6 +81,14 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         app = QtWidgets.QApplication(list())
         app.setAttribute(QtCore.Qt.AA_X11InitThreads)
+
+        # Lade Systemsprache und passende Übersetzungen
+        sys_lang = QtCore.QLocale.system()
+        translator = QtCore.QTranslator()
+        if translator.load(sys_lang, "qtbase", "_", QtCore.QLibraryInfo.location(QtCore.QLibraryInfo.TranslationsPath)):
+            app.installTranslator(translator)
+
+
         window = HauptGUI()
         app.exec_()
 
