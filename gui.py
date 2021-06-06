@@ -56,6 +56,9 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         create_missing_dirs(PATH)
 
+        #Spawn for now (The parent process starts a fresh python interpreter process. The child process will only inherit those resources necessary to run the process object’s)
+        multiprocessing.set_start_method('spawn')
+
         # Laden der .ui Datei und Anpassungen
         self.setup(pfad_fenster_layout)
 
