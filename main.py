@@ -172,7 +172,7 @@ def input_kontaktdaten_key(
             print(f"\n{str(exc)}\n")
 
 
-def run_search_interactive(kontaktdaten_path, check_delay,telegram=None):
+def run_search_interactive(kontaktdaten_path, check_delay, telegram=None):
     """
     Interaktives Setup für die Terminsuche:
     1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen
@@ -295,7 +295,8 @@ def gen_code(kontaktdaten):
     two = 'IPY' + random.choice(code_chars)
     three = ''.join(random.choices(code_chars, k=4))
     random_code = f"{one}-{two}-{three}"
-    print(f"Für die Cookies-Generierung wird ein zufälliger Code verwendet ({random_code}).\n")
+    print(
+        f"Für die Cookies-Generierung wird ein zufälliger Code verwendet ({random_code}).\n")
 
     its = ImpfterminService(random_code, [plz_impfzentrum], {}, PATH)
 
@@ -313,7 +314,8 @@ def gen_code(kontaktdaten):
     print()
     # cookies erneuern und code anfordern
     its.renew_cookies_code()
-    token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, geburtsdatum)
+    token = its.code_anfordern(
+        mail, telefonnummer, plz_impfzentrum, geburtsdatum)
 
     if token is not None:
         # code bestätigen
@@ -343,9 +345,11 @@ def subcommand_search(args):
         update_kontaktdaten_interactive(
             get_kontaktdaten(args.file), "search", args.file)
     elif args.read_only:
-        run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec, telegram=telegram)
+        run_search(get_kontaktdaten(args.file),
+                   check_delay=args.retry_sec, telegram=telegram)
     else:
-        run_search_interactive(args.file, check_delay=args.retry_sec, telegram=telegram)
+        run_search_interactive(
+            args.file, check_delay=args.retry_sec, telegram=telegram)
 
 
 def subcommand_code(args):
@@ -420,12 +424,16 @@ def main():
         args.read_only = False
     if not hasattr(args, "retry_sec"):
         args.retry_sec = 60
-    if not hasattr(args, "t_token") or args.t_token is None or not hasattr(args, "t_id") or args.t_id is None:
-        telegram_data = load_telegram_data("data/telegram.json")
-        if telegram_data is not None:
-            args.t_token=telegram_data["token"]
-            args.t_id=telegram_data["chatid"]
-            
+
+    telegram_data = load_telegram_data("data/telegram.json")
+    
+    if telegram_data is not None:
+        args.t_token = telegram_data["token"]
+        args.t_id = telegram_data["chatid"]
+    else:
+        args.t_token = None
+        args.t_id = None
+
     try:
         validate_args(args)
     except ValueError as exc:
@@ -507,7 +515,8 @@ if __name__ == "__main__":
     # Auf aktuelle Version prüfen
     try:
         if not update_available():
-            print('Du verwendest die aktuellste Version von vaccipy: ' + get_current_version())
+            print('Du verwendest die aktuellste Version von vaccipy: ' +
+                  get_current_version())
         else:
             print("Du verwendest eine alte Version von vaccipy.\n"
                   "Bitte installiere die aktuellste Version. Link zum Download:\n"
