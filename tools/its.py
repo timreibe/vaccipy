@@ -623,7 +623,6 @@ class ImpfterminService():
                         self.log.warn(f"{num}. Termin: {ts}")
                         self.send_to_telegram(f"{num}. Termin: {ts}")
                     self.log.info('-' * 50)
-
                 if terminpaare_angenommen:
                     # Auswahl des erstbesten Terminpaares
                     self.terminpaar = choice(terminpaare_angenommen)
