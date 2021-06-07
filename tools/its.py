@@ -681,7 +681,7 @@ class ImpfterminService():
         elif res.status_code == 429:
             msg = "Anfrage wurde von der Botprotection geblockt. Cookies werden erneuert und die Buchung wiederholt."
             self.log.error(msg)
-            self.send_to_telegram("*Error:* "+msg)  
+            self.send_to_telegram(f"*Error:* {msg}")  
             self.renew_cookies_code()
             res = self.s.post(self.domain + path, json=data, timeout=15)
             if res.status_code == 201:
