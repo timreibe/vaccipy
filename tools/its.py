@@ -5,7 +5,7 @@ import time
 from base64 import b64encode
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
-from tools.PythonTelegramWraper import bot as telegram_bot
+from PythonTelegramWraper import bot as telegram_bot
 from random import choice, randint
 from typing import Dict, List
 
