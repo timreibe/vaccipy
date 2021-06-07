@@ -629,10 +629,6 @@ class ImpfterminService():
                     self.plz_termin = plz
                     self.log.success(f"Termin gefunden!")
                     self.send_to_telegram("Termin gefunden!")
-                    impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                    zentrumsname = impfzentrum.get('Zentrumsname').strip()
-                    ort = impfzentrum.get('Ort')
-
                     self.log.success(f"'{zentrumsname}' in {plz} {ort}")
                     for num, termin in enumerate(self.terminpaar, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
