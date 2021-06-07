@@ -304,12 +304,12 @@ def gen_code(kontaktdaten):
           "Beispiel: 02.03.1982\n")
     while True:
         try:
-            geburtsdatum = input("> Geburtsdatum: ")
+            geburtsdatum = input("> " + i18n.t("i18n.Birthday") + ": ")
             validate_datum(geburtsdatum)
             break
         except ValidationError as exc:
-            print("Das Datum entspricht nicht dem richtigen Format (DD.MM.YYYY). "
-                  "Bitte erneut versuchen.")
+            print(i18n.t("i18n.InvalidBirthdayFormat") + ". " +
+                  i18n.t("i18n.PleaseTryAgain") + ".")
 
     print()
     # cookies erneuern und code anfordern
@@ -318,18 +318,18 @@ def gen_code(kontaktdaten):
 
     if token is not None:
         # code bestätigen
-        print("\nDu erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
-              "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
-              "Beispiel: 123-456\n")
+        print("\n" + i18n.t("i18n.ReceiveSMSCode") + ".\n" +
+              i18n.t("i18n.EnterSMSCode") + ".\n" +
+              i18n.t("i18n.Example") + ": 123-456\n")
 
         # 3 Versuche für die SMS-Code-Eingabe
         for _ in range(3):
             sms_pin = input("> SMS-Code: ").replace("-", "")
             if its.code_bestaetigen(token, sms_pin):
-                print("\nDu kannst jetzt mit der Terminsuche fortfahren.\n")
+                print("\n" + i18n.t("i18n.ContinueSearchForAppointment") + ".\n")
                 return True
 
-    print("\nDie Code-Generierung war leider nicht erfolgreich.\n")
+    print("\n" + i18n.t("i18n.CodeGenerationFailed") + ".\n")
     return False
 
 
@@ -490,7 +490,6 @@ if __name__ == "__main__":
     # Lade Sprachen
     i18n.load_path.append(os.path.join(PATH, "i18n"))
     i18n.set('fallback', 'de')
-    print(i18n.t("i18n.test"))
 
     # Auf aktuelle Version prüfen
     try:
