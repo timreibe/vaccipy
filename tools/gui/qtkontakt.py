@@ -244,14 +244,14 @@ class QtKontakt(QtWidgets.QDialog):
 
 
     def __lade_alle_werte(self, modus: Modus):
+        """
+        
+        """
 
         try:
             kontaktdaten = kontakt_tools.get_kontaktdaten(self.standard_speicherpfad)
 
-        
             if modus == Modus.TERMIN_SUCHEN:
-
-                #plz_zentrum_raw = self.i_plz_impfzentren.text()
 
                 # Wird nur bei Terminsuche benötigt
                 self.i_code_impfzentren.setText(kontaktdaten["code"])
@@ -263,26 +263,36 @@ class QtKontakt(QtWidgets.QDialog):
                 self.i_plz_wohnort.setText(kontaktdaten["kontakt"]["plz"])
                 self.i_wohnort.setText(kontaktdaten["kontakt"]["ort"])
 
-                kontaktdaten["zeitrahmen"]
-                # Subkeys von "zeitrahmen" brauchen nicht gecheckt werden, da
-                # `kontaktdaten["zeitrahmen"] == {}` zulässig ist.
+                try:
+                    self.__set_zeitrahmen(kontaktdaten["zeitrahmen"])
+                    # Subkeys von "zeitrahmen" brauchen nicht gecheckt werden, da
+                    # `kontaktdaten["zeitrahmen"] == {}` zulässig ist.
+
+                except KeyError:
+                    # ToDo >> FEHLER ANZEIGEN UND KONTAKTDATEN DA LASSEN
+                    self.__reset_zeitrahmen()
 
             # Rest wird immer benötigt
-        
-            plz_zentrum_raw = ''
-            for plz in kontaktdaten["plz_impfzentren"]:
-                plz_zentrum_raw += plz + ', '
 
-            self.i_plz_impfzentren.setText(plz_zentrum_raw[:-2])
+            self.i_plz_impfzentren.setText(self.__get_impfzentren_plz(kontaktdaten["plz_impfzentren"]))
 
             self.i_telefon.setText(kontaktdaten["kontakt"]["phone"])
             self.i_mail.setText(kontaktdaten["kontakt"]["notificationReceiver"])
 
         except KeyError as exc:
-            raise MissingValuesError("Schlüsselwort fehlt!") from exc
+            # ToDo: Warnung anzeigen
+            self.__reset_kontakdaten()
+            self.__reset_zeitrahmen()
 
-        except ValidationError as err:
-            raise
+        except ValidationError as exc:
+            # ToDo: Error anzeigen
+            self.__reset_kontakdaten()
+            self.__reset_zeitrahmen()
+
+
+
+
+
 
     ##############################
     #        Kontakdaten         #
@@ -337,6 +347,22 @@ class QtKontakt(QtWidgets.QDialog):
 
         # Telefon wieder mit Prefix befüllen
         self.i_telefon.setText("+49")
+
+    def __get_impfzentren_plz(self, plzList : list) -> str: 
+        """
+        Erstellt ein String aus einer Liste an PLZ für die GUI
+
+        Args:
+            plzList: List der PLZ
+
+        Returns:
+            String mit allen PLZ der Impfzentren
+
+        """
+        plz_zentrum_raw = ''
+        for plz in plzList:
+            plz_zentrum_raw += plz + ', '
+        return plz_zentrum_raw[:-2]
 
 
     ##############################
@@ -449,3 +475,99 @@ class QtKontakt(QtWidgets.QDialog):
                     widget.setTime(QTime(23, 59))
             elif isinstance(widget, QtWidgets.QFrame):
                 self.__reset_zeitrahmen(widget.children())
+
+    def __set_zeitrahmen(self, zeitrahmen: dict):
+        """
+        Gibt alle nötigen Daten richtig formatiert zum abspeichern
+
+        Args:
+            zeitrahmen: Dict mit allen Daten für den Suchzeitraum
+        """
+
+        if not zeitrahmen:
+            # Leeres Dict -> Keine Restriktionen
+            return
+
+        try:
+
+            von_datum = str(zeitrahmen["von_datum"])
+            von_uhr = zeitrahmen["von_uhrzeit"]
+            bis_uhr = zeitrahmen["bis_uhrzeit"]
+            wochentage = zeitrahmen["wochentage"]
+            einhalten_bei = zeitrahmen["einhalten_bei"]
+
+        except KeyError:
+            raise
+
+        self.__set_einhalten_bei(einhalten_bei)
+        self.__set_wochentage(wochentage)
+        self.__set_start_datum(von_datum)
+        #aktive_wochentage = self.__get_aktive_wochentage()
+        #uhrzeiten = self.__get_uhrzeiten()
+        #termine = self.__get_aktive_termine()
+        #start_datum = self.i_start_datum_qdate.date()
+
+    def __set_einhalten_bei(self, einhalten: str):
+        """
+        Setzt die Termine, welche von den Restriktionen betroffen sind
+        in der GUI
+
+        Args:
+            einhalten: str bei welchen Terminen die Restriktionen gelten
+        """
+        
+        if einhalten == "beide":
+            self.i_erster_termin_check_box.setChecked(True)
+            self.i_zweiter_termin_check_box.setChecked(True)
+        elif einhalten == "1":
+            self.i_erster_termin_check_box.setChecked(True)
+            self.i_zweiter_termin_check_box.setChecked(False)
+        elif einhalten == "2":
+            self.i_erster_termin_check_box.setChecked(False)
+            self.i_zweiter_termin_check_box.setChecked(True)
+            
+
+    def __set_wochentage(self, wochentage: list):
+        """
+        Setzt die in den Kotaktdaten gespeicherten Wochentage in der GUI
+
+        Args:
+            wochentage: list mit allen Wochentagen
+        """
+        alle_wochentage = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
+
+        deaktivere_tage = [tag for tag in alle_wochentage if tag not in wochentage]
+
+        for tag in deaktivere_tage:
+            if tag == "Mo":
+                self.i_mo_check_box.setChecked(False)
+            elif tag == "Di":
+                self.i_di_check_box.setChecked(False)
+            elif tag == "Mi":
+                self.i_mi_check_box.setChecked(False)
+            elif tag == "Do":
+                self.i_do_check_box.setChecked(False)
+            elif tag == "Fr":
+                self.i_fr_check_box.setChecked(False)
+            elif tag == "Sa":
+                self.i_sa_check_box.setChecked(False)
+            elif tag == "So":
+                self.i_so_check_box.setChecked(False)
+
+    def __set_start_datum(self, von_datum: str):
+        """
+        """
+        try:
+            tag = int(von_datum[:von_datum.find(".")])
+            datum_rest = von_datum[von_datum.find(".") + 1:]
+
+            monat = int(datum_rest[:datum_rest.find(".")])
+            datum_rest = datum_rest[datum_rest.find(".") + 1:]
+
+            jahr = int(datum_rest)
+        except ValueError:
+            # Datum unverändert lassen
+            return
+
+        self.i_start_datum_qdate.setDate( QDate(jahr, monat, tag))
+
