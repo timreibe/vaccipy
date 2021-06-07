@@ -10,7 +10,7 @@ import sys
 
 from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
-from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version,load_telegram_data
+from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version, load_telegram_data
 from tools.exceptions import ValidationError
 from pathlib import Path
 
