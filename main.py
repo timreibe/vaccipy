@@ -172,7 +172,7 @@ def input_kontaktdaten_key(
             print(f"\n{str(exc)}\n")
 
 
-def run_search_interactive(kontaktdaten_path, check_delay, telegram=None):
+def run_search_interactive(kontaktdaten_path, check_delay, telegram):
     """
     Interaktives Setup für die Terminsuche:
     1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen
@@ -203,7 +203,7 @@ def run_search_interactive(kontaktdaten_path, check_delay, telegram=None):
     return run_search(kontaktdaten, check_delay, telegram)
 
 
-def run_search(kontaktdaten, check_delay, telegram=None):
+def run_search(kontaktdaten, check_delay, telegram):
     """
     Nicht-interaktive Terminsuche
 
