@@ -829,10 +829,6 @@ class ImpfterminService():
             if its.termin_buchen():
                 its.send_to_telegram("Buchung erfolgreich")
                 return True
-            # Cookies erneuern und pausieren, wenn Terminbuchung nicht möglich war
-            # Anschließend nach neuem Termin suchen
-            if its.book_appointment():
-                return True
             else:
                 its.send_to_telegram("Buchung fehlgeschlagen")
 
