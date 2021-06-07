@@ -33,7 +33,8 @@ except ImportError:
 
 
 class ImpfterminService():
-    def __init__(self, code: str, plz_impfzentren: list, kontakt: dict, PATH: str, telegram: dict = None):
+    def __init__(self, code: str, plz_impfzentren: list, kontakt: dict,
+                 PATH: str, telegram: dict = None):
         self.code = str(code).upper()
         self.splitted_code = self.code.split("-")
 
@@ -897,4 +898,3 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
             if not termin_zeit.weekday() in wochentage:
                 return False
     return True
-
