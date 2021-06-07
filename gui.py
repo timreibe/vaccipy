@@ -231,7 +231,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             try:
                 pfad = oeffne_file_dialog_select(self, "Kontakdaten", self.pfad_kontaktdaten)
             except FileNotFoundError:
-                pass
+                return
 
         self.pfad_kontaktdaten = pfad
         self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
