@@ -616,10 +616,6 @@ class ImpfterminService():
                         "Termin gefunden - jedoch nicht im entsprechenden Zeitraum:")
                     self.log.info('-' * 50)
                     self.send_to_telegram("Termin gefunden - jedoch nicht im entsprechenden Zeitraum")
-                    impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                    zentrumsname = impfzentrum.get('Zentrumsname').strip()
-                    ort = impfzentrum.get('Ort')
-
                     self.log.warn(f"'{zentrumsname}' in {plz} {ort}")
                     for num, termin in enumerate(tp_abgelehnt, 1):
                         ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
