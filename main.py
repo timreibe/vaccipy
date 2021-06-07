@@ -13,6 +13,7 @@ from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktda
 from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version
 from tools.exceptions import ValidationError
 from pathlib import Path
+from tools.chromium_downloader import check_chromium, download_chromium, check_webdriver, download_webdriver
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -351,6 +352,13 @@ def subcommand_code(args):
         gen_code_interactive(args.file)
 
 
+def subcommand_install_chromium():
+    if not check_chromium():
+        download_chromium()
+    if not check_webdriver():
+        download_webdriver()
+
+
 def validate_args(args):
     """
     Raises ValueError if args contain invalid settings.
@@ -433,6 +441,7 @@ def main():
                 "Was möchtest du tun?\n"
                 "[1] Termin suchen\n"
                 "[2] Impf-Code generieren\n"
+                "[3] Eigene Chromium Instanz im Vaccipy Ordner installieren\n"
                 f"[x] Erweiterte Einstellungen {'verbergen' if extended_settings else 'anzeigen'}\n")
 
             if extended_settings:
@@ -449,6 +458,8 @@ def main():
                     subcommand_search(args)
                 elif option == "2":
                     subcommand_code(args)
+                elif option == "3":
+                    subcommand_install_chromium()
                 elif option == "x":
                     extended_settings = not extended_settings
                 elif extended_settings and option == "c":

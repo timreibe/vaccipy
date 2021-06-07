@@ -22,6 +22,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from tools.clog import CLogger
 from tools.kontaktdaten import decode_wochentag, validate_kontakt, validate_zeitrahmen
 from tools.utils import retry_on_failure, desktop_notification, update_available
+from tools.chromium_downloader import chromium_executable, check_chromium, webdriver_executable, check_webdriver
 from pathlib import Path
 
 try:
@@ -162,6 +163,8 @@ class ImpfterminService():
         chromedriver_from_env = os.getenv("VACCIPY_CHROMEDRIVER")
         if chromedriver_from_env:
             return chromedriver_from_env
+        if check_webdriver():
+            return webdriver_executable()
 
         # Chromedriver anhand des OS auswählen
         if 'linux' in self.operating_system:
@@ -201,6 +204,8 @@ class ImpfterminService():
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
             chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
+        elif check_chromium():
+            chrome_options.binary_location = str(chromium_executable())
 
         chrome_options.headless = headless
 
