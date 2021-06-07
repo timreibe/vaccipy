@@ -841,7 +841,8 @@ class ImpfterminService():
         """
         
         if self.use_telegram:
-            self.telegram_notification_channel.sendMessage(self.telegram_chatID,message)
+            self.telegram_notification_channel.sendMessage(
+                self.telegram_chatID, message)
 
 def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
     """
