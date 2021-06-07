@@ -837,7 +837,6 @@ class ImpfterminService():
         Sendet eine nachricht an die vorher festgelegte chat id
 
         :param message: Nachricht die gesendet werden soll
-        :return:
         """
         
         if self.use_telegram:
