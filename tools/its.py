@@ -714,7 +714,7 @@ class ImpfterminService():
             msg = f"Unbekannter Statuscode: {res.status_code}"
 
         self.log.error(msg)
-        self.send_to_telegram("*Error:* "+msg)
+        self.send_to_telegram(f"*Error:* {msg}")
         desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
         return False
 
