@@ -200,7 +200,7 @@ def run_search_interactive(kontaktdaten_path, check_delay,telegram=None):
     print()
     kontaktdaten = update_kontaktdaten_interactive(
         kontaktdaten, "search", kontaktdaten_path)
-    return run_search(kontaktdaten, check_delay,telegram)
+    return run_search(kontaktdaten, check_delay, telegram)
 
 
 def run_search(kontaktdaten, check_delay, telegram=None):
