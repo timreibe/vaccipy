@@ -80,7 +80,6 @@ class ImpfterminService():
 
         # set up telegram notification channel
         self.use_telegram = False
-        self.telegram_chatID = None
         if telegram is not None:
             self.use_telegram = True
             self.telegram_chatID = telegram["id"]
