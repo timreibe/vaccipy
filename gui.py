@@ -103,7 +103,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         try:
             self.setWindowTitle('vaccipy ' + get_current_version())
         except Exception as error:
-            #Standardwert ist vaccipy
+            self.setWindowTitle('vaccipy')
             pass
 
         # Meldung falls alte Daten von alter Version
