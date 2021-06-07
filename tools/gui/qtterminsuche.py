@@ -78,7 +78,7 @@ class Worker(QObject):
                 telegram_dict = {"token" : self.t_token, "id" : self.t_id}
 
             ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                          PATH=self.ROOT_PATH, check_delay=self.check_delay, zeitrahmen=self.zeitrahmen,,telegram=telegram_dict)
+                                          PATH=self.ROOT_PATH, check_delay=self.check_delay, zeitrahmen=self.zeitrahmen,telegram=telegram_dict)
 
             self.fertig.emit()
 
