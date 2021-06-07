@@ -295,8 +295,7 @@ def gen_code(kontaktdaten):
     two = 'IPY' + random.choice(code_chars)
     three = ''.join(random.choices(code_chars, k=4))
     random_code = f"{one}-{two}-{three}"
-    print(
-        f"Für die Cookies-Generierung wird ein zufälliger Code verwendet ({random_code}).\n")
+    print(f"Für die Cookies-Generierung wird ein zufälliger Code verwendet ({random_code}).\n")
 
     its = ImpfterminService(random_code, [plz_impfzentrum], {}, PATH)
 
