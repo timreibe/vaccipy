@@ -1,0 +1,3 @@
+[submodule "tools/PythonTelegramWraper"]
+	path = tools/PythonTelegramWraper
+	url = https://github.com/TheMrPhantom/PythonTelegramWraper.git
