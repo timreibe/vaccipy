@@ -8,6 +8,8 @@ import random
 import string
 import sys
 
+import i18n
+
 from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
 from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version
@@ -371,31 +373,31 @@ def main():
     base_subparser.add_argument(
         "-f",
         "--file",
-        help="Pfad zur JSON-Datei für Kontaktdaten")
+        help=i18n.t("i18n.PathContactData"))
     base_subparser.add_argument(
         "-c",
         "--configure-only",
         action='store_true',
-        help="Nur Kontaktdaten erfassen und in JSON-Datei abspeichern")
+        help=i18n.t("i18n.ConfigureOnlyDescription"))
     base_subparser.add_argument(
         "-r",
         "--read-only",
         action='store_true',
-        help="Es wird nicht nach fehlenden Kontaktdaten gefragt. Stattdessen wird ein Fehler angezeigt, falls benötigte Kontaktdaten in der JSON-Datei fehlen.")
+        help=i18n.t("i18n.ReadOnlyDescription"))
 
     parser_search = subparsers.add_parser(
-        "search", parents=[base_subparser], help="Termin suchen")
+        "search", parents=[base_subparser], help=i18n.t("i18n.SearchForAppointment"))
     parser_search.add_argument(
         "-s",
         "--retry-sec",
         type=int,
         default=60,
-        help="Wartezeit zwischen zwei Versuchen (in Sekunden)")
+        help=i18n.t("i18n.RetrySecDescription"))
 
     parser_code = subparsers.add_parser(
         "code",
         parents=[base_subparser],
-        help="Impf-Code generieren")
+        help=i18n.t("i18n.GenerateVacCode"))
 
     args = parser.parse_args()
 
@@ -423,22 +425,22 @@ def main():
             else:
                 assert False
         except ValidationError as exc:
-            print(f"Fehler in {json.dumps(args.file)}:\n{str(exc)}")
+            print(i18n.t("i18n.ErrorIn") + f" {json.dumps(args.file)}:\n{str(exc)}")
 
     else:
         extended_settings = False
 
         while True:
             print(
-                "Was möchtest du tun?\n"
-                "[1] Termin suchen\n"
-                "[2] Impf-Code generieren\n"
-                f"[x] Erweiterte Einstellungen {'verbergen' if extended_settings else 'anzeigen'}\n")
+                i18n.t("Menu") + "?\n"
+                "[1] " + i18n.t("i18n.SearchForAppointment") + "\n"
+                "[2] " + i18n.t("i18n.GenerateVacCode") + "\n"
+                f"[x] {i18n.t('i18n.HideAdvancedSettings') if extended_settings else i18n.t('i18n.ShowAdvancedSettings')}\n")
 
             if extended_settings:
                 print(
-                    f"[c] --configure-only {'de' if args.configure_only else ''}aktivieren\n"
-                    f"[r] --read-only {'de' if args.read_only else ''}aktivieren\n"
+                    f"[c] --configure-only {'de' if args.configure_only else ''}" + i18n.t("i18n.activate") + "\n"
+                    f"[r] --read-only {'de' if args.read_only else ''}" + i18n.t("i18n.activate") + "\n"
                     "[s] --retry-sec setzen\n")
 
             option = input("> Option: ").lower()
@@ -457,21 +459,21 @@ def main():
                     validate_args(new_args)
                     args = new_args
                     print(
-                        f"--configure-only {'de' if not args.configure_only else ''}aktiviert.")
+                        f"--configure-only {'de' if not args.configure_only else ''}" + i18n.t("i18n.activate") + ".")
                 elif extended_settings and option == "r":
                     new_args = copy.copy(args)
                     new_args.read_only = not new_args.read_only
                     validate_args(new_args)
                     args = new_args
                     print(
-                        f"--read-only {'de' if not args.read_only else ''}aktiviert.")
+                        f"--read-only {'de' if not args.read_only else ''}" + i18n.t("i18n.activate") + ".")
                 elif extended_settings and option == "s":
                     args.retry_sec = int(input("> --retry-sec="))
                 else:
-                    print("Falscheingabe! Bitte erneut versuchen.")
+                    print(i18n.t("i18n.InvalidInputPleaseTryAgain") + ".")
                 print()
             except Exception as exc:
-                print(f"\nFehler:\n{str(exc)}\n")
+                print(f"\n" + i18n.t("Error") + ":\n{str(exc)}\n")
 
 
 if __name__ == "__main__":
@@ -485,22 +487,26 @@ if __name__ == "__main__":
                                    | |       __/ |
                                    |_|      |___/ 
 """)
+    # Lade Sprachen
+    i18n.load_path.append(os.path.join(PATH, "i18n"))
+    i18n.set('fallback', 'de')
+    print(i18n.t("i18n.test"))
 
     # Auf aktuelle Version prüfen
     try:
         if not update_available():
-            print('Du verwendest die aktuellste Version von vaccipy: ' + get_current_version())
+            print(i18n.t("i18n.YouAreUsingTheLatestVersionOfVaccipy") + ': ' + get_current_version())
         else:
-            print("Du verwendest eine alte Version von vaccipy.\n"
-                  "Bitte installiere die aktuellste Version. Link zum Download:\n"
+            print(i18n.t("YouAreUsingAnOldVersionOfVaccipy") + "\n" +
+                  i18n.t("PleaseInstallTheLastestVersionLink") + ":\n" +
                   "https://github.com/iamnotturner/vaccipy/releases/tag/" + get_latest_version())
     except:
-        print("vaccipy konnte nicht auf die neuste Version geprüft werden.")
+        print(i18n.t("i18n.CannotVerifyIfVaccipyIsRunningInItsLatestVersion"))
 
     print()
-    print("Automatische Terminbuchung für den Corona Impfterminservice\n")
+    print(i18n.t("i18n.AutomaticVaccinationAppointments") + "\n")
 
-    print("Vor der Ausführung des Programms ist die Berechtigung zur Impfung zu prüfen.\n"
-          "Ob Anspruch auf eine Impfung besteht, kann hier nachgelesen werden:\n"
+    print(i18n.t("i18n.CheckIfYouAreAllowedForVaccination") + ".\n" +
+          i18n.t("i18n.PleaseFindThisInformationHere") + ":\n" +
           "https://www.impfterminservice.de/terminservice/faq\n")
     main()
