@@ -2,7 +2,6 @@
 
 import sys
 import os
-import json
 
 from PyQt5 import QtWidgets, uic, QtCore, QtGui
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
