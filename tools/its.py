@@ -82,8 +82,9 @@ class ImpfterminService():
         self.telegram_chatID = None
         if telegram is not None:
             self.use_telegram = True
-            self.telegram_chatID=telegram["id"]
-            self.telegram_notification_channel = telegram_bot.Bot(False,telegram["token"])
+            self.telegram_chatID = telegram["id"]
+            self.telegram_notification_channel = telegram_bot.Bot(
+                False, telegram["token"])
 
     def __str__(self) -> str:
         return "ImpfterminService"
@@ -896,5 +897,4 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
             if not termin_zeit.weekday() in wochentage:
                 return False
     return True
-
 
