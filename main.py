@@ -429,11 +429,11 @@ def main():
     telegram_data = load_telegram_data("data/telegram.json")
     
     if telegram_data is not None:
-        args.t_token = telegram_data["token"]
-        args.t_id = telegram_data["chatid"]
+        args.telegram_token = telegram_data["token"]
+        args.telegram_id = telegram_data["chatid"]
     else:
-        args.t_token = None
-        args.t_id = None
+        args.telegram_token = None
+        args.telegram_id = None
 
     try:
         validate_args(args)
