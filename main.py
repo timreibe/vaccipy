@@ -336,10 +336,11 @@ def gen_code(kontaktdaten):
 
 def subcommand_search(args):
     telegram = None
-    if args.t_token is not None and args.t_id is not None:
-        telegram = dict()
-        telegram["token"] = args.t_token
-        telegram["id"] = args.t_id
+    if args.telegram_token is not None and args.telegram_id is not None:
+        telegram = {
+          "token": args.telegram_token,
+          "id": args.telegram_id,
+        }
 
     if args.configure_only:
         update_kontaktdaten_interactive(
