@@ -10,7 +10,7 @@ log/
 # data
 kontaktdaten.json
 zeitspanne.json
-data/
+/data/
 
 #building: 
 installer/
@@ -19,4 +19,3 @@ installer/
 # temporary building files:
 build/    
 dist/
-
