@@ -196,8 +196,8 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
 
         check_delay = self.i_interval.value()
-        code = kontaktdaten["code"]
-        terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{code}-{self.prozesse_counter}", daemon=True, kwargs={
+        codes = kontaktdaten["codes"]
+        terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{codes[0]}-{self.prozesse_counter}", daemon=True, kwargs={
                                                       "kontaktdaten": kontaktdaten,
                                                       "zeitrahmen": zeitrahmen,
                                                       "ROOT_PATH": PATH,

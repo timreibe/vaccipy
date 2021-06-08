@@ -8,7 +8,6 @@ from email.utils import parseaddr
 from tools.exceptions import ValidationError, MissingValuesError
 from tools import Modus
 
-
 WOCHENTAG_ABBRS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 WOCHENTAG_NAMES = [
     "Montag",
@@ -34,6 +33,14 @@ def get_kontaktdaten(filepath: str):
         with open(filepath, encoding='utf-8') as f:
             try:
                 kontaktdaten = json.load(f)
+
+                # Backwards Compatibility: "code"
+                if "code" in kontaktdaten:
+                    code = kontaktdaten.pop("code")
+                    if "codes" not in kontaktdaten:
+                        kontaktdaten["codes"] = []
+                    kontaktdaten["codes"].append(code)
+
                 validate_kontaktdaten(kontaktdaten)
                 return kontaktdaten
             except json.JSONDecodeError:
@@ -57,7 +64,7 @@ def check_kontaktdaten(kontaktdaten: dict, mode: Modus):
     try:
         if mode == Modus.TERMIN_SUCHEN:
             # Wird nur bei Terminsuche benötigt
-            kontaktdaten["code"]
+            kontaktdaten["codes"]
             kontaktdaten["kontakt"]["anrede"]
             kontaktdaten["kontakt"]["vorname"]
             kontaktdaten["kontakt"]["nachname"]
@@ -96,8 +103,8 @@ def validate_kontaktdaten(kontaktdaten: dict):
 
     for key, value in kontaktdaten.items():
         try:
-            if key == "code":
-                validate_code(value)
+            if key == "codes":
+                validate_codes(value)
             elif key == "plz_impfzentren":
                 validate_plz_impfzentren(value)
             elif key == "kontakt":
@@ -113,24 +120,24 @@ def validate_kontaktdaten(kontaktdaten: dict):
                 f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
 
 
-def validate_code(code: str):
+def validate_codes(codes: list):
     """
-    Überprüft, ob der Code Valide ist
+    Validiert eine Liste an Impf-Codes vom Schema XXXX-XXXX-XXXX
 
-    Args:
-        code (str): impf-code
-
-    Raises:
-        ValidationError: Code ist keine Zeichenkette oder entspricht nicht dem Schema
+    :raise ValidationError: Typ ist nicht list
+    :raise ValidationError: Liste enthält vom Schema abweichendes Element
     """
 
-    if not isinstance(code, str):
-        raise ValidationError("Muss eine Zeichenkette sein")
+    if not isinstance(codes, list):
+        raise ValidationError("Muss eine Liste sein")
 
-    c = "[0-9a-zA-Z]"
-    if not re.match(f"^{4 * c}-{4 * c}-{4 * c}$", code):
-        raise ValidationError(
-            f"{json.dumps(code)} entspricht nicht dem Schema \"XXXX-XXXX-XXXX\"")
+    for code in codes:
+        if not isinstance(code, str):
+            raise ValidationError("Darf nur Zeichenketten enthalten")
+        c = "[0-9a-zA-Z]"
+        if not re.match(f"^{4 * c}-{4 * c}-{4 * c}$", code):
+            raise ValidationError(
+                f"{json.dumps(code)} entspricht nicht dem Schema \"XXXX-XXXX-XXXX\"")
 
 
 def validate_plz_impfzentren(plz_impfzentren: list):
@@ -265,8 +272,14 @@ def validate_email(email: str):
         raise ValidationError("Muss eine Zeichenkette sein")
 
     # https://stackoverflow.com/a/14485817/7350842
-    if '@' not in parseaddr(email)[1]:
+    parsed_email = parseaddr(email)[1]
+    if '@' not in parsed_email:
         raise ValidationError(f"Ungültige E-Mail-Adresse {json.dumps(email)}")
+
+    # Gmail erlaubt Plus-Zeichen (https://support.google.com/a/users/answer/9308648?hl=en),
+    # der Impfterminservice leider nicht.
+    if '+' in parsed_email:
+        raise ValidationError(f"Ungültige E-Mail-Adresse {json.dumps(email)} (Plus-Zeichen nicht möglich)")
 
 
 def validate_zeitrahmen(zeitrahmen: dict):
