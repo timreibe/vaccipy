@@ -259,3 +259,10 @@ def check_chromium() -> bool:
 def check_webdriver() -> bool:
     """Check if webdriver is placed at correct path."""
     return webdriver_executable().exists()
+
+
+if __name__ == '__main__':
+    if not check_chromium():
+        download_chromium()
+    if not check_webdriver():
+        download_webdriver()
