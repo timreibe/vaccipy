@@ -302,5 +302,5 @@ class QtCodeGen(QtWidgets.QDialog):
         sys.stderr = sys.__stderr__
 
         self.deleteLater()
-
+        event.accept()
 
