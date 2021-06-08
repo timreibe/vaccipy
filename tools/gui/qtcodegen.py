@@ -257,7 +257,6 @@ class QtCodeGen(QtWidgets.QDialog):
         elif dlgType == "SMSCODE_OK":
             QtWidgets.QMessageBox.information(self, "Erfolgreich", "Code erfolgreich generiert. Du kannst jetzt mit der Terminsuche fortfahren.")
             
-        self.worker.signalUpdateData.emit("DUMMY","")
 
  
 
