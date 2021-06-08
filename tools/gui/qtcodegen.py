@@ -274,7 +274,6 @@ class QtCodeGen(QtWidgets.QDialog):
                 event.ignore()
                 return
                 
-            event.accept()
             
         #exit
         self.parent.enableCodeBtn.emit() # enable Code Btn again
