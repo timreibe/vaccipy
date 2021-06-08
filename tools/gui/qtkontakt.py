@@ -182,7 +182,7 @@ class QtKontakt(QtWidgets.QDialog):
         """
 
         plz_zentrum_raw = self.i_plz_impfzentren.text()
-        code = self.i_code_impfzentren.text().strip()
+        codes = [self.i_code_impfzentren.text().strip()]
         anrede = self.i_anrede_combo_box.currentText().strip()
         vorname = self.i_vorname.text().strip()
         nachname = self.i_nachname.text().strip()
@@ -199,7 +199,7 @@ class QtKontakt(QtWidgets.QDialog):
 
         kontaktdaten = {
             "plz_impfzentren": plz_zentren,
-            "code": code,
+            "codes": codes,
             "kontakt": {
                 "anrede": anrede,
                 "vorname": vorname,

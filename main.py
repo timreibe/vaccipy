@@ -4,7 +4,6 @@ import argparse
 import copy
 import json
 import os
-import random
 import string
 import sys
 
@@ -53,8 +52,9 @@ def update_kontaktdaten_interactive(
                                    "> PLZ's der Impfzentren: ",
                                    lambda x: list(set([plz.strip() for plz in x.split(",")])))
 
-        if "code" not in kontaktdaten and command == "search":
-            input_kontaktdaten_key(kontaktdaten, ["code"], "> Code: ")
+        if "codes" not in kontaktdaten and command == "search":
+            input_kontaktdaten_key(
+                kontaktdaten, ["codes"], "> Code: ", lambda c: [c])
 
         if "kontakt" not in kontaktdaten:
             kontaktdaten["kontakt"] = {}
@@ -210,7 +210,7 @@ def run_search(kontaktdaten, check_delay):
     """
 
     try:
-        code = kontaktdaten["code"]
+        codes = kontaktdaten["codes"]
 
         # Hinweis, wenn noch alte Version der Kontaktdaten.json verwendet wird
         if kontaktdaten.get("plz"):
@@ -232,8 +232,13 @@ def run_search(kontaktdaten, check_delay):
             "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
             "deine Daten beim Programmstart erneut ein.\n") from exc
 
-    ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                  zeitrahmen=zeitrahmen, check_delay=check_delay, PATH=PATH)
+    ImpfterminService.terminsuche(
+        codes=codes,
+        plz_impfzentren=plz_impfzentren,
+        kontakt=kontakt,
+        zeitrahmen=zeitrahmen,
+        check_delay=check_delay,
+        PATH=PATH)
 
 
 def gen_code_interactive(kontaktdaten_path):
@@ -287,16 +292,7 @@ def gen_code(kontaktdaten):
             "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
             "deine Daten beim Programmstart erneut ein.\n") from exc
 
-    # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
-    # für die Cookie-Generierung
-    code_chars = string.ascii_uppercase + string.digits
-    one = 'VACC'
-    two = 'IPY' + random.choice(code_chars)
-    three = ''.join(random.choices(code_chars, k=4))
-    random_code = f"{one}-{two}-{three}"
-    print(f"Für die Cookies-Generierung wird ein zufälliger Code verwendet ({random_code}).\n")
-
-    its = ImpfterminService(random_code, [plz_impfzentrum], {}, PATH)
+    its = ImpfterminService([], {}, PATH)
 
     print("Bitte trage nachfolgend dein Geburtsdatum im Format DD.MM.YYYY ein.\n"
           "Beispiel: 02.03.1982\n")
@@ -310,24 +306,30 @@ def gen_code(kontaktdaten):
                   "Bitte erneut versuchen.")
 
     print()
-    # cookies erneuern und code anfordern
-    its.renew_cookies_code()
-    token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, geburtsdatum)
+    # code anfordern
+    try:
+        token, cookies = its.code_anfordern(
+            mail, telefonnummer, plz_impfzentrum, geburtsdatum)
+    except RuntimeError as exc:
+        print(
+            f"\nDie Code-Generierung war leider nicht erfolgreich:\n{str(exc)}")
+        return False
 
-    if token is not None:
-        # code bestätigen
-        print("\nDu erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
-              "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
-              "Beispiel: 123-456\n")
+    # code bestätigen
+    print("\nDu erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
+          "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
+          "Beispiel: 123-456")
 
-        # 3 Versuche für die SMS-Code-Eingabe
-        for _ in range(3):
-            sms_pin = input("> SMS-Code: ").replace("-", "")
-            if its.code_bestaetigen(token, sms_pin):
-                print("\nDu kannst jetzt mit der Terminsuche fortfahren.\n")
-                return True
+    # 3 Versuche für die SMS-Code-Eingabe
+    for _ in range(3):
+        sms_pin = input("\n> SMS-Code: ").replace("-", "")
+        print()
+        if its.code_bestaetigen(token, cookies, sms_pin, plz_impfzentrum):
+            print("\nDu kannst jetzt mit der Terminsuche fortfahren.")
+            return True
+        print("\nSMS-Code ungültig")
 
-    print("\nDie Code-Generierung war leider nicht erfolgreich.\n")
+    print("Die Code-Generierung war leider nicht erfolgreich.")
     return False
 
 
