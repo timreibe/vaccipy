@@ -143,7 +143,7 @@ def get_url(binary: str) -> str:
 def download_zip(url: str, binary: str) -> BytesIO:
     """Download data from url."""
     log.info(
-        f'Starting {binary} download. ' 'Download may take a few minutes.'
+        f'Starte den Download von {binary}. Dieser Vorgang kann einige Minuten dauern.'
     )
 
     # Uncomment the statement below to disable HTTPS warnings and allow
@@ -179,7 +179,8 @@ def download_zip(url: str, binary: str) -> BytesIO:
                 process_bar.update(len(chunk))
             process_bar.close()
 
-    log.info(f'\n{binary} download done.')
+    print()
+    log.info(f'Download von {binary} abgeschlossen.')
     return _data
 
 
@@ -223,7 +224,7 @@ def extract_zip(data: BytesIO, path: Path, binary: str) -> None:
     exec_path.chmod(
         exec_path.stat().st_mode | stat.S_IXOTH | stat.S_IXGRP | stat.S_IXUSR
     )
-    log.info(f'{binary} extracted to: {path}')
+    log.info(f"{binary} exportiert nach '{path}'")
 
 
 def download_chromium(binary='chromium') -> None:
