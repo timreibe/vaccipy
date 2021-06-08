@@ -132,7 +132,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             if update_available():
                 url = f"https://github.com/iamnotturner/vaccipy/releases/tag/{get_latest_version()}"
                 
-                if get_current_version()!='source':  
+                if get_current_version() != 'source':  
                     msg = QtWidgets.QMessageBox()
                     msg.setIcon(QtWidgets.QMessageBox.Warning)
                     msg.setWindowTitle("Alte Version!")
