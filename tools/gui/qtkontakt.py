@@ -637,7 +637,6 @@ class QtKontakt(QtWidgets.QDialog):
         """
         try:
             msg = QtWidgets.QMessageBox(self)
-            #msg.parent(self)
             msg.setIcon(QtWidgets.QMessageBox.Warning)
             msg.setWindowTitle(title)
             msg.setText(text)
