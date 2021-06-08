@@ -4,14 +4,13 @@ import argparse
 import copy
 import json
 import os
-import string
-import sys
 
-from tools.its import ImpfterminService
-from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
-from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version
 from tools.exceptions import ValidationError
-from pathlib import Path
+from tools.its import ImpfterminService
+from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, \
+    validate_kontaktdaten, validate_datum
+from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, \
+    get_current_version
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
