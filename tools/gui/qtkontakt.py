@@ -274,8 +274,25 @@ class QtKontakt(QtWidgets.QDialog):
             kontaktdaten = kontakt_tools.get_kontaktdaten(self.standard_speicherpfad)
 
             if not kontaktdaten:
+                # ToDo: Evtl. Meldung anzeigen
                 return
+            
+            self.__check_werte(kontaktdaten)
 
+            self.i_plz_impfzentren.setText(self.__get_impfzentren_plz(kontaktdaten["plz_impfzentren"]))
+            self.i_telefon.setText(kontaktdaten["kontakt"]["phone"])
+            self.i_mail.setText(kontaktdaten["kontakt"]["notificationReceiver"])
+            
+            if self.modus == Modus.CODE_GENERIEREN:
+                # Versuche alle Werte zu laden, wenn möglich
+                try:
+                    kontakt_tools.check_kontaktdaten(kontaktdaten, Modus.TERMIN_SUCHEN)
+                    kontakt_tools.validate_kontaktdaten(kontaktdaten)
+                except MissingValuesError as exc:
+                    return
+                except ValidationError as exc:
+                    return
+            
             # Wird nur bei Terminsuche benötigt
             self.i_code_impfzentren.setText(kontaktdaten["code"])
             self.i_anrede_combo_box.setEditText(kontaktdaten["kontakt"]["anrede"])
@@ -298,14 +315,8 @@ class QtKontakt(QtWidgets.QDialog):
                                       " Überprüfen Sie die Daten im Reiter Zeitrahmen und"
                                       " speichern Sie die Kontaktdaten.")
                 pass
-
-
-            self.i_plz_impfzentren.setText(self.__get_impfzentren_plz(kontaktdaten["plz_impfzentren"]))
-
-            self.i_telefon.setText(kontaktdaten["kontakt"]["phone"])
-            self.i_mail.setText(kontaktdaten["kontakt"]["notificationReceiver"])
          
-        except KeyError as exc:
+        except MissingValuesError as exc:
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
             self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
