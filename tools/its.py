@@ -944,7 +944,7 @@ class ImpfterminService():
                 if iz["PLZ"] == plz_impfzentrum:
                     return iz
         raise ValueError(
-            f"Gewünschte PLZ {plz} wurde bei Initialisierung nicht angegeben")
+            f"Gewünschte PLZ {plz_impfzentrum} wurde bei Initialisierung nicht angegeben")
 
     def rotiere_codes(self, url):
         codes = self.codes[url]
