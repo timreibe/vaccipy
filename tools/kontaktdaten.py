@@ -67,6 +67,7 @@ def check_kontaktdaten(kontaktdaten: dict, mode: Modus):
             kontaktdaten["kontakt"]["ort"]
 
             kontaktdaten["zeitrahmen"]
+
             # Subkeys von "zeitrahmen" brauchen nicht gecheckt werden, da
             # `kontaktdaten["zeitrahmen"] == {}` zulässig ist.
 
@@ -101,6 +102,8 @@ def validate_kontaktdaten(kontaktdaten: dict):
                 validate_plz_impfzentren(value)
             elif key == "kontakt":
                 validate_kontakt(value)
+            elif key == "notifications":
+                validate_notifications(value)
             elif key == "zeitrahmen":
                 validate_zeitrahmen(value)
             else:
@@ -327,6 +330,81 @@ def validate_zeitrahmen(zeitrahmen: dict):
             raise ValidationError(
                 "Ungültige Kombination von Uhrzeiten: "
                 '"von_uhrzeit" liegt nach "bis_uhrzeit"')
+
+
+def validate_notifications(notifications: dict):
+    if not isinstance(notifications, dict):
+        raise ValidationError("Muss ein Dictionary sein")
+
+    for key, value in notifications.items():
+        try:
+            if key == "pushover":
+                validate_pushover(value)
+            elif key == "telegram":
+                validate_telegram(value)
+            else:
+                raise ValidationError(f"Nicht unterstützter Key")
+        except ValidationError as exc:
+            raise ValidationError(
+                f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
+
+
+def validate_pushover(pushover: dict):
+    if not isinstance(pushover, dict):
+        raise ValidationError("Muss ein Dictionary sein")
+
+    for key, value in pushover.items():
+        try:
+            if key == "app_token":
+                validate_pushover_app_token(value)
+            elif key == "user_key":
+                validate_pushover_user_key(value)
+            else:
+                raise ValidationError(f"Nicht unterstützter Key")
+        except ValidationError as exc:
+            raise ValidationError(
+                f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
+
+
+def validate_telegram(telegram: dict):
+    if not isinstance(telegram, dict):
+        raise ValidationError("Muss ein Dictionary sein")
+
+    for key, value in telegram.items():
+        try:
+            if key == "api_token":
+                validate_telegram_api_token(value)
+            elif key == "chat_id":
+                validate_telegram_chat_id(value)
+            else:
+                raise ValidationError(f"Nicht unterstützter Key")
+        except ValidationError as exc:
+            raise ValidationError(
+                f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
+
+
+def validate_pushover_app_token(pushover_app_token: str):
+    if not isinstance(pushover_app_token, str):
+        raise ValidationError("Muss eine Zeichenkette sein")
+    if len(pushover_app_token) != 30:
+        raise ValidationError("Der Pushover APP Token muss genau 30 Zeichen lang sein")
+
+
+def validate_pushover_user_key(pushover_user_key: str):
+    if not isinstance(pushover_user_key, str):
+        raise ValidationError("Muss eine Zeichenkette sein")
+    if len(pushover_user_key) != 30:
+        raise ValidationError("Der Pushover User Key muss genau 30 Zeichen lang sein")
+
+
+def validate_telegram_api_token(telegram_api_token: str):
+    if not isinstance(telegram_api_token, str):
+        raise ValidationError("Muss eine Zeichenkette sein")
+
+
+def validate_telegram_chat_id(telegram_chat_id: str):
+    if not isinstance(telegram_chat_id, str):
+        raise ValidationError("Muss eine Zeichenkette sein")
 
 
 def validate_datum(date: str):

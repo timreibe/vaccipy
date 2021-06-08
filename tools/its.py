@@ -21,7 +21,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from tools.clog import CLogger
 from tools.kontaktdaten import decode_wochentag, validate_kontakt, validate_zeitrahmen
-from tools.utils import retry_on_failure, desktop_notification, update_available
+from tools.utils import retry_on_failure, update_available, fire_notifications
 from pathlib import Path
 
 try:
@@ -33,7 +33,7 @@ except ImportError:
 
 
 class ImpfterminService():
-    def __init__(self, code: str, plz_impfzentren: list, kontakt: dict, PATH: str):
+    def __init__(self, code: str, plz_impfzentren: list, kontakt: dict, PATH: str, notifications: dict = dict()):
         self.code = str(code).upper()
         self.splitted_code = self.code.split("-")
 
@@ -45,6 +45,8 @@ class ImpfterminService():
 
         self.kontakt = kontakt
         self.authorization = b64encode(bytes(f":{code}", encoding='utf-8')).decode("utf-8")
+
+        self.notifications = notifications
 
         # Logging einstellen
         self.log = CLogger("impfterminservice")
@@ -467,12 +469,14 @@ class ImpfterminService():
         if "Ihr Termin am" in str(driver.page_source):
             msg = "Termin erfolgreich gebucht!"
             self.log.success(msg)
-            desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
+            self.notify("Terminbuchung:", msg)
             return True
         else:
             self.log.error(
                 "Automatisierte Terminbuchung fehlgeschlagen. Termin manuell im Fenster oder im Browser buchen.")
-            print(f"Link für manuelle Buchung im Browser: {self.domain}impftermine/suche/{self.code}/{plz_impfzentrum}")
+            msg = f"Link für manuelle Buchung im Browser: {self.domain}impftermine/suche/{self.code}/{plz_impfzentrum}"
+            print(msg)
+            self.notify("Fehler:", msg)
             time.sleep(10 * 60)
             return False
 
@@ -630,9 +634,12 @@ class ImpfterminService():
         elif res.status_code == 401:
             self.log.error(f"Terminpaare können nicht geladen werden: Impf-Code kann nicht für "
                            f"die PLZ '{plz}' verwendet werden.")
+            self.notify("Fehler:", f"Terminpaare können nicht geladen werden: Impf-Code kann nicht für "
+                           f"die PLZ '{plz}' verwendet werden.")
             sys.exit()
         else:
             self.log.error(f"Terminpaare können nicht geladen werden: {res.text}")
+            self.notify("Fehler:", f"Terminpaare können nicht geladen werden: {res.text}")
         return False, res.status_code
 
     @retry_on_failure()
@@ -658,7 +665,7 @@ class ImpfterminService():
         if res.status_code == 201:
             msg = "Termin erfolgreich gebucht!"
             self.log.success(msg)
-            desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
+            self.notify("Terminbuchung:", msg)
             return True
 
         elif res.status_code == 429:
@@ -669,7 +676,7 @@ class ImpfterminService():
             if res.status_code == 201:
                 msg = "Termin erfolgreich gebucht!"
                 self.log.success(msg)
-                desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
+                self.notify("Terminbuchung:", msg)
                 return True
             else:
                 # Termin über Selenium Buchen
@@ -695,7 +702,7 @@ class ImpfterminService():
             msg = f"Unbekannter Statuscode: {res.status_code}"
 
         self.log.error(msg)
-        desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
+        self.notify("Terminbuchung:", msg)
         return False
 
     @retry_on_failure()
@@ -764,13 +771,14 @@ class ImpfterminService():
                 return False
 
     @staticmethod
-    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH: str, zeitrahmen: dict = dict(), check_delay: int = 30):
+    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH: str, notifications: dict = {}, zeitrahmen: dict = dict(), check_delay: int = 30):
         """
         Workflow für die Terminbuchung.
 
         :param code: 14-stelliger Impf-Code
         :param plz_impfzentren: Liste mit PLZ von Impfzentren
         :param kontakt: Kontaktdaten der zu impfenden Person als JSON
+        :param notifications: Daten zur Authentifizierung bei Benachrichtigungs Providern
         :param check_delay: Zeit zwischen Iterationen der Terminsuche
         :return:
         """
@@ -778,7 +786,7 @@ class ImpfterminService():
         validate_kontakt(kontakt)
         validate_zeitrahmen(zeitrahmen)
 
-        its = ImpfterminService(code, plz_impfzentren, kontakt, PATH)
+        its = ImpfterminService(code, plz_impfzentren, kontakt, PATH, notifications)
         its.renew_cookies()
 
         # login ist nicht zwingend erforderlich
@@ -805,6 +813,9 @@ class ImpfterminService():
             # Programm beenden, wenn Termin gefunden wurde
             if its.termin_buchen():
                 return True
+
+    def notify(self, title: str, msg: str):
+        fire_notifications(self.notifications, self.operating_system, title, msg)
 
 
 def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):

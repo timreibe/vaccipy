@@ -8,3 +8,11 @@ class ValidationError(Exception):
 
 class MissingValuesError(Exception):
     pass
+
+
+class PushoverNotificationError(Exception):
+    pass
+
+
+class TelegramNotificationError(Exception):
+    pass

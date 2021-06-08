@@ -20,6 +20,7 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 def update_kontaktdaten_interactive(
         known_kontaktdaten,
         command,
+        configure_notifications,
         filepath=None):
     """
     Interaktive Eingabe und anschließendes Abspeichern der Kontaktdaten.
@@ -28,6 +29,8 @@ def update_kontaktdaten_interactive(
         abgefragt werden sollen.
     :param command: Entweder "code" oder "search". Bestimmt, welche
         Kontaktdaten überhaupt benötigt werden.
+    :param configure_notifications: Boolean - die Option zum einrichten von Pushover
+        und Telegram wird nur bei true angezeigt
     :param filepath: Pfad zur JSON-Datei zum Abspeichern der Kontaktdaten.
         Default: data/kontaktdaten.json im aktuellen Ordner
     :return: Dictionary mit Kontaktdaten
@@ -101,6 +104,31 @@ def update_kontaktdaten_interactive(
             input_kontaktdaten_key(
                 kontaktdaten, ["kontakt", "notificationReceiver"], "> Mail: ")
 
+        if configure_notifications:
+            if "notifications" not in kontaktdaten:
+                kontaktdaten["notifications"] = {}
+            if "pushover" not in kontaktdaten["notifications"]:
+                kontaktdaten["notifications"]["pushover"] = {}
+                if input("> Benachtigung mit Pushover einrichten? (y/n): ").lower() != "n":
+                    print()
+                    input_kontaktdaten_key(
+                        kontaktdaten, ["notifications", "pushover", "app_token"],
+                        "> Geben Sie den Pushover APP Token ein: ")
+                    input_kontaktdaten_key(
+                        kontaktdaten, ["notifications", "pushover", "user_key"],
+                        "> Geben Sie den Pushover User Key ein: ")
+
+            if "telegram" not in kontaktdaten["notifications"]:
+                kontaktdaten["notifications"]["telegram"] = {}
+                if input("> Benachtigung mit Telegram einrichten? (y/n): ").lower() != "n":
+                    print()
+                    input_kontaktdaten_key(
+                        kontaktdaten, ["notifications", "telegram", "api_token"],
+                        "> Geben Sie den Telegram API Token ein: ")
+                    input_kontaktdaten_key(
+                        kontaktdaten, ["notifications", "telegram", "chat_id"],
+                        "> Geben Sie die Telegram Chat ID ein: ")
+
         if "zeitrahmen" not in kontaktdaten and command == "search":
             kontaktdaten["zeitrahmen"] = {}
             if input("> Zeitrahmen festlegen? (y/n): ").lower() != "n":
@@ -171,7 +199,7 @@ def input_kontaktdaten_key(
             print(f"\n{str(exc)}\n")
 
 
-def run_search_interactive(kontaktdaten_path, check_delay):
+def run_search_interactive(kontaktdaten_path, configure_notifications, check_delay):
     """
     Interaktives Setup für die Terminsuche:
     1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen
@@ -182,6 +210,7 @@ def run_search_interactive(kontaktdaten_path, check_delay):
     4. Terminsuche
 
     :param kontaktdaten_path: Pfad zur JSON-Datei mit Kontaktdaten. Default: data/kontaktdaten.json im aktuellen Ordner
+    :param configure_notifications: Wird durchgereicht zu update_kontaktdaten_interactive()
     """
 
     print(
@@ -198,7 +227,7 @@ def run_search_interactive(kontaktdaten_path, check_delay):
 
     print()
     kontaktdaten = update_kontaktdaten_interactive(
-        kontaktdaten, "search", kontaktdaten_path)
+        kontaktdaten, "search", configure_notifications, kontaktdaten_path)
     return run_search(kontaktdaten, check_delay)
 
 
@@ -225,6 +254,8 @@ def run_search(kontaktdaten, check_delay):
         print(
             f"Kontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
 
+        notifications = kontaktdaten.get("notifications", {})
+
         zeitrahmen = kontaktdaten["zeitrahmen"]
     except KeyError as exc:
         raise ValueError(
@@ -232,7 +263,7 @@ def run_search(kontaktdaten, check_delay):
             "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
             "deine Daten beim Programmstart erneut ein.\n") from exc
 
-    ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
+    ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt, notifications=notifications,
                                   zeitrahmen=zeitrahmen, check_delay=check_delay, PATH=PATH)
 
 
@@ -334,11 +365,11 @@ def gen_code(kontaktdaten):
 def subcommand_search(args):
     if args.configure_only:
         update_kontaktdaten_interactive(
-            get_kontaktdaten(args.file), "search", args.file)
+            get_kontaktdaten(args.file), "search", args.configure_notifications, args.file)
     elif args.read_only:
         run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec)
     else:
-        run_search_interactive(args.file, check_delay=args.retry_sec)
+        run_search_interactive(args.file, args.configure_notifications, check_delay=args.retry_sec)
 
 
 def subcommand_code(args):
@@ -382,6 +413,11 @@ def main():
         "--read-only",
         action='store_true',
         help="Es wird nicht nach fehlenden Kontaktdaten gefragt. Stattdessen wird ein Fehler angezeigt, falls benötigte Kontaktdaten in der JSON-Datei fehlen.")
+    base_subparser.add_argument(
+        "-n",
+        "--configure-notifications",
+        action='store_true',
+        help="Gibt bei der Erfassung der Kontaktdaten die Möglichkeit, Benachrichtungen über Pushover und Telegram zu konfigurieren.")
 
     parser_search = subparsers.add_parser(
         "search", parents=[base_subparser], help="Termin suchen")
@@ -407,6 +443,8 @@ def main():
         args.read_only = False
     if not hasattr(args, "retry_sec"):
         args.retry_sec = 60
+    if not hasattr(args, "configure_notifications"):
+        args.configure_notifications = False
 
     try:
         validate_args(args)
@@ -439,7 +477,8 @@ def main():
                 print(
                     f"[c] --configure-only {'de' if args.configure_only else ''}aktivieren\n"
                     f"[r] --read-only {'de' if args.read_only else ''}aktivieren\n"
-                    "[s] --retry-sec setzen\n")
+                    "[s] --retry-sec setzen\n"
+                    f"[n] --configure-notifications {'de' if args.configure_notifications else ''}aktivieren\n\n")
 
             option = input("> Option: ").lower()
             print()
@@ -467,6 +506,13 @@ def main():
                         f"--read-only {'de' if not args.read_only else ''}aktiviert.")
                 elif extended_settings and option == "s":
                     args.retry_sec = int(input("> --retry-sec="))
+                elif extended_settings and option == "n":
+                    new_args = copy.copy(args)
+                    new_args.configure_notifications = not new_args.configure_notifications
+                    validate_args(new_args)
+                    args = new_args
+                    print(
+                        f"--configure-notifications {'de' if not args.configure_notifications else ''}aktiviert.")
                 else:
                     print("Falscheingabe! Bitte erneut versuchen.")
                 print()
