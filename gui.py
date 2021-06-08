@@ -131,18 +131,29 @@ class HauptGUI(QtWidgets.QMainWindow):
             # Auf Update prüfen
             if update_available():
                 url = f"https://github.com/iamnotturner/vaccipy/releases/tag/{get_latest_version()}"
-
-                msg = QtWidgets.QMessageBox()
-                msg.setIcon(QtWidgets.QMessageBox.Warning)
-                msg.setWindowTitle("Alte Version!")
-                msg.setText("Bitte Update installieren")
-                msg.setInformativeText(f"Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest ({get_current_version()})")
-                msg.addButton(msg.Close)
-                btn_download = msg.addButton("Download", msg.ApplyRole)
-
-                btn_download.clicked.connect(lambda: open_browser(url))
-
-                msg.exec_()
+                
+                if get_current_version()!='source':  
+                    msg = QtWidgets.QMessageBox()
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
+                    msg.setWindowTitle("Alte Version!")
+                    msg.setText("Bitte Update installieren")
+                    msg.setInformativeText(f"Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest ({get_current_version()})")
+                    msg.addButton(msg.Close)
+                    btn_download = msg.addButton("Download", msg.ApplyRole)
+                    btn_download.clicked.connect(lambda: open_browser(url))
+                    msg.exec_()
+                    
+                else:
+                    msg = QtWidgets.QMessageBox()
+                    msg.setIcon(QtWidgets.QMessageBox.information)
+                    msg.setWindowTitle("Sourcecode")
+                    msg.setText("Updateprüfung nicht möglich!")
+                    msg.setInformativeText("Du benutzt die nicht paketierten Skripte von Github. Die Terminsuche funktioniert möglicherweise nicht, da die Version veraltet sein könnten.")
+                    msg.addButton(msg.Close)
+                    btn_download = msg.addButton("Download", msg.ApplyRole)
+                    btn_download.clicked.connect(lambda: open_browser(url))
+                    msg.exec_()      
+                    
         except Exception as error:
             # warum auch immer konnte nicht überprüft werden
             # einfach nichts machen
