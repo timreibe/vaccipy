@@ -44,7 +44,10 @@ def current_platform() -> str:
     raise OSError('Unsupported platform: ' + sys.platform)
 
 
-chromium_revision = '869685'
+DEFAULT_CHROMIUM_REVISION = '869685'
+chromium_revision = os.environ.get(
+    'CHROMIUM_REVISION', DEFAULT_CHROMIUM_REVISION
+)
 
 # Mac_Arm is available since r882387
 if current_platform() == 'mac-arm':
