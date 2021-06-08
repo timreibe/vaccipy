@@ -1,12 +1,10 @@
-import calendar
 import datetime
 import json
-import os
 import re
-
 from email.utils import parseaddr
-from tools.exceptions import ValidationError, MissingValuesError
+
 from tools import Modus
+from tools.exceptions import ValidationError, MissingValuesError
 
 WOCHENTAG_ABBRS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 WOCHENTAG_NAMES = [
@@ -276,7 +274,8 @@ def validate_email(email: str):
     # Gmail erlaubt Plus-Zeichen (https://support.google.com/a/users/answer/9308648?hl=en),
     # der Impfterminservice leider nicht.
     if '+' in parsed_email:
-        raise ValidationError(f"Ungültige E-Mail-Adresse {json.dumps(email)} (Plus-Zeichen nicht möglich)")
+        raise ValidationError(
+            f"Ungültige E-Mail-Adresse {json.dumps(email)} (Plus-Zeichen nicht möglich)")
 
 
 def validate_zeitrahmen(zeitrahmen: dict):

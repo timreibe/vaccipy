@@ -1,19 +1,18 @@
 # Alphabetisch sortiert:
-import cloudscraper
 import copy
 import os
 import platform
 import string
 import sys
 import time
-
 # Alphabetisch sortiert:
 from base64 import b64encode
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
 from json import JSONDecodeError
-from pathlib import Path
 from random import choice, choices, randint
+
+import cloudscraper
 from requests.exceptions import RequestException
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
@@ -22,11 +21,12 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+
 from tools.clog import CLogger
-from tools.exceptions import AppointmentGone, BookingError, LoginFailed, TimeframeMissed, UnmatchingCodeError
-from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, validate_zeitrahmen
-from tools.utils import desktop_notification, update_available
-from typing import Dict, List
+from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
+from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
+    validate_zeitrahmen
+from tools.utils import desktop_notification
 
 try:
     import beepy
@@ -250,8 +250,6 @@ class ImpfterminService():
     def get_chromedriver(self, headless):
         chrome_options = Options()
 
-
-
         # deaktiviere Selenium Logging
         chrome_options.add_argument('disable-infobars')
         chrome_options.add_experimental_option('useAutomationExtension', False)
@@ -259,13 +257,13 @@ class ImpfterminService():
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
-        #chrome_options.add_argument("-no-sandbox");
+        # chrome_options.add_argument("-no-sandbox");
         chrome_options.add_argument("-disable-dev-shm-usage");
 
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
         chrome_options.add_argument("user-agent=Mozilla/5.0")
-        
+
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
             chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
@@ -411,7 +409,8 @@ class ImpfterminService():
         except:
             self.log.error("Termine können nicht ausgewählt werden")
             try:
-                with open(filepath + "errorterminauswahl" + timestamp + ".html", 'w', encoding='utf-8') as file:
+                with open(filepath + "errorterminauswahl" + timestamp + ".html", 'w',
+                          encoding='utf-8') as file:
                     file.write(str(driver.page_source))
                 driver.save_screenshot(filepath + "errorterminauswahl" + timestamp + ".png")
             except:
@@ -443,12 +442,13 @@ class ImpfterminService():
             pass
         try:
             # Klick Anrede
-            arrAnreden = ["Herr","Frau","Kind","Divers"]
+            arrAnreden = ["Herr", "Frau", "Kind", "Divers"]
             if self.kontakt['anrede'] in arrAnreden:
-                button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"'+self.kontakt['anrede']+'")]'
+                button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"' + \
+                               self.kontakt['anrede'] + '")]'
             else:
                 button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"Divers")]'
-                
+
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
@@ -834,7 +834,7 @@ class ImpfterminService():
                     cookies = self.get_cookies(url, manual=manual)
                 except RuntimeError as exc:
                     self.log.error(str(exc))
-                    continue # Neuer Versuch in nächster Iteration
+                    continue  # Neuer Versuch in nächster Iteration
 
             try:
                 self.s.cookies.clear()
@@ -847,7 +847,7 @@ class ImpfterminService():
                 self.log.error(f"Vermittlungscode kann nicht angefragt werden: {str(exc)}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
                 time.sleep(30)
-                continue # Neuer Versuch in nächster Iteration
+                continue  # Neuer Versuch in nächster Iteration
 
             if res.status_code == 429:
                 self.log.error("Anfrage wurde von der Botprotection geblockt")
@@ -855,7 +855,7 @@ class ImpfterminService():
                     "Die Cookies müssen manuell im Browser generiert werden")
                 cookies = None
                 manual = True
-                continue # Neuer Versuch in nächster Iteration
+                continue  # Neuer Versuch in nächster Iteration
 
             if res.status_code == 400 and res.text == '{"error":"Anfragelimit erreicht."}':
                 raise RuntimeError("Anfragelimit erreicht")
@@ -866,7 +866,7 @@ class ImpfterminService():
                     f"{res.status_code} {res.text}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
                 time.sleep(30)
-                continue # Neuer Versuch in nächster Iteration
+                continue  # Neuer Versuch in nächster Iteration
 
             try:
                 token = res.json().get("token")
@@ -899,7 +899,7 @@ class ImpfterminService():
                     cookies = self.get_cookies(url, manual=manual)
                 except RuntimeError as exc:
                     self.log.error(str(exc))
-                    continue # Neuer Versuch in nächster Iteration
+                    continue  # Neuer Versuch in nächster Iteration
 
             try:
                 self.s.cookies.clear()
@@ -912,7 +912,7 @@ class ImpfterminService():
                 self.log.error(f"Code-Verifikation fehlgeschlagen: {str(exc)}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
                 time.sleep(30)
-                continue # Neuer Versuch in nächster Iteration
+                continue  # Neuer Versuch in nächster Iteration
 
             if res.status_code == 429:
                 self.log.error("Anfrage wurde von der Botprotection geblockt")
@@ -920,7 +920,7 @@ class ImpfterminService():
                     "Die Cookies müssen manuell im Browser generiert werden")
                 cookies = None
                 manual = True
-                continue # Neuer Versuch in nächster Iteration
+                continue  # Neuer Versuch in nächster Iteration
 
             if res.status_code == 400:
                 return False
@@ -931,7 +931,7 @@ class ImpfterminService():
                     f"{res.status_code} {res.text}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
                 time.sleep(30)
-                continue # Neuer Versuch in nächster Iteration
+                continue  # Neuer Versuch in nächster Iteration
 
             self.log.success(
                 "Der Vermittlungscode wurde erfolgreich angefragt, "
@@ -1052,8 +1052,8 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
         zeitrahmen["von_uhrzeit"],
         "%H:%M").time() if "von_uhrzeit" in zeitrahmen else dtime.min
     bis_uhrzeit = (
-        datetime.strptime(zeitrahmen["bis_uhrzeit"], "%H:%M")
-        + timedelta(seconds=59)
+            datetime.strptime(zeitrahmen["bis_uhrzeit"], "%H:%M")
+            + timedelta(seconds=59)
     ).time() if "bis_uhrzeit" in zeitrahmen else dtime.max
     wochentage = [decode_wochentag(wt) for wt in set(
         zeitrahmen["wochentage"])] if "wochentage" in zeitrahmen else range(7)

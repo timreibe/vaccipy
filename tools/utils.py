@@ -1,8 +1,6 @@
 import os
 import time
 import traceback
-import json
-import sys
 from json import JSONDecodeError
 from pathlib import Path
 from threading import Thread
@@ -148,26 +146,27 @@ def get_grouped_impfzentren() -> dict:
         result[f"Gruppe {gruppe}"] = impfzentren
     return result
 
+
 def update_available():
-   
     # 2 Zeichen Puffer für zukünftige Versionssprünge
     current_version = get_current_version()
     latest_version = get_latest_version()
-
 
     if latest_version.strip() == current_version.strip():
         return False
     else:
         return True
 
+
 def get_current_version():
     try:
         with open("version.txt") as file:
-                file_contents = file.readlines()
-                current_version = file_contents[0]
-                return current_version
+            file_contents = file.readlines()
+            current_version = file_contents[0]
+            return current_version
     except:
         pass
+
 
 def get_latest_version():
     json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/releases/latest'
