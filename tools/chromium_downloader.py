@@ -176,7 +176,8 @@ def download_zip(url: str, binary: str) -> BytesIO:
                 process_bar.update(len(chunk))
             process_bar.close()
 
-    log.info(f'\n{binary} download done.')
+    print()
+    log.info(f'Download von {binary} abgeschlossen.')
     return _data
 
 
