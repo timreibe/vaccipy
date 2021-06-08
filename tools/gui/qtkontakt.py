@@ -86,7 +86,7 @@ class QtKontakt(QtWidgets.QDialog):
         self.b_impfzentren_waehlen.clicked.connect(self.__open_impfzentren)
 
         # Versuche Kontakdaten zu laden 
-        self.__lade_alle_werte(modus)
+        self.__lade_alle_werte()
 
     def setup(self):
         """
@@ -158,6 +158,25 @@ class QtKontakt(QtWidgets.QDialog):
         speichern(speicherpfad, data)
         return speicherpfad
 
+
+    def __lade_einstellungen(self):
+        """
+        Lädt alle Werte aus einer JSON-Datei
+        Speicherpfad wird vom User angefragt
+        """
+        try:
+            speicherpfad = oeffne_file_dialog_select(self, "Kontaktdaten", self.standard_speicherpfad)
+        except FileNotFoundError:
+            self.__oeffne_error(title="Kontaktdaten", text="Datei konnte nicht geöffnet werden.",
+                                info= "Die von Ihnen gewählte Datei konne nicht geöffnet werden.")
+            return
+
+        self.standard_speicherpfad = speicherpfad
+        self.update_path.emit(speicherpfad)
+
+        self.__lade_alle_werte()
+
+
     def __button_box_clicked(self, button: QtWidgets.QPushButton):
         """
         Zuweisung der einzelnen Funktionen der Buttons in der ButtonBox
@@ -169,9 +188,11 @@ class QtKontakt(QtWidgets.QDialog):
         clicked_button = self.buttonBox.standardButton(button)
         if clicked_button == QtWidgets.QDialogButtonBox.Save:
             self.bestaetigt()
-        if clicked_button == QtWidgets.QDialogButtonBox.Reset:
+        elif clicked_button == QtWidgets.QDialogButtonBox.Reset:
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
+        elif clicked_button == QtWidgets.QDialogButtonBox.Open:
+            self.__lade_einstellungen()
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
             self.close()
 
@@ -243,39 +264,37 @@ class QtKontakt(QtWidgets.QDialog):
                 raise ValidationError("Telefonnummer: +49 nicht vergessen") from error
 
 
-    def __lade_alle_werte(self, modus: Modus):
+    def __lade_alle_werte(self):
         """
         Lädt alle Kontaktdaten und den Suchzeitraum in das GUI
-
-        Args:
-            modus: Betriebsmodus des Tools
         """
 
         try:
             kontaktdaten = kontakt_tools.get_kontaktdaten(self.standard_speicherpfad)
 
-            if modus == Modus.TERMIN_SUCHEN:
+            # Wird nur bei Terminsuche benötigt
+            self.i_code_impfzentren.setText(kontaktdaten["code"])
+            self.i_anrede_combo_box.setEditText(kontaktdaten["kontakt"]["anrede"])
+            self.i_vorname.setText(kontaktdaten["kontakt"]["vorname"])
+            self.i_nachname.setText(kontaktdaten["kontakt"]["nachname"])
+            self.i_strasse.setText(kontaktdaten["kontakt"]["strasse"])
+            self.i_hausnummer.setText(kontaktdaten["kontakt"]["hausnummer"])
+            self.i_plz_wohnort.setText(kontaktdaten["kontakt"]["plz"])
+            self.i_wohnort.setText(kontaktdaten["kontakt"]["ort"])
 
-                # Wird nur bei Terminsuche benötigt
-                self.i_code_impfzentren.setText(kontaktdaten["code"])
-                self.i_anrede_combo_box.setEditText(kontaktdaten["kontakt"]["anrede"])
-                self.i_vorname.setText(kontaktdaten["kontakt"]["vorname"])
-                self.i_nachname.setText(kontaktdaten["kontakt"]["nachname"])
-                self.i_strasse.setText(kontaktdaten["kontakt"]["strasse"])
-                self.i_hausnummer.setText(kontaktdaten["kontakt"]["hausnummer"])
-                self.i_plz_wohnort.setText(kontaktdaten["kontakt"]["plz"])
-                self.i_wohnort.setText(kontaktdaten["kontakt"]["ort"])
+            try:
+                self.__set_zeitrahmen(kontaktdaten["zeitrahmen"])
+                # Subkeys von "zeitrahmen" brauchen nicht gecheckt werden, da
+                # `kontaktdaten["zeitrahmen"] == {}` zulässig ist.
 
-                try:
-                    self.__set_zeitrahmen(kontaktdaten["zeitrahmen"])
-                    # Subkeys von "zeitrahmen" brauchen nicht gecheckt werden, da
-                    # `kontaktdaten["zeitrahmen"] == {}` zulässig ist.
+            except ValueError:
+                self.__reset_zeitrahmen()
+                self.__oeffne_error(title="Kontaktdaten", text="Falscher Suchzeitraum.",
+                                info= "Der Suchzeitraum Ihrer Kontaktdaten ist fehlerhaft."
+                                      " Überprüfen Sie die Daten im Reiter Zeitrahmen und"
+                                      " speichern Sie die Kontaktdaten.")
+                pass
 
-                except ValueError:
-                    # ToDo >> FEHLER ANZEIGEN UND KONTAKTDATEN DA LASSEN
-                    self.__reset_zeitrahmen()
-
-            # Rest wird immer benötigt
 
             self.i_plz_impfzentren.setText(self.__get_impfzentren_plz(kontaktdaten["plz_impfzentren"]))
 
@@ -286,11 +305,19 @@ class QtKontakt(QtWidgets.QDialog):
             # ToDo: Warnung anzeigen
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
+            self.__oeffne_error(title="Kontaktdaten", text="Falsches Format.",
+                info= "Die von Ihnen gewählte Datei hat ein falsches Format."
+                       "Laden Sie eine andere Datei oder überschreiben Sie die"
+                       "Datei, indem Sie auf Speichern klicken.")
 
         except ValidationError as exc:
             # ToDo: Error anzeigen
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
+            self.__oeffne_error(title="Kontaktdaten", text="Falsches Format.",
+                info= "Die von Ihnen gewählte Datei hat ein falsches Format."
+                       "Laden Sie eine andere Datei oder überschreiben Sie die"
+                       "Datei, indem Sie auf Speichern klicken.")
 
 
 
@@ -481,7 +508,7 @@ class QtKontakt(QtWidgets.QDialog):
 
     def __set_zeitrahmen(self, zeitrahmen: dict):
         """
-        Setyzt den Suchzeitraum in der GUI
+        Setzt den Suchzeitraum in der GUI
 
         Args:
             zeitrahmen: Dict mit allen Daten für den Suchzeitraum
@@ -575,10 +602,7 @@ class QtKontakt(QtWidgets.QDialog):
         """
 
         datum = QDate.fromString(von_datum, 'd.M.yyyy')
-        
-        assert(datum.isNull())
-        assert(not datum.isValid())
-
+        assert(QDate.isValid(datum))
         self.i_start_datum_qdate.setDate(datum)
 
 
@@ -596,10 +620,18 @@ class QtKontakt(QtWidgets.QDialog):
         """
 
         time = QTime.fromString(uhrzeit, 'h:m')
-        
-        assert(time.isNull())
-        assert(not time.isValid())
-
+        assert(QTime.isValid(time))
         widget.setTime(time)
 
 
+    def __oeffne_error(self, title: str, text: str, info: str):
+        try:
+            msg = QtWidgets.QMessageBox()
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle(title)
+            msg.setText(text)
+            msg.setInformativeText(info)
+            msg.addButton(msg.Close)
+            msg.exec_()
+        except Exception as error:
+            pass
