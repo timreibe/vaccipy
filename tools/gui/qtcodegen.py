@@ -107,7 +107,7 @@ class Worker(QObject):
         
         # send signal for GUI
         self.signalShowInput.emit("GEBURTSDATUM")
-        while True:
+        while True and self.stopped is False:
             if self.signalGot is True:
                 break
 
@@ -126,7 +126,7 @@ class Worker(QObject):
             # code bestätigen            
             # 3 Versuche für die SMS-Code-Eingabe
             self.signalShowInput.emit("SMSCODE")
-            while True:
+            while True and self.stopped is False:
                 if self.signalGot is True:
                     break
             #stop requested in the meanwhile?
@@ -257,8 +257,6 @@ class QtCodeGen(QtWidgets.QDialog):
         elif dlgType == "SMSCODE_OK":
             QtWidgets.QMessageBox.information(self, "Erfolgreich", "Code erfolgreich generiert. Du kannst jetzt mit der Terminsuche fortfahren.")
             
-
- 
 
     def closeEvent(self, event):
         """
