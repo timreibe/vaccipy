@@ -24,14 +24,14 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 
 > ⚠️ Google Chrome muss auf dem PC installiert sein (Windows, Mac und Linux)  
 
-### GUI Version (mit Programmoberfläche)
+### GUI Version (mit Programmoberfläche) [Funktionalitäten: Terminsuche]
 
 <a href="https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy_gui_installer.exe">
 <img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
 </a>
 
 
-### CLI Version (Kommandozeile)
+### CLI Version (Kommandozeile) [Funktionalitäten: Terminsuche und Impf-Codes generieren]
 
 <a href="https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy_installer.exe">
 <img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
@@ -46,6 +46,15 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 Hier kannst du dir das [Projekt (GUI) komprimiert als `.zip` herunterladen.](https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy-windows-gui.zip)
 
 Hier kannst du dir das [Projekt (CLI) komprimiert als `.zip` herunterladen.](https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy-windows.zip)
+
+### MacOS
+
+Für die Ausführung auf MacOS gibt es bisher noch kein Build, also keine Datei, die man einfach ausführen kann. 
+Um `vaccipy` auf dem Mac auszuführen, musst du den [**Source Code** von `vaccipy` als `.zip` herunterladen](https://github.com/iamnotturner/vaccipy/releases/latest/) und die [notwendigen Requirements](#requirements) installieren. Anschließend kann das [Programm im Terminal](#ausführung-in-der-Kommandozeile) oder in einer beliebigen Python Entwicklungsumgebung ausgeführt werden.
+
+<a href="https://github.com/iamnotturner/vaccipy/releases/latest/">
+<img width="60" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/505px-Apple_logo_black.svg.png">
+</a>
 
 #### Releases
 
