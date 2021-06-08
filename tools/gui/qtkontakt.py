@@ -245,7 +245,10 @@ class QtKontakt(QtWidgets.QDialog):
 
     def __lade_alle_werte(self, modus: Modus):
         """
-        
+        Lädt alle Kontaktdaten und den Suchzeitraum in das GUI
+
+        Args:
+            modus: Betriebsmodus des Tools
         """
 
         try:
@@ -268,7 +271,7 @@ class QtKontakt(QtWidgets.QDialog):
                     # Subkeys von "zeitrahmen" brauchen nicht gecheckt werden, da
                     # `kontaktdaten["zeitrahmen"] == {}` zulässig ist.
 
-                except KeyError:
+                except ValueError:
                     # ToDo >> FEHLER ANZEIGEN UND KONTAKTDATEN DA LASSEN
                     self.__reset_zeitrahmen()
 
@@ -478,10 +481,13 @@ class QtKontakt(QtWidgets.QDialog):
 
     def __set_zeitrahmen(self, zeitrahmen: dict):
         """
-        Gibt alle nötigen Daten richtig formatiert zum abspeichern
+        Setyzt den Suchzeitraum in der GUI
 
         Args:
             zeitrahmen: Dict mit allen Daten für den Suchzeitraum
+
+        Raise:
+            ValueError: Suchzeitraum unvollständig oder fehlerhaft
         """
 
         if not zeitrahmen:
@@ -489,7 +495,6 @@ class QtKontakt(QtWidgets.QDialog):
             return
 
         try:
-
             von_datum = str(zeitrahmen["von_datum"])
             von_uhr = zeitrahmen["von_uhrzeit"]
             bis_uhr = zeitrahmen["bis_uhrzeit"]
@@ -497,16 +502,19 @@ class QtKontakt(QtWidgets.QDialog):
             einhalten_bei = zeitrahmen["einhalten_bei"]
 
         except KeyError:
-            raise
+            raise ValueError("Die Zeitangaben sind unvollständig.")
 
         self.__set_einhalten_bei(einhalten_bei)
         self.__set_wochentage(wochentage)
-        self.__set_start_datum(von_datum)
-        #aktive_wochentage = self.__get_aktive_wochentage()
-        #uhrzeiten = self.__get_uhrzeiten()
-        #termine = self.__get_aktive_termine()
-        #start_datum = self.i_start_datum_qdate.date()
 
+        try:
+            self.__set_start_datum(von_datum)
+            self.__set_uhrzeit_datum(bis_uhr, self.i_end_time_qtime)
+            self.__set_uhrzeit_datum(von_uhr, self.i_start_time_qtime)
+
+        except AssertionError:
+            raise ValueError("Das Datum oder die Uhrzeiten haben ein falsches Format.")
+        
     def __set_einhalten_bei(self, einhalten: str):
         """
         Setzt die Termine, welche von den Restriktionen betroffen sind
@@ -534,6 +542,7 @@ class QtKontakt(QtWidgets.QDialog):
         Args:
             wochentage: list mit allen Wochentagen
         """
+
         alle_wochentage = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 
         deaktivere_tage = [tag for tag in alle_wochentage if tag not in wochentage]
@@ -556,18 +565,41 @@ class QtKontakt(QtWidgets.QDialog):
 
     def __set_start_datum(self, von_datum: str):
         """
+        Setzt das Startdatum in der GUI.
+        
+        Args:
+            von_datum: Startdatum der Suche
+
+        Raise:
+            AssertionError: Datum fehlerhaft
         """
-        try:
-            tag = int(von_datum[:von_datum.find(".")])
-            datum_rest = von_datum[von_datum.find(".") + 1:]
 
-            monat = int(datum_rest[:datum_rest.find(".")])
-            datum_rest = datum_rest[datum_rest.find(".") + 1:]
+        datum = QDate.fromString(von_datum, 'd.M.yyyy')
+        
+        assert(datum.isNull())
+        assert(not datum.isValid())
 
-            jahr = int(datum_rest)
-        except ValueError:
-            # Datum unverändert lassen
-            return
+        self.i_start_datum_qdate.setDate(datum)
 
-        self.i_start_datum_qdate.setDate( QDate(jahr, monat, tag))
+
+        
+    def __set_uhrzeit_datum(self, uhrzeit: str, widget: QtWidgets.QTimeEdit):
+        """
+        Setzt die Uhrzeit in einem QTimeEdit in der GUI.
+        
+        Args:
+            uhrzeit: Uhrzeit des Termins im Format h:m
+            widget: QTimeEdit, welches gesezt wird
+
+        Raise:
+            AssertionError: Zeitangabe fehlerhaft
+        """
+
+        time = QTime.fromString(uhrzeit, 'h:m')
+        
+        assert(time.isNull())
+        assert(not time.isValid())
+
+        widget.setTime(time)
+
 
