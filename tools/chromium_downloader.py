@@ -24,8 +24,34 @@ log = CLogger("impfterminservice")
 log.set_prefix("chromium downloader")
 
 
-vaccipy_dir = pathlib.Path(__file__).parent.absolute()
+def current_platform() -> str:
+    """Get current platform name by short string."""
+    if sys.platform.startswith('linux'):
+        return 'linux'
+    elif sys.platform.startswith('darwin'):
+        if "arm" in platform.processor().lower():
+            return 'mac-arm'
+        else:
+            return 'mac'
+    elif (
+        sys.platform.startswith('win')
+        or sys.platform.startswith('msys')
+        or sys.platform.startswith('cyg')
+    ):
+        if sys.maxsize > 2 ** 31 - 1:
+            return 'win64'
+        return 'win32'
+    raise OSError('Unsupported platform: ' + sys.platform)
+
+
 chromium_revision = '869685'
+
+# Mac_Arm is available since r882387
+if current_platform() == 'mac-arm':
+    if chromium_revision < '882387':
+        chromium_revision = '882387'
+
+vaccipy_dir = pathlib.Path(__file__).parent.absolute()
 DOWNLOADS_FOLDER = Path(vaccipy_dir) / 'local-chromium'
 DEFAULT_DOWNLOAD_HOST = 'https://storage.googleapis.com'
 DOWNLOAD_HOST = os.environ.get(
@@ -101,32 +127,6 @@ webdriverExecutable = {
     / 'chromedriver_win32'
     / 'chromedriver.exe',
 }
-
-
-def current_platform() -> str:
-    """Get current platform name by short string."""
-    if sys.platform.startswith('linux'):
-        return 'linux'
-    elif sys.platform.startswith('darwin'):
-        if "arm" in platform.processor().lower():
-            return 'mac-arm'
-        else:
-            return 'mac'
-    elif (
-        sys.platform.startswith('win')
-        or sys.platform.startswith('msys')
-        or sys.platform.startswith('cyg')
-    ):
-        if sys.maxsize > 2 ** 31 - 1:
-            return 'win64'
-        return 'win32'
-    raise OSError('Unsupported platform: ' + sys.platform)
-
-
-# Mac_Arm is available since r882387
-if current_platform() == 'mac-arm':
-    if chromium_revision < '882387':
-        chromium_revision = '882387'
 
 
 def get_url(binary: str) -> str:
