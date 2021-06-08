@@ -625,6 +625,14 @@ class QtKontakt(QtWidgets.QDialog):
 
 
     def __oeffne_error(self, title: str, text: str, info: str):
+        """
+            Öffnet eine Warnung
+
+            Args:
+                title: Titel des Fensters
+                text: Überschrift der Warnung
+                info: Infotext der Warnung
+        """
         try:
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Warning)
