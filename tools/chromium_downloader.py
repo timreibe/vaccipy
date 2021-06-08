@@ -220,7 +220,7 @@ def extract_zip(data: BytesIO, path: Path, binary: str) -> None:
     exec_path.chmod(
         exec_path.stat().st_mode | stat.S_IXOTH | stat.S_IXGRP | stat.S_IXUSR
     )
-    log.info(f'{binary} extracted to: {path}')
+    log.info(f"{binary} exportiert nach '{path}'")
 
 
 def download_chromium(binary='chromium') -> None:
