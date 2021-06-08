@@ -6,6 +6,8 @@ import sys
 from json import JSONDecodeError
 from pathlib import Path
 from threading import Thread
+import random
+import string
 
 import requests
 from plyer import notification
@@ -173,3 +175,13 @@ def get_latest_version():
     json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/releases/latest'
     latest_version = requests.get(json_url).json()['tag_name']
     return latest_version
+
+# Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
+# für die Cookie-Generierung
+def gen_random_code():
+    code_chars = string.ascii_uppercase + string.digits
+    one = 'VACC'
+    two = 'IPY' + random.choice(code_chars)
+    three = ''.join(random.choices(code_chars, k=4))
+    random_code = f"{one}-{two}-{three}"
+    return random_code

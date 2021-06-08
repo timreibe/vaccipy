@@ -8,10 +8,10 @@ import time
 import sys
 
 from PyQt5 import QtCore, QtWidgets, uic
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QIcon
 from tools.exceptions import ValidationError, MissingValuesError
 from tools.gui import oeffne_file_dialog_select
-
 
 from tools import Modus
 from tools import kontaktdaten as kontak_tools
@@ -19,6 +19,7 @@ from tools.exceptions import MissingValuesError, ValidationError
 from tools.gui import oeffne_file_dialog_select, open_browser
 from tools.gui.qtkontakt import QtKontakt
 from tools.gui.qtterminsuche import QtTerminsuche
+from tools.gui.qtcodegen import QtCodeGen
 from tools.utils import create_missing_dirs, update_available, get_latest_version, get_current_version
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -42,7 +43,7 @@ class HauptGUI(QtWidgets.QMainWindow):
 
     ### QSpinBox ###
     # i_interval
-
+    enableCodeBtn = pyqtSignal()
     def __init__(self, pfad_fenster_layout: str = os.path.join(PATH, "tools/gui/main.ui")):
         """
         Main der GUI Anwendung
@@ -61,6 +62,10 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         # Laden der .ui Datei und Anpassungen
         self.setup(pfad_fenster_layout)
+        
+        
+        #signal
+        self.enableCodeBtn.connect(self.enable_code_btn)
 
         # GUI anzeigen
         self.show()
@@ -159,10 +164,30 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
         Startet den Prozess der Codegenerierung
         """
+        """
+        Codegenerierung ohne interaktive Eingabe der Kontaktdaten
 
-        # TODO: code generierung implementieren
-        QtWidgets.QMessageBox.information(self, "Noch nicht verfügbar", "Funktion nur über Konsolenanwendung verfügbar")
+        :param kontaktdaten: Dictionary mit Kontaktdaten
+        """
+        
+        #disable button after click
+        self.b_code_generieren.setEnabled(False) 
+        try:
+            kontaktdaten = self.__get_kontaktdaten(Modus.CODE_GENERIEREN)
 
+        except FileNotFoundError as error:
+            QtWidgets.QMessageBox.critical(self, "Datei nicht gefunden!", f"Datei zum Laden konnte nicht gefunden werden\n\nBitte erstellen")
+            return
+        except ValidationError as error:
+            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei sind Fehler:\n\n{error}")
+            return
+        except MissingValuesError as error:
+            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei Fehlen Daten:\n\n{error}")
+            return
+            
+    
+        dialog = QtCodeGen(self, kontaktdaten, PATH )
+        
     def __termin_suchen(self):
         """
         Startet den Prozess der terminsuche mit Impfterminservice.terminsuche in einem neuen Thread
@@ -349,10 +374,14 @@ class HauptGUI(QtWidgets.QMainWindow):
             self.kontaktdaten_erstellen(modus)
 
         kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
-        if not self.__check_old_kontakt_version(kontaktdaten):
-            raise ValidationError("\"zeitrahmen\" fehlt -> Alte Version")
+        if modus == Modus.TERMIN_SUCHEN:
+            if not self.__check_old_kontakt_version(kontaktdaten):
+                raise ValidationError("\"zeitrahmen\" fehlt -> Alte Version")
 
         return kontaktdaten
+        
+    def enable_code_btn(self):
+        self.b_code_generieren.setEnabled(True)
 
 
 def main():

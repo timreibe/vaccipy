@@ -4,13 +4,12 @@ import argparse
 import copy
 import json
 import os
-import random
-import string
+
 import sys
 
 from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
-from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version
+from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version, gen_random_code
 from tools.exceptions import ValidationError
 from pathlib import Path
 
@@ -289,11 +288,7 @@ def gen_code(kontaktdaten):
 
     # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
     # für die Cookie-Generierung
-    code_chars = string.ascii_uppercase + string.digits
-    one = 'VACC'
-    two = 'IPY' + random.choice(code_chars)
-    three = ''.join(random.choices(code_chars, k=4))
-    random_code = f"{one}-{two}-{three}"
+    random_code = gen_random_code()
     print(f"Für die Cookies-Generierung wird ein zufälliger Code verwendet ({random_code}).\n")
 
     its = ImpfterminService(random_code, [plz_impfzentrum], {}, PATH)
