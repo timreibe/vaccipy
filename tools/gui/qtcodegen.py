@@ -94,17 +94,9 @@ class Worker(QObject):
         :param kontaktdaten: Dictionary mit Kontaktdaten
         """
         
-        try:
-            self.plz_impfzentrum = self.kontaktdaten["plz_impfzentren"][0]
-            self.mail = self.kontaktdaten["kontakt"]["notificationReceiver"]
-            self.telefonnummer = self.kontaktdaten["kontakt"]["phone"]
-            if not self.telefonnummer.startswith("+49"):
-                self.telefonnummer = f"+49{remove_prefix(self.telefonnummer, '0')}"
-        except KeyError as exc:
-            raise ValueError(
-                "Kontaktdaten konnten nicht aus 'kontaktdaten.json' geladen werden.\n"
-                "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
-                "deine Daten beim Programmstart erneut ein.\n") from exc
+        self.plz_impfzentrum = self.kontaktdaten["plz_impfzentren"][0]
+        self.mail = self.kontaktdaten["kontakt"]["notificationReceiver"]
+        self.telefonnummer = self.kontaktdaten["kontakt"]["phone"]
 
         # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
         # für die Cookie-Generierung
@@ -303,4 +295,3 @@ class QtCodeGen(QtWidgets.QDialog):
 
         self.deleteLater()
         event.accept()
-
