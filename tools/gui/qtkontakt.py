@@ -169,7 +169,7 @@ class QtKontakt(QtWidgets.QDialog):
             speicherpfad = oeffne_file_dialog_select(self, "Kontaktdaten", self.standard_speicherpfad)
         except FileNotFoundError:
             self.__oeffne_error(title="Kontaktdaten", text="Datei konnte nicht geöffnet werden.",
-                                info= "Die von Ihnen gewählte Datei konne nicht geöffnet werden.")
+                                info="Die von Ihnen gewählte Datei konne nicht geöffnet werden.")
             return
 
         self.standard_speicherpfad = speicherpfad
@@ -273,6 +273,9 @@ class QtKontakt(QtWidgets.QDialog):
         try:
             kontaktdaten = kontakt_tools.get_kontaktdaten(self.standard_speicherpfad)
 
+            if not kontaktdaten:
+                return
+
             # Wird nur bei Terminsuche benötigt
             self.i_code_impfzentren.setText(kontaktdaten["code"])
             self.i_anrede_combo_box.setEditText(kontaktdaten["kontakt"]["anrede"])
@@ -290,7 +293,7 @@ class QtKontakt(QtWidgets.QDialog):
 
             except ValueError:
                 self.__reset_zeitrahmen()
-                self.__oeffne_error(title="Kontaktdaten", text="Falscher Suchzeitraum.",
+                self.__oeffne_error(title="Kontaktdaten", text="Falscher Suchzeitraum",
                                 info= "Der Suchzeitraum Ihrer Kontaktdaten ist fehlerhaft."
                                       " Überprüfen Sie die Daten im Reiter Zeitrahmen und"
                                       " speichern Sie die Kontaktdaten.")
@@ -301,23 +304,21 @@ class QtKontakt(QtWidgets.QDialog):
 
             self.i_telefon.setText(kontaktdaten["kontakt"]["phone"])
             self.i_mail.setText(kontaktdaten["kontakt"]["notificationReceiver"])
-
+         
         except KeyError as exc:
-            # ToDo: Warnung anzeigen
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
-            self.__oeffne_error(title="Kontaktdaten", text="Falsches Format.",
-                info= "Die von Ihnen gewählte Datei hat ein falsches Format."
-                       "Laden Sie eine andere Datei oder überschreiben Sie die"
+            self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
+                info= "Die von Ihnen gewählte Datei hat ein falsches Format. "
+                       "Laden Sie eine andere Datei oder überschreiben Sie die "
                        "Datei, indem Sie auf Speichern klicken.")
 
         except ValidationError as exc:
-            # ToDo: Error anzeigen
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
-            self.__oeffne_error(title="Kontaktdaten", text="Falsches Format.",
-                info= "Die von Ihnen gewählte Datei hat ein falsches Format."
-                       "Laden Sie eine andere Datei oder überschreiben Sie die"
+            self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
+                info= "Die von Ihnen gewählte Datei hat ein falsches Format. "
+                       "Laden Sie eine andere Datei oder überschreiben Sie die "
                        "Datei, indem Sie auf Speichern klicken.")
 
 
@@ -635,7 +636,8 @@ class QtKontakt(QtWidgets.QDialog):
                 info: Infotext der Warnung
         """
         try:
-            msg = QtWidgets.QMessageBox()
+            msg = QtWidgets.QMessageBox(self)
+            #msg.parent(self)
             msg.setIcon(QtWidgets.QMessageBox.Warning)
             msg.setWindowTitle(title)
             msg.setText(text)
