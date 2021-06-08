@@ -140,7 +140,7 @@ def get_url(binary: str) -> str:
 def download_zip(url: str, binary: str) -> BytesIO:
     """Download data from url."""
     log.info(
-        f'Starting {binary} download. ' 'Download may take a few minutes.'
+        f'Starte den Download von {binary}. Dieser Vorgang kann einige Minuten dauern.'
     )
 
     # Uncomment the statement below to disable HTTPS warnings and allow
