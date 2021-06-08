@@ -8,7 +8,6 @@ from email.utils import parseaddr
 from tools.exceptions import ValidationError, MissingValuesError
 from tools import Modus
 
-
 WOCHENTAG_ABBRS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 WOCHENTAG_NAMES = [
     "Montag",
@@ -262,8 +261,14 @@ def validate_email(email: str):
         raise ValidationError("Muss eine Zeichenkette sein")
 
     # https://stackoverflow.com/a/14485817/7350842
-    if '@' not in parseaddr(email)[1]:
+    parsed_email = parseaddr(email)[1]
+    if '@' not in parsed_email:
         raise ValidationError(f"Ungültige E-Mail-Adresse {json.dumps(email)}")
+
+    # Gmail erlaubt Plus-Zeichen (https://support.google.com/a/users/answer/9308648?hl=en),
+    # der Impfterminservice leider nicht.
+    if '+' in parsed_email:
+        raise ValidationError(f"Ungültige E-Mail-Adresse {json.dumps(email)} (Plus-Zeichen nicht möglich)")
 
 
 def validate_zeitrahmen(zeitrahmen: dict):
