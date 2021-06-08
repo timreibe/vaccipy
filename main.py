@@ -4,14 +4,13 @@ import argparse
 import copy
 import json
 import os
-import string
-import sys
 
-from tools.its import ImpfterminService
-from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
-from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version
 from tools.exceptions import ValidationError
-from pathlib import Path
+from tools.its import ImpfterminService
+from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, \
+    validate_kontaktdaten, validate_datum
+from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, \
+    get_current_version
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -287,7 +286,7 @@ def gen_code_interactive(kontaktdaten_path):
     """
 
     print(
-        "Du kannst dir jetzt direkt einen Impf-Code erstellen.\n"
+        "Du kannst dir jetzt direkt einen Vermittlungscode erstellen.\n"
         "Dazu benötigst du eine Mailadresse, Telefonnummer und die PLZ deines Impfzentrums.\n"
         f"Die Daten werden anschließend lokal in der Datei '{os.path.basename(kontaktdaten_path)}' abgelegt.\n"
         "Du musst sie zukünftig nicht mehr eintragen.\n")
@@ -326,7 +325,7 @@ def gen_code(kontaktdaten):
 
     its = ImpfterminService([], {}, PATH)
 
-    print("Bitte trage nachfolgend dein Geburtsdatum im Format DD.MM.YYYY ein.\n"
+    print("\nBitte trage nachfolgend dein Geburtsdatum im Format DD.MM.YYYY ein.\n"
           "Beispiel: 02.03.1982\n")
     while True:
         try:
@@ -434,7 +433,7 @@ def main():
     parser_code = subparsers.add_parser(
         "code",
         parents=[base_subparser],
-        help="Impf-Code generieren")
+        help="Vermittlungscode generieren")
 
     args = parser.parse_args()
 
@@ -473,7 +472,7 @@ def main():
             print(
                 "Was möchtest du tun?\n"
                 "[1] Termin suchen\n"
-                "[2] Impf-Code generieren\n"
+                "[2] Vermittlungscode generieren\n"
                 f"[x] Erweiterte Einstellungen {'verbergen' if extended_settings else 'anzeigen'}\n")
 
             if extended_settings:

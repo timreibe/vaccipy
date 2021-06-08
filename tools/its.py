@@ -1,19 +1,18 @@
 # Alphabetisch sortiert:
-import cloudscraper
 import copy
 import os
 import platform
 import string
 import sys
 import time
-
 # Alphabetisch sortiert:
 from base64 import b64encode
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
 from json import JSONDecodeError
-from pathlib import Path
 from random import choice, choices, randint
+
+import cloudscraper
 from requests.exceptions import RequestException
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
@@ -22,11 +21,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+
 from tools.clog import CLogger
-from tools.exceptions import AppointmentGone, BookingError, LoginFailed, TimeframeMissed, UnmatchingCodeError
-from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, validate_zeitrahmen
-from tools.utils import update_available, fire_notifications
-from typing import Dict, List
+from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
+from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
+    validate_zeitrahmen
 
 try:
     import beepy
@@ -252,8 +251,6 @@ class ImpfterminService():
     def get_chromedriver(self, headless):
         chrome_options = Options()
 
-
-
         # deaktiviere Selenium Logging
         chrome_options.add_argument('disable-infobars')
         chrome_options.add_experimental_option('useAutomationExtension', False)
@@ -261,13 +258,13 @@ class ImpfterminService():
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
-        #chrome_options.add_argument("-no-sandbox");
+        # chrome_options.add_argument("-no-sandbox");
         chrome_options.add_argument("-disable-dev-shm-usage");
 
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
         chrome_options.add_argument("user-agent=Mozilla/5.0")
-        
+
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
             chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
@@ -281,7 +278,7 @@ class ImpfterminService():
         TODO xpath code auslagern
         """
 
-        self.log.info("Code eintragen und Mausbewegung / Klicks simulieren. "
+        self.log.info("Vermittlungscode eintragen und Mausbewegung / Klicks simulieren. "
                       "Dieser Vorgang kann einige Sekunden dauern.")
 
         location = f"{impfzentrum['URL']}impftermine/service?plz={impfzentrum['PLZ']}"
@@ -346,7 +343,7 @@ class ImpfterminService():
                 pass
 
     def driver_get_cookies(self, driver, url, manual):
-        # Erstelle zufälligen Impf-Code für die Cookie-Generierung
+        # Erstelle zufälligen Vermittlungscode für die Cookie-Generierung
         legal_chars = string.ascii_uppercase + string.digits
         random_chars = "".join(choices(legal_chars, k=5))
         random_code = f"VACC-IPY{random_chars[0]}-{random_chars[1:]}"
@@ -383,7 +380,7 @@ class ImpfterminService():
             self.driver_enter_code(
                 driver, reservierung["impfzentrum"], reservierung["code"])
         except BaseException as exc:
-            self.log.error(f"Code kann nicht eingegeben werden: {str(exc)}")
+            self.log.error(f"Vermittlungscode kann nicht eingegeben werden: {str(exc)}")
             pass
 
         try:
@@ -413,7 +410,8 @@ class ImpfterminService():
         except:
             self.log.error("Termine können nicht ausgewählt werden")
             try:
-                with open(filepath + "errorterminauswahl" + timestamp + ".html", 'w', encoding='utf-8') as file:
+                with open(filepath + "errorterminauswahl" + timestamp + ".html", 'w',
+                          encoding='utf-8') as file:
                     file.write(str(driver.page_source))
                 driver.save_screenshot(filepath + "errorterminauswahl" + timestamp + ".png")
             except:
@@ -445,12 +443,13 @@ class ImpfterminService():
             pass
         try:
             # Klick Anrede
-            arrAnreden = ["Herr","Frau","Kind","Divers"]
+            arrAnreden = ["Herr", "Frau", "Kind", "Divers"]
             if self.kontakt['anrede'] in arrAnreden:
-                button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"'+self.kontakt['anrede']+'")]'
+                button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"' + \
+                               self.kontakt['anrede'] + '")]'
             else:
                 button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"Divers")]'
-                
+
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
@@ -575,7 +574,7 @@ class ImpfterminService():
 
     def login(self, plz_impfzentrum, code, cookies):
         """
-        Einloggen mittels Code, um qualifizierte Impfstoffe zu erhalten.
+        Einloggen mittels Vermittlungscode, um qualifizierte Impfstoffe zu erhalten.
 
         Beispiel:
             self.login("69123", "XXXX-XXXX-XXXX", cookies)
@@ -602,8 +601,8 @@ class ImpfterminService():
             raise RuntimeError(f"Login mit Code fehlgeschlagen: {str(exc)}")
         if res.status_code == 401:
             raise UnmatchingCodeError(
-                "Login in {plz_impfzentrum} nicht erfolgreich: "
-                f"Impf-Code nicht gültig für diese PLZ")
+                f"Login in {plz_impfzentrum} nicht erfolgreich: "
+                f"Vermittlungscode nicht gültig für diese PLZ")
         if not res.ok:
             raise RuntimeError(
                 f"Login mit Code fehlgeschlagen: {res.status_code} {res.text}")
@@ -631,7 +630,7 @@ class ImpfterminService():
             plz = iz["PLZ"]
             codes = self.codes[url]
             if not codes:
-                self.log.warn(f"Kein gültiger Code mehr vorhanden für {plz}")
+                self.log.warn(f"Kein gültiger Vermittlungscode vorhanden für PLZ {plz}")
                 continue
 
             try:
@@ -688,8 +687,8 @@ class ImpfterminService():
                 f"Termine in {plz} können nicht geladen werden: {str(exc)}")
         if res.status_code == 401:
             raise UnmatchingCodeError(
-                "Termine in {plz} können nicht geladen werden: "
-                f"Impf-Code nicht gültig für diese PLZ")
+                f"Termine in {plz} können nicht geladen werden: "
+                f"Vermittlungscode nicht gültig für diese PLZ")
         if not res.ok:
             raise RuntimeError(
                 "Termine in {plz} können nicht geladen werden: "
@@ -836,7 +835,7 @@ class ImpfterminService():
                     cookies = self.get_cookies(url, manual=manual)
                 except RuntimeError as exc:
                     self.log.error(str(exc))
-                    continue # Neuer Versuch in nächster Iteration
+                    continue  # Neuer Versuch in nächster Iteration
 
             try:
                 self.s.cookies.clear()
@@ -846,10 +845,10 @@ class ImpfterminService():
                     cookies=cookies,
                     timeout=15)
             except RequestException as exc:
-                self.log.error(f"Code kann nicht angefragt werden: {str(exc)}")
+                self.log.error(f"Vermittlungscode kann nicht angefragt werden: {str(exc)}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
                 time.sleep(30)
-                continue # Neuer Versuch in nächster Iteration
+                continue  # Neuer Versuch in nächster Iteration
 
             if res.status_code == 429:
                 self.log.error("Anfrage wurde von der Botprotection geblockt")
@@ -857,7 +856,7 @@ class ImpfterminService():
                     "Die Cookies müssen manuell im Browser generiert werden")
                 cookies = None
                 manual = True
-                continue # Neuer Versuch in nächster Iteration
+                continue  # Neuer Versuch in nächster Iteration
 
             if res.status_code == 400 and res.text == '{"error":"Anfragelimit erreicht."}':
                 raise RuntimeError("Anfragelimit erreicht")
@@ -868,7 +867,7 @@ class ImpfterminService():
                     f"{res.status_code} {res.text}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
                 time.sleep(30)
-                continue # Neuer Versuch in nächster Iteration
+                continue  # Neuer Versuch in nächster Iteration
 
             try:
                 token = res.json().get("token")
@@ -901,7 +900,7 @@ class ImpfterminService():
                     cookies = self.get_cookies(url, manual=manual)
                 except RuntimeError as exc:
                     self.log.error(str(exc))
-                    continue # Neuer Versuch in nächster Iteration
+                    continue  # Neuer Versuch in nächster Iteration
 
             try:
                 self.s.cookies.clear()
@@ -914,7 +913,7 @@ class ImpfterminService():
                 self.log.error(f"Code-Verifikation fehlgeschlagen: {str(exc)}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
                 time.sleep(30)
-                continue # Neuer Versuch in nächster Iteration
+                continue  # Neuer Versuch in nächster Iteration
 
             if res.status_code == 429:
                 self.log.error("Anfrage wurde von der Botprotection geblockt")
@@ -922,7 +921,7 @@ class ImpfterminService():
                     "Die Cookies müssen manuell im Browser generiert werden")
                 cookies = None
                 manual = True
-                continue # Neuer Versuch in nächster Iteration
+                continue  # Neuer Versuch in nächster Iteration
 
             if res.status_code == 400:
                 return False
@@ -933,10 +932,10 @@ class ImpfterminService():
                     f"{res.status_code} {res.text}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
                 time.sleep(30)
-                continue # Neuer Versuch in nächster Iteration
+                continue  # Neuer Versuch in nächster Iteration
 
             self.log.success(
-                "Der Impf-Code wurde erfolgreich angefragt, "
+                "Der Vermittlungscode wurde erfolgreich angefragt, "
                 "bitte prüfe deine Mails!")
             return True
 
@@ -946,22 +945,22 @@ class ImpfterminService():
                 if iz["PLZ"] == plz_impfzentrum:
                     return iz
         raise ValueError(
-            f"Gewünschte PLZ {plz} wurde bei Initialisierung nicht angegeben")
+            f"Gewünschte PLZ {plz_impfzentrum} wurde bei Initialisierung nicht angegeben")
 
     def rotiere_codes(self, url):
         codes = self.codes[url]
         self.codes[url] = codes[1:] + codes[:1]
 
     @staticmethod
-
     def terminsuche(codes: list, plz_impfzentren: list, kontakt: dict,
-                    PATH: str, notifications: dict = {}, zeitrahmen: dict = dict(), check_delay: int = 30):
+                    PATH: str, notifications: dict = {}, zeitrahmen: dict = dict(),
+                    check_delay: int = 30):
         """
-        Sucht mit mehreren Impf-Codes bei einer Liste von Impfzentren nach
+        Sucht mit mehreren Vermittlungscodes bei einer Liste von Impfzentren nach
         Terminen und bucht den erstbesten, der dem Zeitrahmen entspricht,
         automatisch.
 
-        :param codes: Liste an Impf-Codes vom Schma XXXX-XXXX-XXXX
+        :param codes: Liste an Vermittlungscodes vom Schma XXXX-XXXX-XXXX
         :param plz_impfzentren: Liste der PLZs der Impfzentren bei denen
             gesucht werden soll
         :param kontakt: Kontaktdaten der zu impfenden Person.
@@ -1053,8 +1052,8 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
         zeitrahmen["von_uhrzeit"],
         "%H:%M").time() if "von_uhrzeit" in zeitrahmen else dtime.min
     bis_uhrzeit = (
-        datetime.strptime(zeitrahmen["bis_uhrzeit"], "%H:%M")
-        + timedelta(seconds=59)
+            datetime.strptime(zeitrahmen["bis_uhrzeit"], "%H:%M")
+            + timedelta(seconds=59)
     ).time() if "bis_uhrzeit" in zeitrahmen else dtime.max
     wochentage = [decode_wochentag(wt) for wt in set(
         zeitrahmen["wochentage"])] if "wochentage" in zeitrahmen else range(7)

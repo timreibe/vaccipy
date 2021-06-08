@@ -1,8 +1,6 @@
 import os
 import time
 import traceback
-import json
-import sys
 from json import JSONDecodeError
 from pathlib import Path
 from threading import Thread
