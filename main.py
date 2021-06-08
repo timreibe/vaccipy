@@ -255,7 +255,7 @@ def gen_code_interactive(kontaktdaten_path):
     """
 
     print(
-        "Du kannst dir jetzt direkt einen Impf-Code erstellen.\n"
+        "Du kannst dir jetzt direkt einen Vermittlungscode erstellen.\n"
         "Dazu benötigst du eine Mailadresse, Telefonnummer und die PLZ deines Impfzentrums.\n"
         f"Die Daten werden anschließend lokal in der Datei '{os.path.basename(kontaktdaten_path)}' abgelegt.\n"
         "Du musst sie zukünftig nicht mehr eintragen.\n")
@@ -294,7 +294,7 @@ def gen_code(kontaktdaten):
 
     its = ImpfterminService([], {}, PATH)
 
-    print("Bitte trage nachfolgend dein Geburtsdatum im Format DD.MM.YYYY ein.\n"
+    print("\nBitte trage nachfolgend dein Geburtsdatum im Format DD.MM.YYYY ein.\n"
           "Beispiel: 02.03.1982\n")
     while True:
         try:
@@ -397,7 +397,7 @@ def main():
     parser_code = subparsers.add_parser(
         "code",
         parents=[base_subparser],
-        help="Impf-Code generieren")
+        help="Vermittlungscode generieren")
 
     args = parser.parse_args()
 
@@ -434,7 +434,7 @@ def main():
             print(
                 "Was möchtest du tun?\n"
                 "[1] Termin suchen\n"
-                "[2] Impf-Code generieren\n"
+                "[2] Vermittlungscode generieren\n"
                 f"[x] Erweiterte Einstellungen {'verbergen' if extended_settings else 'anzeigen'}\n")
 
             if extended_settings:

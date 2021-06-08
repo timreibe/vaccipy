@@ -119,7 +119,7 @@ def validate_kontaktdaten(kontaktdaten: dict):
 
 def validate_codes(codes: list):
     """
-    Validiert eine Liste an Impf-Codes vom Schema XXXX-XXXX-XXXX
+    Validiert eine Liste an Vermittlungscodes vom Schema XXXX-XXXX-XXXX
 
     :raise ValidationError: Typ ist nicht list
     :raise ValidationError: Liste enthält vom Schema abweichendes Element

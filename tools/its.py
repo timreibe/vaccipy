@@ -279,7 +279,7 @@ class ImpfterminService():
         TODO xpath code auslagern
         """
 
-        self.log.info("Code eintragen und Mausbewegung / Klicks simulieren. "
+        self.log.info("Vermittlungscode eintragen und Mausbewegung / Klicks simulieren. "
                       "Dieser Vorgang kann einige Sekunden dauern.")
 
         location = f"{impfzentrum['URL']}impftermine/service?plz={impfzentrum['PLZ']}"
@@ -344,7 +344,7 @@ class ImpfterminService():
                 pass
 
     def driver_get_cookies(self, driver, url, manual):
-        # Erstelle zufälligen Impf-Code für die Cookie-Generierung
+        # Erstelle zufälligen Vermittlungscode für die Cookie-Generierung
         legal_chars = string.ascii_uppercase + string.digits
         random_chars = "".join(choices(legal_chars, k=5))
         random_code = f"VACC-IPY{random_chars[0]}-{random_chars[1:]}"
@@ -381,7 +381,7 @@ class ImpfterminService():
             self.driver_enter_code(
                 driver, reservierung["impfzentrum"], reservierung["code"])
         except BaseException as exc:
-            self.log.error(f"Code kann nicht eingegeben werden: {str(exc)}")
+            self.log.error(f"Vermittlungscode kann nicht eingegeben werden: {str(exc)}")
             pass
 
         try:
@@ -573,7 +573,7 @@ class ImpfterminService():
 
     def login(self, plz_impfzentrum, code, cookies):
         """
-        Einloggen mittels Code, um qualifizierte Impfstoffe zu erhalten.
+        Einloggen mittels Vermittlungscode, um qualifizierte Impfstoffe zu erhalten.
 
         Beispiel:
             self.login("69123", "XXXX-XXXX-XXXX", cookies)
@@ -600,8 +600,8 @@ class ImpfterminService():
             raise RuntimeError(f"Login mit Code fehlgeschlagen: {str(exc)}")
         if res.status_code == 401:
             raise UnmatchingCodeError(
-                "Login in {plz_impfzentrum} nicht erfolgreich: "
-                f"Impf-Code nicht gültig für diese PLZ")
+                f"Login in {plz_impfzentrum} nicht erfolgreich: "
+                f"Vermittlungscode nicht gültig für diese PLZ")
         if not res.ok:
             raise RuntimeError(
                 f"Login mit Code fehlgeschlagen: {res.status_code} {res.text}")
@@ -629,7 +629,7 @@ class ImpfterminService():
             plz = iz["PLZ"]
             codes = self.codes[url]
             if not codes:
-                self.log.warn(f"Kein gültiger Code mehr vorhanden für {plz}")
+                self.log.warn(f"Kein gültiger Vermittlungscode vorhanden für PLZ {plz}")
                 continue
 
             try:
@@ -686,8 +686,8 @@ class ImpfterminService():
                 f"Termine in {plz} können nicht geladen werden: {str(exc)}")
         if res.status_code == 401:
             raise UnmatchingCodeError(
-                "Termine in {plz} können nicht geladen werden: "
-                f"Impf-Code nicht gültig für diese PLZ")
+                f"Termine in {plz} können nicht geladen werden: "
+                f"Vermittlungscode nicht gültig für diese PLZ")
         if not res.ok:
             raise RuntimeError(
                 "Termine in {plz} können nicht geladen werden: "
@@ -844,7 +844,7 @@ class ImpfterminService():
                     cookies=cookies,
                     timeout=15)
             except RequestException as exc:
-                self.log.error(f"Code kann nicht angefragt werden: {str(exc)}")
+                self.log.error(f"Vermittlungscode kann nicht angefragt werden: {str(exc)}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
                 time.sleep(30)
                 continue # Neuer Versuch in nächster Iteration
@@ -934,7 +934,7 @@ class ImpfterminService():
                 continue # Neuer Versuch in nächster Iteration
 
             self.log.success(
-                "Der Impf-Code wurde erfolgreich angefragt, "
+                "Der Vermittlungscode wurde erfolgreich angefragt, "
                 "bitte prüfe deine Mails!")
             return True
 
@@ -954,11 +954,11 @@ class ImpfterminService():
     def terminsuche(codes: list, plz_impfzentren: list, kontakt: dict,
                     PATH: str, zeitrahmen: dict = dict(), check_delay: int = 30):
         """
-        Sucht mit mehreren Impf-Codes bei einer Liste von Impfzentren nach
+        Sucht mit mehreren Vermittlungscodes bei einer Liste von Impfzentren nach
         Terminen und bucht den erstbesten, der dem Zeitrahmen entspricht,
         automatisch.
 
-        :param codes: Liste an Impf-Codes vom Schma XXXX-XXXX-XXXX
+        :param codes: Liste an Vermittlungscodes vom Schma XXXX-XXXX-XXXX
         :param plz_impfzentren: Liste der PLZs der Impfzentren bei denen
             gesucht werden soll
         :param kontakt: Kontaktdaten der zu impfenden Person.
