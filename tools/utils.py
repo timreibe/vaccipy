@@ -9,8 +9,9 @@ import requests
 from plyer import notification
 from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
 
-from tools.exceptions import DesktopNotificationError
+from tools.exceptions import DesktopNotificationError, PushoverNotificationError, TelegramNotificationError
 
+from tools.kontaktdaten import get_kontaktdaten
 
 def retry_on_failure(retries=10):
     """Decorator zum Errorhandling beim Ausführen einer Methode im Loop.
@@ -172,3 +173,51 @@ def get_latest_version():
     json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/releases/latest'
     latest_version = requests.get(json_url).json()['tag_name']
     return latest_version
+
+
+def pushover_notification(notifications: dict, title: str, message: str):
+    if 'app_token' not in notifications or 'user_key' not in notifications:
+        return
+
+    url = f'https://api.pushover.net/1/messages.json'
+    data = {
+        'token': notifications['app_token'],
+        'user': notifications['user_key'],
+        'title': title,
+        'sound': 'persistent',
+        'priority': 1,
+        'message': message
+    }
+
+    r = requests.post(url, data=data)
+    if r.status_code != 200:
+        raise PushoverNotificationError(r.status_code, r.text)
+
+
+def telegram_notification(notifications: dict, message: str):
+    if 'api_token' not in notifications or 'chat_id' not in notifications:
+        return
+
+    headers = {
+        'Accept': 'application/json',
+        'User-Agent': 'vaccipy'
+    }
+
+    url = f'https://api.telegram.org/bot{notifications["api_token"]}/sendMessage'
+    params = {
+        'chat_id': notifications["chat_id"],
+        'parse_mode': 'Markdown',
+        'text': message
+    }
+
+    r = requests.get(url, params=params, headers=headers)
+    if r.status_code != 200:
+        raise TelegramNotificationError(r.status_code, r.text)
+
+
+def fire_notifications(notifications: dict, operating_system: str, title: str, message: str):
+    desktop_notification(operating_system, title, message)
+    if 'pushover' in notifications:
+        pushover_notification(notifications["pushover"], title, message)
+    if 'telegram' in notifications:
+        telegram_notification(notifications["telegram"], message)

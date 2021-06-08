@@ -26,7 +26,6 @@ from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
 from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
     validate_zeitrahmen
-from tools.utils import desktop_notification
 
 try:
     import beepy
@@ -37,10 +36,12 @@ except ImportError:
 
 
 class ImpfterminService():
-    def __init__(self, codes: list, kontakt: dict, PATH: str):
+    def __init__(self, codes: list, kontakt: dict, PATH: str, notifications: dict = dict()):
         self.PATH = PATH
         self.kontakt = kontakt
         self.operating_system = platform.system().lower()
+
+        self.notifications = notifications
 
         # Logging einstellen
         self.log = CLogger("impfterminservice")
@@ -952,7 +953,8 @@ class ImpfterminService():
 
     @staticmethod
     def terminsuche(codes: list, plz_impfzentren: list, kontakt: dict,
-                    PATH: str, zeitrahmen: dict = dict(), check_delay: int = 30):
+                    PATH: str, notifications: dict = {}, zeitrahmen: dict = dict(),
+                    check_delay: int = 30):
         """
         Sucht mit mehreren Vermittlungscodes bei einer Liste von Impfzentren nach
         Terminen und bucht den erstbesten, der dem Zeitrahmen entspricht,
@@ -967,6 +969,7 @@ class ImpfterminService():
         :param PATH: Dateipfad zum vaccipy-Repo.
             Wird verwendet, um die Chromedriver-Binary zu finden und Logs zu
             speichern.
+        :param notifications: Daten zur Authentifizierung bei Benachrichtigungs Providern
         :param zeitrahmen: Objekt, das den Zeitrahmen festlegt, in dem Termine
             gebucht werden.
             Zum Format, siehe tools.kontaktdaten.validate_zeitrahmen.
@@ -981,7 +984,7 @@ class ImpfterminService():
         if len(plz_impfzentren) == 0:
             raise ValueError("Kein Impfzentrum ausgewählt")
 
-        its = ImpfterminService(codes, kontakt, PATH)
+        its = ImpfterminService(codes, kontakt, PATH, notifications)
 
         # Prüfen, ob in allen angegebenen PLZs ein Impfzentrum verfügbar ist
         izs_by_plz = {
@@ -1009,10 +1012,7 @@ class ImpfterminService():
                     its.termin_buchen(reservierung)
                     msg = "Termin erfolgreich gebucht!"
                     its.log.success(msg)
-                    desktop_notification(
-                        operating_system=its.operating_system,
-                        title="Terminbuchung:",
-                        message=msg)
+                    self.notify(title="Terminbuchung:", message=msg)
                     # Programm beenden, wenn Termin gefunden wurde
                     return
                 except AppointmentGone:
@@ -1021,12 +1021,12 @@ class ImpfterminService():
                 except BookingError:
                     msg = f"Termin konnte nicht gebucht werden."
                 its.log.error(msg)
-                desktop_notification(
-                    operating_system=its.operating_system,
-                    title="Terminbuchung:",
-                    message=msg)
+                self.notify(title="Terminbuchung:", message=msg)
 
             time.sleep(check_delay)
+
+    def notify(self, title: str, msg: str):
+        fire_notifications(self.notifications, self.operating_system, title, msg)
 
 
 def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
