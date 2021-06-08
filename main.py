@@ -300,7 +300,7 @@ def gen_code_interactive(kontaktdaten_path):
 
     print()
     kontaktdaten = update_kontaktdaten_interactive(
-        kontaktdaten, "code", kontaktdaten_path)
+        kontaktdaten, "code", False, kontaktdaten_path)
     return gen_code(kontaktdaten)
 
 
