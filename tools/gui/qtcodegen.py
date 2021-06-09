@@ -269,6 +269,8 @@ class QtCodeGen(QtWidgets.QDialog):
             if ok:
                 sms_pin = str(text).replace("-", "")
                 self.worker.signalUpdateData.emit("SMSCODE",sms_pin) 
+            else:
+                self.hardClose()
         elif dlgType == "SMSCODE_OK":
             QtWidgets.QMessageBox.information(self, "Erfolgreich", "Code erfolgreich generiert. Du kannst jetzt mit der Terminsuche fortfahren.")
             self.worker.signalUpdateData.emit("SMSCODE_OK","") 
