@@ -351,7 +351,7 @@ def gen_code(kontaktdaten):
         if its.code_bestaetigen(token, cookies, sms_pin, plz_impfzentrum):
             print(f"\n{i18n.t('i18n.ContinueSearchForAppointment')}.")
             return True
-        print("\nSMS-Code ungültig")
+        print(f"\n{i18n.t('i18n.SMSCodeInvalid')}")
 
     print(f"{i18n.t('i18n.CodeGenerationFailed')}.")
     return False
