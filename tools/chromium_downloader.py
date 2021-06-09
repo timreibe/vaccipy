@@ -49,11 +49,6 @@ chromium_revision = os.environ.get(
     'CHROMIUM_REVISION', DEFAULT_CHROMIUM_REVISION
 )
 
-# Mac_Arm is available since r882387
-if current_platform() == 'mac-arm':
-    if chromium_revision < '882387':
-        chromium_revision = '882387'
-
 vaccipy_dir = pathlib.Path(__file__).parent.absolute()
 DOWNLOADS_FOLDER = Path(vaccipy_dir) / 'local-chromium'
 DEFAULT_DOWNLOAD_HOST = 'https://storage.googleapis.com'

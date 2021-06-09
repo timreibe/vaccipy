@@ -13,7 +13,7 @@ from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktda
 from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version
 from tools.exceptions import ValidationError
 from pathlib import Path
-from tools.chromium_downloader import check_chromium, download_chromium, check_webdriver, download_webdriver
+from tools.chromium_downloader import check_chromium, download_chromium, check_webdriver, download_webdriver, current_platform
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -353,10 +353,14 @@ def subcommand_code(args):
 
 
 def subcommand_install_chromium():
-    if not check_chromium():
-        download_chromium()
-    if not check_webdriver():
-        download_webdriver()
+    # Mac_Arm currently not working
+    if current_platform() == 'mac-arm':
+        print('Zur Zeit kann keine eigene Chromium Instanz auf einem Mac M1 installiert werden.')
+    else:
+        if not check_chromium():
+            download_chromium()
+        if not check_webdriver():
+            download_webdriver()
 
 
 def validate_args(args):
