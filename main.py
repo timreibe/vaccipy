@@ -527,6 +527,7 @@ if __name__ == "__main__":
 """)
     # Lade Sprachen
     i18n.load_path.append(os.path.join(PATH, "i18n"))
+    i18n.set('locale', 'de')
     i18n.set('fallback', 'de')
 
     # Auf aktuelle Version prüfen
