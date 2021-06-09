@@ -412,6 +412,11 @@ def main():
         "--configure-notifications",
         action='store_true',
         help="Gibt bei der Erfassung der Kontaktdaten die Möglichkeit, Benachrichtungen über Pushover und Telegram zu konfigurieren.")
+    base_subparser.add_argument(
+        "-l",
+        "--lang",
+        action='store_true',
+        help=i18n.t("i18n.LangDescription"))
 
     parser_search = subparsers.add_parser(
         "search", parents=[base_subparser], help=i18n.t("i18n.SearchForAppointment"))
@@ -439,6 +444,8 @@ def main():
         args.retry_sec = 60
     if not hasattr(args, "configure_notifications"):
         args.configure_notifications = False
+    if not hasattr(args, "lang"):
+        args.lang = "de"
 
     try:
         validate_args(args)
@@ -462,7 +469,7 @@ def main():
 
         while True:
             print(
-                i18n.t("Menu") + "?\n"
+                f"{i18n.t('i18n.Menu')}?\n"
                 f"[1] {i18n.t('i18n.SearchForAppointment')}\n"
                 f"[2] {i18n.t('i18n.GenerateVacCode')}\n"
                 f"[x] {i18n.t('i18n.HideAdvancedSettings') if extended_settings else i18n.t('i18n.ShowAdvancedSettings')}\n")
@@ -472,7 +479,8 @@ def main():
                     f"[c] --configure-only {i18n.t('i18n.deactivate') if args.configure_only else i18n.t('i18n.activate')}\n"
                     f"[r] --read-only {i18n.t('i18n.deactivate') if args.read_only else i18n.t('i18n.activate')}\n"
                     f"[s] --retry-sec {i18n.t('i18n.set')}\n"
-                    f"[n] --configure-notifications {i18n.t('i18n.deactivate') if args.read_only else i18n.t('i18n.activate')}\n\n")
+                    f"[n] --configure-notifications {i18n.t('i18n.deactivate') if args.read_only else i18n.t('i18n.activate')}\n"
+                    f"[l] --lang {i18n.t('i18n.ChangeLanguage')}: {'[en],de' if args.lang=='en' else 'en,[de]'}\n\n") # TODO This is just a quick fix! Optimize!
 
 
             option = input("> Option: ").lower()
@@ -501,6 +509,14 @@ def main():
                         f"--read-only {i18n.t('i18n.deactivate') if not args.read_only else i18n.t('i18n.activate')}.")
                 elif extended_settings and option == "s":
                     args.retry_sec = int(input("> --retry-sec="))
+                elif extended_settings and option == "l":
+                    lang = input("> --lang=")
+                    # Check if lang is available.
+                    if lang in ["de","en"]:
+                        args.lang = lang
+                        i18n.set('locale', lang)
+                    else:
+                        print(i18n.t('i18n.LangInvalid'))
                 elif extended_settings and option == "n":
                     new_args = copy.copy(args)
                     new_args.configure_notifications = not new_args.configure_notifications

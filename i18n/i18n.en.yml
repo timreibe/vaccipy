@@ -85,3 +85,6 @@ en:
     This information will be saved in the file '%{filename}' afterwards.
     You will not need to input them afterwards again.
   SMSCodeInvalid: SMS-Code invalid
+  LangDescription: Select language (en,de)
+  LangInvalid: Selected language invalid
+  ChangeLanguage: Change language

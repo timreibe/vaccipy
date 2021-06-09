@@ -85,3 +85,6 @@ de:
     Die Daten werden anschließend lokal in der Datei '%{filename}' abgelegt."
     Du musst sie zukünftig nicht mehr eintragen.
   SMSCodeInvalid: SMS-Code ungültig
+  LangDescription: Sprache auswählen (en,de)
+  LangInvalid: Sprache ungültig
+  ChangeLanguage: Sprache ändern
