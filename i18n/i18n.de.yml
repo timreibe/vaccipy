@@ -1,0 +1,99 @@
+de:
+  YouAreUsingTheLatestVersionOfVaccipy: Du verwendest die aktuellste Version von vaccipy
+  CannotVerifyIfVaccipyIsRunningInItsLatestVersion: vaccipy konnte nicht auf die neuste Version geprüft werden.
+  YouAreUsingAnOldVersionOfVaccipy: |-
+    Du verwendest eine alte Version von vaccipy.
+    Bitte installiere die aktuellste Version. Link zum Download:
+    https://github.com/iamnotturner/vaccipy/releases/tag/
+  CheckIfYouAreAllowedForVaccination: |-
+    Automatische Terminbuchung für den Corona Impfterminservice.
+    Vor der Ausführung des Programms ist die Berechtigung zur Impfung zu prüfen.
+    Ob Anspruch auf eine Impfung besteht, kann hier nachgelesen werden.
+    https://www.impfterminservice.de/terminservice/faq
+  activate: aktivieren
+  deactivate: deaktivieren
+  set: setzen
+  ErrorIn: Fehler in
+  InvalidInputPleaseTryAgain: Falscheingabe! Bitte erneut versuchen
+  Error: Fehler
+  GenerateVacCode: Vermittlungscode generieren
+  SearchForAppointment: Termin suchen
+  ShowAdvancedSettings: Erweiterte Einstellungen anzeigen
+  HideAdvancedSettings: Erweiterte Einstellung verbergen
+  Menu: Was möchtest du tun
+  PathContactData: Pfad zur JSON-Datei für Kontaktdaten
+  ConfigureOnlyDescription: Nur Kontaktdaten erfassen und in JSON-Datei abspeichern
+  ReadOnlyDescription: Es wird nicht nach fehlenden Kontaktdaten gefragt. Stattdessen wird ein Fehler angezeigt, falls benötigte Kontaktdaten in der JSON-Datei fehlen.
+  RetrySecDescription: Wartezeit zwischen zwei Versuchen (in Sekunden)
+  CodeGenerationFailed: Die Code-Generierung war leider nicht erfolgreich
+  ContinueSearchForAppointment: Du kannst jetzt mit der Terminsuche fortfahren
+  ReceiveSMSCode: |-
+    Du erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.
+    Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.
+    Beispiel: 123-456
+  InvalidBirthdayFormat: |-
+    Das Datum entspricht nicht dem richtigen Format (DD.MM.YYYY).
+    Bitte erneut versuchen.
+  Birthday: Geburtstag
+  PleaseEnterBirthday: Bitte trage nachfolgend dein Geburtsdatum im Format DD.MM.YYYY ein
+  UsingRandomCodeForCookieGeneration: Für die Cookies-Generierung wird ein zufälliger Code verwendet
+  Gender: Anrede (Frau/Herr/...)
+  Firstname: Vorname
+  Lastname: Nachname
+  Street: Strasse (ohne Hausnummer)
+  City: Wohnort
+  HouseNumber: Hausnummer
+  PLZ: PLZ des Wohnorts
+  Phonenumber: Telefonnummer
+  PLZVacCenters: PLZ's der Impfzentren
+  InputPLZs: |-
+    Mit einem Code kann in mehreren Impfzentren gleichzeitig nach einem Termin gesucht werden.
+    Eine Übersicht über die Gruppierung der Impfzentren findest du hier:
+    https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren
+    Trage nun die PLZ deines Impfzentrums ein. Für mehrere Impfzentren die PLZ's kommagetrennt nacheinander.
+    Beispiel: 68163, 69124, 69469
+  InputWeekday: |-
+    Trage nun die Wochentage ein, an denen die ausgewählten Impftermine liegen dürfen.
+    Mehrere Wochentage können durch Komma getrennt werden.
+    Beispiel: Mo, Di, Mi, Do, Fr, Sa, So
+    Leer lassen, um alle Wochentage auszuwählen.
+  AllowedWeekdays: Erlaubte Wochentage
+  InputAttentionOldVersionOfContactdata: |-
+    ACHTUNG: Du verwendest noch die alte Version der '%{filename}'!
+    Lösche vor dem nächsten Ausführen die Datei und fülle die Kontaktdaten bitte erneut aus.
+  ContactdataCouldNotBeLoaded: |-
+    Kontaktdaten konnten nicht aus '%{filename}' geladen werden.
+    Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe deine Daten beim Programmstart erneut ein.
+  ConfigureOnlyReadOnlyNotBoth: --configure-only und --read-only kann nicht gleichzeitig verwendet werden
+  ConstrainTimeSlot: Zeitrahmen festlegen (y/n)
+  ForWhichAppointment: Für welchen Impftermin soll der Zeitrahmen gelten? (1/2/beide)
+  FromDate: Von Datum (Leer lassen zum Überspringen)
+  ToDate: Bis Datum (Leer lassen zum Überspringen)
+  FromTime: Von Uhrzeit (Leer lassen zum Überspringen)
+  ToTime: Bis Uhrzeit (Leer lassen zum Überspringen)
+  InputVacCodeAndContactdata: |-
+    Bitte trage zunächst deinen Vermittlungscode und deine Kontaktdaten ein.
+    Die Daten werden anschließend lokal in der Datei '%{filename}' abgelegt.
+    Du musst sie zukünftig nicht mehr eintragen.
+  ShouldContactdataBeLoaded: |-
+    Sollen die vorhandenen Daten aus '%{filename}' geladen werden? (y/n)
+  ContactdataLoadedFor: |-
+    Kontaktdaten wurden geladen für: %{firstname} %{lastname}
+  InfoVacCode: |-
+    Du kannst dir jetzt direkt einen Vermittlungscode erstellen.
+    Dazu benötigst du eine Mailadresse, Telefonnummer und die PLZ deines Impfzentrums.
+    Die Daten werden anschließend lokal in der Datei '%{filename}' abgelegt."
+    Du musst sie zukünftig nicht mehr eintragen.
+
+
+
+
+
+
+
+
+
+
+
+
+
