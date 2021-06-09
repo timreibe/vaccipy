@@ -13,7 +13,7 @@ import cloudscraper
 
 
 from selenium.webdriver import ActionChains
-from selenium.webdriver import Chrome
+from selenium.webdriver import Chrome, Remote
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -182,8 +182,6 @@ class ImpfterminService():
     def get_chromedriver(self, headless):
         chrome_options = Options()
 
-
-
         # deaktiviere Selenium Logging
         chrome_options.add_argument('disable-infobars')
         chrome_options.add_experimental_option('useAutomationExtension', False)
@@ -204,7 +202,11 @@ class ImpfterminService():
 
         chrome_options.headless = headless
 
-        return Chrome(self.get_chromedriver_path(), options=chrome_options)
+        chrome_remote_address = os.getenv("VACCIPY_CHROME_REMOTE_ADDRESS")
+        if chrome_remote_address:
+            return Remote(chrome_remote_address, options=chrome_options)
+        else:
+            return Chrome(self.get_chromedriver_path(), options=chrome_options)
 
     def driver_enter_code(self, driver, plz_impfzentrum):
         """
