@@ -9,3 +9,4 @@ cloudscraper>=1.2.52
 PyQt5==5.15.4
 PyQt5-Qt5==5.15.2
 PyQt5-sip==12.9.0
+requests>=2.25.1

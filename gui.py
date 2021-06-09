@@ -56,6 +56,9 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         create_missing_dirs(PATH)
 
+        #Spawn for now (The parent process starts a fresh python interpreter process. The child process will only inherit those resources necessary to run the process object’s)
+        multiprocessing.set_start_method('spawn')
+
         # Laden der .ui Datei und Anpassungen
         self.setup(pfad_fenster_layout)
 
@@ -100,7 +103,11 @@ class HauptGUI(QtWidgets.QMainWindow):
         ### GUI ###
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
-        self.setWindowTitle('vaccipy ' + get_current_version())
+        try:
+            self.setWindowTitle('vaccipy ' + get_current_version())
+        except Exception as error:
+            self.setWindowTitle('vaccipy')
+            pass
 
         # Meldung falls alte Daten von alter Version
         self.__check_old_kontakt_version()
@@ -197,8 +204,8 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
 
         check_delay = self.i_interval.value()
-        code = kontaktdaten["code"]
-        terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{code}-{self.prozesse_counter}", daemon=True, kwargs={
+        codes = kontaktdaten["codes"]
+        terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{codes[0]}-{self.prozesse_counter}", daemon=True, kwargs={
                                                       "kontaktdaten": kontaktdaten,
                                                       "zeitrahmen": zeitrahmen,
                                                       "ROOT_PATH": PATH,
@@ -236,7 +243,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             try:
                 pfad = oeffne_file_dialog_select(self, "Kontakdaten", self.pfad_kontaktdaten)
             except FileNotFoundError:
-                pass
+                return
 
         self.pfad_kontaktdaten = pfad
         self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
