@@ -311,8 +311,8 @@ class ImpfterminService():
 
     # Zufälliges anklicken von 10-15 Elementen auf der Seite
     # ggf. werden andere Seiten aufgerufen
-    # Zufälliges anklicken von 10-15 Elementen auf der Seite
-    # ggf. werden andere Seiten aufgerufen
+        # Zufälliges anklicken von 10-15 Elementen auf der Seite
+        # ggf. werden andere Seiten aufgerufen
         for i in range(randint(10, 15)):
             try:
                 action = ActionChains(driver)
