@@ -61,6 +61,16 @@ let
         };
         doCheck = false;
       };
+
+      python-i18n = buildPythonPackage rec {
+        pname = "python-i18n";
+        version = "0.3.9";
+        src = fetchPypi {
+          inherit pname version;
+          sha256 = "1s74f7sgay30kj80pqx9aa74d0slwklfzjynzgmsgwsb6v9g75yz";
+        };
+        doCheck = false;
+      };
     };
   };
 in
@@ -77,6 +87,9 @@ mkShell {
       p.cloudscraper
       p.idna
       p.plyer
+      p.python-i18n
+      p.python-prctl
+      p.pyyaml
       p.selenium
       p.urllib3
     ]))
