@@ -1,17 +1,20 @@
+# Alphabetisch sortiert:
+import copy
 import os
 import platform
+import string
 import sys
 import time
+# Alphabetisch sortiert:
 from base64 import b64encode
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
-from random import choice, randint
-
-from typing import Dict, List
+from json import JSONDecodeError
+from random import choice, choices, randint
 
 import cloudscraper
-
-
+from requests.exceptions import RequestException
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
@@ -20,9 +23,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from tools.clog import CLogger
-from tools.kontaktdaten import decode_wochentag, validate_kontakt, validate_zeitrahmen
-from tools.utils import retry_on_failure, desktop_notification, update_available
-from pathlib import Path
+from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
+from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
+    validate_zeitrahmen
 
 try:
     import beepy
@@ -33,127 +36,193 @@ except ImportError:
 
 
 class ImpfterminService():
-    def __init__(self, code: str, plz_impfzentren: list, kontakt: dict, PATH: str):
-        self.code = str(code).upper()
-        self.splitted_code = self.code.split("-")
-
+    def __init__(self, codes: list, kontakt: dict, PATH: str, notifications: dict = dict()):
         self.PATH = PATH
-
-        # PLZ's zu String umwandeln
-        self.plz_impfzentren = sorted([str(plz) for plz in plz_impfzentren])
-        self.plz_termin = None
-
         self.kontakt = kontakt
-        self.authorization = b64encode(bytes(f":{code}", encoding='utf-8')).decode("utf-8")
+        self.operating_system = platform.system().lower()
+
+        self.notifications = notifications
 
         # Logging einstellen
         self.log = CLogger("impfterminservice")
-        self.log.set_prefix(f"*{self.code[-4:]} | {', '.join(self.plz_impfzentren)}")
 
         # Session erstellen
         self.s = cloudscraper.create_scraper()
         self.s.headers.update({
-            'Authorization': f'Basic {self.authorization}',
             'User-Agent': 'Mozilla/5.0',
         })
 
         # Ausgewähltes Impfzentrum prüfen
-        self.verfuegbare_impfzentren = {}
-        self.domain = None
-        if not self.impfzentren_laden():
-            raise ValueError("Impfzentren laden fehlgeschlagen")
+        while True:
+            try:
+                self.impfzentren = self.impfzentren_laden()
+                break
+            except RuntimeError as exc:
+                self.log.error(str(exc))
+                self.log.info("Erneuter Versuch in 30 Sekunden")
+                time.sleep(30)
 
-        # Verfügbare Impfstoffe laden
-        self.verfuegbare_qualifikationen: List[Dict] = []
-        while not self.impfstoffe_laden():
-            self.log.warn("Erneuter Versuch in 60 Sekunden")
-            time.sleep(60)
+        # Zunächst alle Codes zu allen URLs zuordnen. Aussortiert wird später.
+        self.codes = {
+            url: copy.copy(codes)
+            for url in self.impfzentren
+        }
 
-        # OS
-        self.operating_system = platform.system().lower()
-
-        # Sonstige
-        self.terminpaar = None
-        self.qualifikationen = []
-        self.app_name = str(self)
+        # Verfügbare Impfstoffe laden, aber nur um sie im Log auszugeben
+        try:
+            self.impfstoffe_laden(next(iter(self.impfzentren)))
+        except RuntimeError as exc:
+            # Wissen der verfügbare Impfstoffe wird nicht zwingend benötigt,
+            # also nur ein Warning:
+            self.log.warn(str(exc))
 
     def __str__(self) -> str:
         return "ImpfterminService"
 
-    @retry_on_failure()
     def impfzentren_laden(self):
         """
-        Laden aller Impfzentren zum Abgleich der eingegebenen PLZ.
+        Lädt alle Impfzentren, gruppiert nach URL.
 
-        :return: bool
+        Beispiel (verkürzter Output, eigentlich gibt es mehr Impfzentren):
+            self.impfzentren_laden(["68163", "69124", "69123"])
+            {
+                'https://001-iz.impfterminservice.de/': [
+                    {
+                        'Zentrumsname': 'Maimarkthalle',
+                        'PLZ': '68163',
+                        'Ort': 'Mannheim',
+                        'Bundesland': 'Baden-Württemberg',
+                        'URL': 'https://001-iz.impfterminservice.de/',
+                        'Adresse': 'Xaver-Fuhr-Straße 113'
+                    },
+                    {
+                        'Zentrumsname': 'Zentrales Impfzentrum Heidelberg - Commissary Patrick-Henry-Village',
+                        'PLZ': '69124',
+                        'Ort': 'Heidelberg',
+                        'Bundesland': 'Baden-Württemberg',
+                        'URL': 'https://001-iz.impfterminservice.de/',
+                        'Adresse': 'South Gettysburg Avenue 45'
+                    }
+                ],
+                'https://002-iz.impfterminservice.de/': [
+                    {
+                        'Zentrumsname': 'Gesellschaftshaus Pfaffengrund',
+                        'PLZ': '69123',
+                        'Ort': 'Heidelberg',
+                        'Bundesland': 'Baden-Württemberg',
+                        'URL': 'https://002-iz.impfterminservice.de/',
+                        'Adresse': 'Schwalbenweg 1/2'
+                    }
+                ]
+            }
+
+        :return: Impfzentren gruppiert nach URL; siehe obiges Beispiel
         """
 
-        url = "https://www.impfterminservice.de/assets/static/impfzentren.json"
+        location = "https://www.impfterminservice.de/assets/static/impfzentren.json"
 
-        res = self.s.get(url, timeout=15)
-        if res.ok:
-            # Antwort-JSON umformatieren für einfachere Handhabung
-            formatierte_impfzentren = {}
-            for bundesland, impfzentren in res.json().items():
-                for impfzentrum in impfzentren:
-                    formatierte_impfzentren[impfzentrum["PLZ"]] = impfzentrum
+        try:
+            self.s.cookies.clear()
+            res = self.s.get(location, timeout=15)
+        except RequestException as exc:
+            raise RuntimeError(
+                f"Impfzentren können nicht geladen werden: {str(exc)}"
+            ) from exc
+        if not res.ok:
+            raise RuntimeError(
+                "Impfzentren können nicht geladen werden: "
+                f"{res.status_code} {res.text}")
 
-            self.verfuegbare_impfzentren = formatierte_impfzentren
-            self.log.info(f"{len(self.verfuegbare_impfzentren)} Impfzentren verfügbar")
+        # Antwort-JSON in Impfzentren-Liste umwandeln
+        verfuegbare_impfzentren = [
+            iz
+            for bundesland, impfzentren in res.json().items()
+            for iz in impfzentren
+        ]
+        self.log.info(f"{len(verfuegbare_impfzentren)} Impfzentren verfügbar")
 
-            # Prüfen, ob Impfzentren zur eingetragenen PLZ existieren
-            plz_geprueft = []
-            for plz in self.plz_impfzentren:
-                impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                if impfzentrum:
-                    self.domain = impfzentrum.get("URL")
-                    zentrumsname = impfzentrum.get("Zentrumsname")
-                    ort = impfzentrum.get("Ort")
-                    self.log.info(f"'{zentrumsname}' in {plz} {ort} ausgewählt")
-                    plz_geprueft.append(plz)
+        # Gefilterte Impfzentren-Liste nach URL gruppieren
+        result = {}
+        for iz in verfuegbare_impfzentren:
+            url = iz["URL"]
+            if url not in result:
+                result[url] = []
+            result[url].append(iz)
+        return result
 
-            if plz_geprueft:
-                self.plz_impfzentren = plz_geprueft
-                return True
-            else:
-                self.log.error("Kein Impfzentrum zu eingetragenen PLZ's verfügbar.")
-                return False
-        else:
-            self.log.error("Impfzentren können nicht geladen werden")
-        return False
-
-    @retry_on_failure(1)
-    def impfstoffe_laden(self):
+    def impfstoffe_laden(self, url):
         """
-        Laden der verfügbaren Impstoff-Qualifikationen.
-        In der Regel gibt es 3 Qualifikationen, die je nach Altersgruppe verteilt werden.
+        Lädt die verfügbaren Impstoff-Qualifikationen
 
-        :return:
+        Beispiel:
+            self.impfstoffe_laden("https://001-iz.impfterminservice.de/")
+            [
+                {
+                    'qualification': 'L920',
+                    'name': 'Comirnaty (BioNTech)',
+                    'short': 'BioNTech',
+                    'tssname': 'BioNTech',
+                    'interval': 40,
+                    'age': '16+',
+                    'tssage': '16-17'
+                },
+                {
+                    'qualification': 'L921',
+                    'name': 'mRNA-1273 (Moderna)',
+                    'short': 'Moderna',
+                    'tssname': 'Moderna, BioNTech',
+                    'interval': 40,
+                    'age': '18+',
+                    'tssage': '18-59'
+                },
+                {
+                    'qualification': 'L922',
+                    'name': 'COVID-1912 (AstraZeneca)',
+                    'short': 'AstraZeneca',
+                    'tssname': 'Moderna, BioNTech, AstraZeneca',
+                    'interval': 40,
+                    'age': '60+',
+                    'tssage': '60+'
+                },
+                {
+                    'qualification': 'L923',
+                    'name': 'COVID-19 Vaccine Janssen (Johnson & Johnson)',
+                    'short': 'Johnson&Johnson',
+                    'tssname': 'Johnson&Johnson',
+                    'age': '60+'
+                }
+            ]
+
+        :param url: URL des Servers, auf dem die verfügbaren
+            Impfstoff-Qualifikationen abgerufen werden sollen
+
+        :return: Liste an Impstoff-Qualifikationen; siehe obiges Beispiel
         """
-        path = "assets/static/its/vaccination-list.json"
 
-        res = self.s.get(self.domain + path, timeout=15)
-        if res.ok:
-            res_json = res.json()
+        location = f"{url}assets/static/its/vaccination-list.json"
 
-            for qualifikation in res_json:
-                qualifikation["impfstoffe"] = qualifikation.get("tssname",
-                                                                "N/A").replace(" ", "").split(",")
-                self.verfuegbare_qualifikationen.append(qualifikation)
+        try:
+            self.s.cookies.clear()
+            res = self.s.get(location, timeout=15)
+        except RequestException as exc:
+            raise RuntimeError(
+                f"Impfstoffe können nicht geladen werden: {str(exc)}")
+        if not res.ok:
+            raise RuntimeError(
+                f"Impfstoffe können nicht geladen werden: {res.status_code} {res.text}")
 
-            # Ausgabe der verfügbaren Impfstoffe:
-            for qualifikation in self.verfuegbare_qualifikationen:
-                q_id = qualifikation["qualification"]
-                alter = qualifikation.get("age", "N/A")
-                intervall = qualifikation.get("interval", " ?")
-                impfstoffe = str(qualifikation["impfstoffe"])
-                self.log.info(
-                    f"[{q_id}] Altersgruppe: {alter} (Intervall: {intervall} Tage) --> {impfstoffe}")
-            print("")
-            return True
+        qualifikationen = res.json()
 
-        self.log.error("Keine Impfstoffe im ausgewählten Impfzentrum verfügbar")
-        return False
+        for qualifikation in qualifikationen:
+            q_id = qualifikation.get("qualification")
+            alter = qualifikation.get("age", "N/A")
+            intervall = qualifikation.get("interval", " ?")
+            impfstoffe = extrahiere_impfstoffe(qualifikation)
+            self.log.info(
+                f"[{q_id}] Altersgruppe: {alter} "
+                f"(Intervall: {intervall} Tage) --> {str(impfstoffe)}")
+
+        return qualifikationen
 
     def get_chromedriver_path(self):
         """
@@ -182,8 +251,6 @@ class ImpfterminService():
     def get_chromedriver(self, headless):
         chrome_options = Options()
 
-
-
         # deaktiviere Selenium Logging
         chrome_options.add_argument('disable-infobars')
         chrome_options.add_experimental_option('useAutomationExtension', False)
@@ -191,13 +258,13 @@ class ImpfterminService():
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
-        #chrome_options.add_argument("-no-sandbox");
+        # chrome_options.add_argument("-no-sandbox");
         chrome_options.add_argument("-disable-dev-shm-usage");
 
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
         chrome_options.add_argument("user-agent=Mozilla/5.0")
-        
+
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
             chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
@@ -206,17 +273,16 @@ class ImpfterminService():
 
         return Chrome(self.get_chromedriver_path(), options=chrome_options)
 
-    def driver_enter_code(self, driver, plz_impfzentrum):
+    def driver_enter_code(self, driver, impfzentrum, code):
         """
         TODO xpath code auslagern
         """
 
-        self.log.info("Code eintragen und Mausbewegung / Klicks simulieren. "
+        self.log.info("Vermittlungscode eintragen und Mausbewegung / Klicks simulieren. "
                       "Dieser Vorgang kann einige Sekunden dauern.")
 
-        url = f"{self.domain}impftermine/service?plz={plz_impfzentrum}"
-
-        driver.get(url)
+        location = f"{impfzentrum['URL']}impftermine/service?plz={impfzentrum['PLZ']}"
+        driver.get(location)  # Kann WebDriverException nach außen werfen.
 
         # Queue Bypass
         while True:
@@ -232,7 +298,7 @@ class ImpfterminService():
 
             # Seite neu laden
             time.sleep(5)
-            driver.get(url)
+            driver.get(location)
             driver.refresh()
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
@@ -257,7 +323,7 @@ class ImpfterminService():
         action.move_to_element(input_field).click().perform()
 
         # Code eintragen
-        input_field.send_keys(self.code)
+        input_field.send_keys(code)
         time.sleep(.1)
 
         # Klick auf "Termin suchen"
@@ -268,6 +334,7 @@ class ImpfterminService():
         action.move_to_element(button).click().perform()
 
         # Maus-Bewegung hinzufügen (nicht sichtbar)
+        action = ActionChains(driver)
         for i in range(3):
             try:
                 action.move_by_offset(randint(1, 100), randint(1, 100)).perform()
@@ -275,52 +342,46 @@ class ImpfterminService():
             except:
                 pass
 
-    def driver_renew_cookies(self, driver, plz_impfzentrum):
-        self.driver_enter_code(driver, plz_impfzentrum)
+    def driver_get_cookies(self, driver, url, manual):
+        # Erstelle zufälligen Vermittlungscode für die Cookie-Generierung
+        legal_chars = string.ascii_uppercase + string.digits
+        random_chars = "".join(choices(legal_chars, k=5))
+        random_code = f"VACC-IPY{random_chars[0]}-{random_chars[1:]}"
 
-        # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
-        try:
-            cookie = driver.get_cookie("bm_sz")
-            if cookie:
-                self.s.cookies.clear()
-                self.s.cookies.update({c['name']: c['value'] for c in driver.get_cookies()})
-                self.log.info("Browser-Cookie generiert: *{}".format(cookie.get("value")[-6:]))
-                return True
-            else:
-                self.log.error("Cookies können nicht erstellt werden!")
-                return False
-        except:
-            return False
-
-
-    def driver_renew_cookies_code(self, driver, plz_impfzentrum, manual=False):
-        self.driver_enter_code(driver, plz_impfzentrum)
+        # Kann WebDriverException nach außen werfen:
+        self.driver_enter_code(
+            driver, choice(self.impfzentren[url]), random_code)
         if manual:
             self.log.warn(
                 "Du hast jetzt 30 Sekunden Zeit möglichst viele Elemente im Chrome Fenster anzuklicken. Das Fenster schließt sich automatisch.")
             time.sleep(30)
+
+        required = ["bm_sz", "akavpau_User_allowed"]
+
+        cookies = {
+            c["name"]: c["value"]
+            for c in driver.get_cookies()
+            if c["name"] in required
+        }
+
         # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
-        try:
-            cookie = driver.get_cookie("bm_sz").get("value")
-            akavpau = driver.get_cookie("akavpau_User_allowed").get("value")
-            if cookie:
-                self.s.cookies.clear()
-                self.s.cookies.update({"bm_sz": cookie,"akavpau_User_allowed": akavpau })
-                self.log.info("Browser-Cookie generiert: *{}".format(cookie.get("value")[-6:]))
-                return True
-            else:
-                self.log.error("Cookies können nicht erstellt werden!")
-                return False
-        except:
-            return False
+        for name in required:
+            if name not in cookies:
+                raise RuntimeError(f"{name} fehlt!")
 
+        self.log.success(f"Browser-Cookie generiert: *{cookies['bm_sz'][-6:]}")
+        return cookies
 
-    def driver_book_appointment(self, driver, plz_impfzentrum):
+    def driver_termin_buchen(self, driver, reservierung):
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         filepath = os.path.join(self.PATH, "tools\\log\\")
-        url = f"{self.domain}impftermine/service?plz={plz_impfzentrum}"
 
-        self.driver_enter_code(driver, plz_impfzentrum)
+        try:
+            self.driver_enter_code(
+                driver, reservierung["impfzentrum"], reservierung["code"])
+        except BaseException as exc:
+            self.log.error(f"Vermittlungscode kann nicht eingegeben werden: {str(exc)}")
+            pass
 
         try:
             # Klick auf "Termin suchen"
@@ -349,7 +410,8 @@ class ImpfterminService():
         except:
             self.log.error("Termine können nicht ausgewählt werden")
             try:
-                with open(filepath + "errorterminauswahl" + timestamp + ".html", 'w', encoding='utf-8') as file:
+                with open(filepath + "errorterminauswahl" + timestamp + ".html", 'w',
+                          encoding='utf-8') as file:
                     file.write(str(driver.page_source))
                 driver.save_screenshot(filepath + "errorterminauswahl" + timestamp + ".png")
             except:
@@ -381,12 +443,13 @@ class ImpfterminService():
             pass
         try:
             # Klick Anrede
-            arrAnreden = ["Herr","Frau","Kind","Divers"]
+            arrAnreden = ["Herr", "Frau", "Kind", "Divers"]
             if self.kontakt['anrede'] in arrAnreden:
-                button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"'+self.kontakt['anrede']+'")]'
+                button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"' + \
+                               self.kontakt['anrede'] + '")]'
             else:
                 button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"Divers")]'
-                
+
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
@@ -464,34 +527,11 @@ class ImpfterminService():
             self.log.error("Button Termin buchen kann nicht gedrückt werden")
             pass
         time.sleep(3)
-        if "Ihr Termin am" in str(driver.page_source):
-            msg = "Termin erfolgreich gebucht!"
-            self.log.success(msg)
-            desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
-            return True
-        else:
-            self.log.error(
-                "Automatisierte Terminbuchung fehlgeschlagen. Termin manuell im Fenster oder im Browser buchen.")
-            print(f"Link für manuelle Buchung im Browser: {self.domain}impftermine/suche/{self.code}/{plz_impfzentrum}")
-            time.sleep(10 * 60)
-            return False
 
-    @retry_on_failure()
-    def renew_cookies(self):
-        """
-        Cookies der Session erneuern, wenn sie abgelaufen sind.
-        :return:
-        """
+        if "Ihr Termin am" not in str(driver.page_source):
+            raise BookingError()
 
-        self.log.info("Browser-Cookies generieren")
-        driver = self.get_chromedriver(headless=True)
-        try:
-            return self.driver_renew_cookies(driver, choice(self.plz_impfzentren))
-        finally:
-            driver.quit()
-          
-    @retry_on_failure()
-    def renew_cookies_code(self, manual=False):
+    def get_cookies(self, url, manual):
         """
         Cookies der Session erneuern, wenn sie abgelaufen sind.
         :return:
@@ -500,12 +540,14 @@ class ImpfterminService():
         self.log.info("Browser-Cookies generieren")
         driver = self.get_chromedriver(headless=False)
         try:
-            return self.driver_renew_cookies_code(driver, choice(self.plz_impfzentren), manual)
+            return self.driver_get_cookies(driver, url, manual)
+        except WebDriverException as exc:
+            raise RuntimeError(
+                f"Cookies können nicht generiert werden: {str(exc)}") from exc
         finally:
             driver.quit()
 
-    @retry_on_failure()
-    def book_appointment(self):
+    def selenium_termin_buchen(self, reservierung):
         """
         Backup Prozess:
         Wenn die Terminbuchung mit dem Bot nicht klappt, wird das
@@ -516,45 +558,103 @@ class ImpfterminService():
         self.log.info("Termin über Selenium buchen")
         driver = self.get_chromedriver(headless=False)
         try:
-            return self.driver_book_appointment(driver, self.plz_termin)
+            self.driver_termin_buchen(driver, reservierung)
+        except BookingError:
+            url = reservierung["impfzentrum"]["URL"]
+            plz_impfzentrum = reservierung["impfzentrum"]["PLZ"]
+            code = reservierung["code"]
+            self.log.error("Automatisierte Terminbuchung fehlgeschlagen")
+            self.log.error("Termin manuell im Fenster oder im Browser buchen.")
+            self.log.error(
+                f"Link: {url}impftermine/suche/{code}/{plz_impfzentrum}")
+            time.sleep(10 * 60)  # Sleep, um Fenster offen zu halten
+            raise  # Ursprüngliche Exception reraisen
         finally:
             driver.quit()
 
-    @retry_on_failure()
-    def login(self):
-        """Einloggen mittels Code, um qualifizierte Impfstoffe zu erhalten.
-        Dieser Schritt ist wahrscheinlich nicht zwingend notwendig, aber schadet auch nicht.
+    def login(self, plz_impfzentrum, code, cookies):
+        """
+        Einloggen mittels Vermittlungscode, um qualifizierte Impfstoffe zu erhalten.
 
-        :return: bool
+        Beispiel:
+            self.login("69123", "XXXX-XXXX-XXXX", cookies)
+            {
+                'kv': '52',
+                'qualifikationen': ['L921'],
+                'verknuepft': True
+            }
+
+        :return: Deserialisierte JSON-Antwort vom Server; siehe obiges Beispiel
         """
 
-        path = f"rest/login?plz={choice(self.plz_impfzentren)}"
+        url = self.impfzentrum_in_plz(plz_impfzentrum)["URL"]
+        location = f"{url}rest/login?plz={plz_impfzentrum}"
 
-        res = self.s.get(self.domain + path, timeout=15)
-        if res.ok:
-            # Checken, welche Impfstoffe für das Alter zur Verfügung stehen
-            self.qualifikationen = res.json().get("qualifikationen")
+        try:
+            self.s.cookies.clear()
+            res = self.s.get(
+                location,
+                headers=get_headers(code),
+                cookies=cookies,
+                timeout=15)
+        except RequestException as exc:
+            raise RuntimeError(f"Login mit Code fehlgeschlagen: {str(exc)}")
+        if res.status_code == 401:
+            raise UnmatchingCodeError(
+                f"Login in {plz_impfzentrum} nicht erfolgreich: "
+                f"Vermittlungscode nicht gültig für diese PLZ")
+        if not res.ok:
+            raise RuntimeError(
+                f"Login mit Code fehlgeschlagen: {res.status_code} {res.text}")
 
-            if self.qualifikationen:
-                zugewiesene_impfstoffe = set()
+        if "Virtueller Warteraum" in res.text:
+            raise RuntimeError("Login mit Code fehlgeschlagen: Warteraum")
 
-                for q in self.qualifikationen:
-                    for verfuegbare_q in self.verfuegbare_qualifikationen:
-                        if verfuegbare_q["qualification"] == q:
-                            zugewiesene_impfstoffe.update(verfuegbare_q["impfstoffe"])
+        try:
+            return res.json()
+        except JSONDecodeError as exc:
+            raise RuntimeError(
+                "Login mit Code fehlgeschlagen: "
+                f"JSONDecodeError: {str(exc)}") from exc
 
-                self.log.info("Erfolgreich mit Code eingeloggt")
-                self.log.info(f"Mögliche Impfstoffe: {list(zugewiesene_impfstoffe)}")
-                print(" ")
+    def reservierung_finden(self, plz_impfzentren: list, zeitrahmen: dict):
+        for url in self.impfzentren:
+            ausgewaehlte_impfzentren = [
+                iz for iz in self.impfzentren[url]
+                if iz["PLZ"] in plz_impfzentren
+            ]
+            if not ausgewaehlte_impfzentren:
+                continue
 
-                return True
-            else:
-                self.log.warn("Keine qualifizierten Impfstoffe verfügbar")
-        else:
-            return False
+            iz = choice(ausgewaehlte_impfzentren)
+            plz = iz["PLZ"]
+            codes = self.codes[url]
+            if not codes:
+                self.log.warn(f"Kein gültiger Vermittlungscode vorhanden für PLZ {plz}")
+                continue
 
-    @retry_on_failure()
-    def termin_suchen(self, plz: str, zeitrahmen: dict):
+            try:
+                reservierung = self.reservierung_hier_finden(
+                    zeitrahmen, iz, codes[0])
+                if reservierung is not None:
+                    return reservierung
+            except UnmatchingCodeError:
+                code = codes.pop(0)
+                plz_ausgeschlossen = [
+                    iz["PLZ"] for iz in ausgewaehlte_impfzentren
+                ]
+                self.log.info(
+                    f"Überspringe Code {code[:4]}* "
+                    f"für {', '.join(plz_ausgeschlossen)}")
+            except TimeframeMissed:
+                self.rotiere_codes(url)
+            except RuntimeError as exc:
+                self.log.error(str(exc))
+
+        return None
+
+    def reservierung_hier_finden(
+            self, zeitrahmen: dict, impfzentrum: dict, code: str):
         """Es wird nach einen verfügbaren Termin in der gewünschten PLZ gesucht.
         Ausgewählt wird der erstbeste Termin, welcher im entsprechenden Zeitraum liegt (!).
         Zurückgegeben wird das Ergebnis der Abfrage und der Status-Code.
@@ -575,131 +675,136 @@ class ImpfterminService():
         :return: bool, status-code
         """
 
-        path = f"rest/suche/impfterminsuche?plz={plz}"
+        url = impfzentrum["URL"]
+        plz = impfzentrum["PLZ"]
+        location = f"{url}rest/suche/impfterminsuche?plz={plz}"
 
-        while True:
-            res = self.s.get(self.domain + path, timeout=15)
-            if not res.ok or 'Virtueller Warteraum des Impfterminservice' not in res.text:
-                break
-            self.log.info('Warteraum... zZz...')
-            time.sleep(30)
+        try:
+            self.s.cookies.clear()
+            res = self.s.get(location, headers=get_headers(code), timeout=5)
+        except RequestException as exc:
+            raise RuntimeError(
+                f"Termine in {plz} können nicht geladen werden: {str(exc)}")
+        if res.status_code == 401:
+            raise UnmatchingCodeError(
+                f"Termine in {plz} können nicht geladen werden: "
+                f"Vermittlungscode nicht gültig für diese PLZ")
+        if not res.ok:
+            raise RuntimeError(
+                "Termine in {plz} können nicht geladen werden: "
+                f"{res.status_code} {res.text}")
 
-        if res.ok:
-            res_json = res.json()
-            terminpaare = res_json.get("termine")
-            self.termin_anzahl=len(terminpaare)
-            if terminpaare:
-                terminpaare_angenommen = [
-                    tp for tp in terminpaare
-                    if terminpaar_im_zeitrahmen(tp, zeitrahmen)
-                ]
-                terminpaare_abgelehnt = [
-                    tp for tp in terminpaare
-                    if tp not in terminpaare_angenommen
-                ]
-                impfzentrum = self.verfuegbare_impfzentren.get(plz)
-                zentrumsname = impfzentrum.get('Zentrumsname').strip()
-                ort = impfzentrum.get('Ort')
-                for tp_abgelehnt in terminpaare_abgelehnt:
-                    self.log.warn(
-                        "Termin gefunden - jedoch nicht im entsprechenden Zeitraum:")
-                    self.log.info('-' * 50)
-                    self.log.warn(f"'{zentrumsname}' in {plz} {ort}")
-                    for num, termin in enumerate(tp_abgelehnt, 1):
-                        ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
-                            '%d.%m.%Y um %H:%M Uhr')
-                        self.log.warn(f"{num}. Termin: {ts}")
-                    self.log.info('-' * 50)
-                if terminpaare_angenommen:
-                    # Auswahl des erstbesten Terminpaares
-                    self.terminpaar = choice(terminpaare_angenommen)
-                    self.plz_termin = plz
-                    self.log.success(f"Termin gefunden!")
-                    self.log.success(f"'{zentrumsname}' in {plz} {ort}")
-                    for num, termin in enumerate(self.terminpaar, 1):
-                        ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
-                            '%d.%m.%Y um %H:%M Uhr')
-                        self.log.success(f"{num}. Termin: {ts}")
-                    if ENABLE_BEEPY:
-                        beepy.beep('coin')
-                    else:
-                        print("\a")
-                    return True, 200
-            else:
-                self.log.info(f"Keine Termine verfügbar in {plz}")
-        elif res.status_code == 401:
-            self.log.error(f"Terminpaare können nicht geladen werden: Impf-Code kann nicht für "
-                           f"die PLZ '{plz}' verwendet werden.")
-            sys.exit()
+        if 'Virtueller Warteraum des Impfterminservice' in res.text:
+            return None
+
+        try:
+            terminpaare = res.json().get("termine")
+        except JSONDecodeError as exc:
+            raise RuntimeError(
+                f"Termine in {plz} können nicht geladen werden: "
+                f"JSONDecodeError: {str(exc)}")
+        if not terminpaare:
+            self.log.info(f"Keine Termine verfügbar in {plz}")
+            return None
+
+        if ENABLE_BEEPY:
+            beepy.beep('coin')
         else:
-            self.log.error(f"Terminpaare können nicht geladen werden: {res.text}")
-        return False, res.status_code
+            print("\a")
 
-    @retry_on_failure()
-    def termin_buchen(self):
+        terminpaare_angenommen = [
+            tp for tp in terminpaare
+            if terminpaar_im_zeitrahmen(tp, zeitrahmen)
+        ]
+        terminpaare_abgelehnt = [
+            tp for tp in terminpaare
+            if tp not in terminpaare_angenommen
+        ]
+
+        zentrumsname = impfzentrum.get('Zentrumsname').strip()
+        ort = impfzentrum.get('Ort')
+
+        for tp_abgelehnt in terminpaare_abgelehnt:
+            self.log.warn(
+                "Termin gefunden - jedoch nicht im entsprechenden Zeitraum:")
+            self.log.info('-' * 50)
+            self.log.warn(f"'{zentrumsname}' in {plz} {ort}")
+            for num, termin in enumerate(tp_abgelehnt, 1):
+                ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
+                    '%d.%m.%Y um %H:%M Uhr')
+                self.log.warn(f"{num}. Termin: {ts}")
+            self.log.info('-' * 50)
+
+        if not terminpaare_angenommen:
+            raise TimeframeMissed()
+
+        # Auswahl des erstbesten Terminpaares
+        tp_angenommen = choice(terminpaare_angenommen)
+        self.log.success(f"Termin gefunden!")
+        self.log.success(f"'{zentrumsname}' in {plz} {ort}")
+        for num, termin in enumerate(tp_angenommen, 1):
+            ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
+                '%d.%m.%Y um %H:%M Uhr')
+            self.log.success(f"{num}. Termin: {ts}")
+
+        # Reservierungs-Objekt besteht aus Terminpaar und Impfzentrum
+        return {
+            "code": code,
+            "impfzentrum": impfzentrum,
+            "terminpaar": tp_angenommen,
+        }
+
+    def termin_buchen(self, reservierung):
         """Termin wird gebucht für die Kontaktdaten, die beim Starten des
         Programms eingetragen oder aus der JSON-Datei importiert wurden.
 
         :return: bool
         """
 
-        path = "rest/buchung"
-
         # Daten für Impftermin sammeln
         data = {
-            "plz": self.plz_termin,
-            "slots": [termin.get("slotId") for termin in self.terminpaar],
-            "qualifikationen": self.qualifikationen,
+            "plz": reservierung["impfzentrum"]["PLZ"],
+            "slots": [termin.get("slotId") for termin in reservierung["terminpaar"]],
+            "qualifikationen": [],
             "contact": self.kontakt
         }
 
-        res = self.s.post(self.domain + path, json=data, timeout=15)
+        url = reservierung["impfzentrum"]["URL"]
+        location = f"{url}rest/buchung"
+        headers = get_headers(reservierung["code"])
 
-        if res.status_code == 201:
-            msg = "Termin erfolgreich gebucht!"
-            self.log.success(msg)
-            desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
-            return True
-
-        elif res.status_code == 429:
-            msg = "Anfrage wurde von der Botprotection geblockt. Cookies werden erneuert und die Buchung wiederholt."
-            self.log.error(msg)
-            self.renew_cookies_code()
-            res = self.s.post(self.domain + path, json=data, timeout=15)
-            if res.status_code == 201:
-                msg = "Termin erfolgreich gebucht!"
-                self.log.success(msg)
-                desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
-                return True
-            else:
-                # Termin über Selenium Buchen
-                return self.book_appointment()
-
-        elif res.status_code >= 400:
-            data = res.json()
+        try:
+            # get_cookies kann RuntimeError werfen
+            cookies = self.get_cookies(url, manual=False)
             try:
-                error = data['errors']['status']
-            except KeyError:
-                error = ''
-            if 'nicht mehr verfügbar' in error:
-                msg = f"Diesen Termin gibts nicht mehr: {error}"
-                #Bei Terminanzahl = 1 11 Minuten warten und danach fortsetzen.
-                if self.termin_anzahl == 1:
-                    msg = f"Diesen Termin gibts nicht mehr: {error}. Die Suche wird in 11 Minuten fortgesetzt"
-                    self.log.error(msg)
-                    time.sleep(11*60)
-                    return False
-            else:
-                msg = f"Termin konnte nicht gebucht werden: {data}"
-        else:
-            msg = f"Unbekannter Statuscode: {res.status_code}"
+                self.s.cookies.clear()
+                res = self.s.post(
+                    location,
+                    json=data,
+                    headers=headers,
+                    cookies=cookies,
+                    timeout=15)
+            except RequestException as exc:
+                raise RuntimeError(
+                    f"Termin konnte nicht gebucht werden: {str(exc)}")
+            if res.status_code != 201:
+                # Example res: {"errors":[{"code":"WP009","text":"Buchung bereits durchgefuehrt"}]}
+                if '"code":"WP009"' in res.text:
+                    raise AppointmentGone
 
-        self.log.error(msg)
-        desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
-        return False
+                # Example res: {"errors":[{"code":"WP011","text":"Der ausgewählte Termin ist nicht mehr verfügbar. Bitte wählen Sie einen anderen Termin aus"}]}
+                if '"code":"WP011"' in res.text:
+                    raise AppointmentGone()
 
-    @retry_on_failure()
-    def code_anfordern(self, mail, telefonnummer, plz_impfzentrum, geburtsdatum):
+                raise RuntimeError(
+                    f"Termin konnte nicht gebucht werden: {res.status_code} {res.text}")
+        except RuntimeError as exc:
+            self.log.error(str(exc))
+            self.log.info("Starte zweiten Versuch über Selenium ...")
+            self.selenium_termin_buchen(reservierung)
+
+    def code_anfordern(self, mail, telefonnummer,
+                       plz_impfzentrum, geburtsdatum):
         """
         SMS-Code beim Impfterminservice anfordern.
 
@@ -710,7 +815,8 @@ class ImpfterminService():
         :return:
         """
 
-        path = "rest/smspin/anforderung"
+        url = self.impfzentrum_in_plz(plz_impfzentrum)["URL"]
+        location = f"{url}rest/smspin/anforderung"
 
         data = {
             "plz": plz_impfzentrum,
@@ -721,90 +827,206 @@ class ImpfterminService():
             "einzeltermin": False
         }
 
+        cookies = None
+        manual = False
         while True:
-            res = self.s.post(self.domain + path, json=data, timeout=15)
-            if res.ok:
-                token = res.json().get("token")
-                return token
-            elif res.status_code == 429:
-                self.log.error(
-                    "Anfrage wurde von der Botprotection geblockt.\n"
-                    "Die Cookies müssen manuell im Browser generiert werden.\n")
-                self.renew_cookies_code(True)
-            else:
-                self.log.error(f"Code kann nicht angefragt werden: {res.text}")
-                return None
+            if cookies is None:
+                try:
+                    cookies = self.get_cookies(url, manual=manual)
+                except RuntimeError as exc:
+                    self.log.error(str(exc))
+                    continue  # Neuer Versuch in nächster Iteration
 
-    @retry_on_failure()
-    def code_bestaetigen(self, token, sms_pin):
+            try:
+                self.s.cookies.clear()
+                res = self.s.post(
+                    location,
+                    json=data,
+                    cookies=cookies,
+                    timeout=15)
+            except RequestException as exc:
+                self.log.error(f"Vermittlungscode kann nicht angefragt werden: {str(exc)}")
+                self.log.info("Erneuter Versuch in 30 Sekunden")
+                time.sleep(30)
+                continue  # Neuer Versuch in nächster Iteration
+
+            if res.status_code == 429:
+                self.log.error("Anfrage wurde von der Botprotection geblockt")
+                self.log.error(
+                    "Die Cookies müssen manuell im Browser generiert werden")
+                cookies = None
+                manual = True
+                continue  # Neuer Versuch in nächster Iteration
+
+            if res.status_code == 400 and res.text == '{"error":"Anfragelimit erreicht."}':
+                raise RuntimeError("Anfragelimit erreicht")
+
+            if not res.ok:
+                self.log.error(
+                    "Code kann nicht angefragt werden: "
+                    f"{res.status_code} {res.text}")
+                self.log.info("Erneuter Versuch in 30 Sekunden")
+                time.sleep(30)
+                continue  # Neuer Versuch in nächster Iteration
+
+            try:
+                token = res.json().get("token")
+            except JSONDecodeError as exc:
+                raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
+
+            return (token, cookies)
+
+    def code_bestaetigen(self, token, cookies, sms_pin, plz_impfzentrum):
         """
         Bestätigung der Code-Generierung mittels SMS-Code
 
         :param token: Token der Code-Erstellung
         :param sms_pin: 6-stelliger SMS-Code
-        :return:
+        :return: True falls SMS-Code korrekt war, sonst False
         """
 
-        path = f"rest/smspin/verifikation"
+        url = self.impfzentrum_in_plz(plz_impfzentrum)["URL"]
+        location = f"{url}rest/smspin/verifikation"
         data = {
             "token": token,
             "smspin": sms_pin
 
         }
+
+        manual = False
         while True:
-            res = self.s.post(self.domain + path, json=data, timeout=15)
-            if res.ok:
-                self.log.success("Der Impf-Code wurde erfolgreich angefragt, bitte prüfe deine Mails!")
-                return True
-            elif res.status_code == 429:
-                self.log.error("Cookies müssen erneuert werden.")
-                self.renew_cookies_code()
-            else:
-                self.log.error(f"Code-Verifikation fehlgeschlagen: {res.text}")
+            if cookies is None:
+                try:
+                    cookies = self.get_cookies(url, manual=manual)
+                except RuntimeError as exc:
+                    self.log.error(str(exc))
+                    continue  # Neuer Versuch in nächster Iteration
+
+            try:
+                self.s.cookies.clear()
+                res = self.s.post(
+                    location,
+                    json=data,
+                    cookies=cookies,
+                    timeout=15)
+            except RequestException as exc:
+                self.log.error(f"Code-Verifikation fehlgeschlagen: {str(exc)}")
+                self.log.info("Erneuter Versuch in 30 Sekunden")
+                time.sleep(30)
+                continue  # Neuer Versuch in nächster Iteration
+
+            if res.status_code == 429:
+                self.log.error("Anfrage wurde von der Botprotection geblockt")
+                self.log.error(
+                    "Die Cookies müssen manuell im Browser generiert werden")
+                cookies = None
+                manual = True
+                continue  # Neuer Versuch in nächster Iteration
+
+            if res.status_code == 400:
                 return False
 
-    @staticmethod
-    def terminsuche(code: str, plz_impfzentren: list, kontakt: dict, PATH: str, zeitrahmen: dict = dict(), check_delay: int = 30):
-        """
-        Workflow für die Terminbuchung.
+            if not res.ok:
+                self.log.error(
+                    "Code-Verifikation fehlgeschlagen: "
+                    f"{res.status_code} {res.text}")
+                self.log.info("Erneuter Versuch in 30 Sekunden")
+                time.sleep(30)
+                continue  # Neuer Versuch in nächster Iteration
 
-        :param code: 14-stelliger Impf-Code
-        :param plz_impfzentren: Liste mit PLZ von Impfzentren
-        :param kontakt: Kontaktdaten der zu impfenden Person als JSON
-        :param check_delay: Zeit zwischen Iterationen der Terminsuche
+            self.log.success(
+                "Der Vermittlungscode wurde erfolgreich angefragt, "
+                "bitte prüfe deine Mails!")
+            return True
+
+    def impfzentrum_in_plz(self, plz_impfzentrum):
+        for url, gruppe in self.impfzentren.items():
+            for iz in gruppe:
+                if iz["PLZ"] == plz_impfzentrum:
+                    return iz
+        raise ValueError(
+            f"Gewünschte PLZ {plz_impfzentrum} wurde bei Initialisierung nicht angegeben")
+
+    def rotiere_codes(self, url):
+        codes = self.codes[url]
+        self.codes[url] = codes[1:] + codes[:1]
+
+    @staticmethod
+    def terminsuche(codes: list, plz_impfzentren: list, kontakt: dict,
+                    PATH: str, notifications: dict = {}, zeitrahmen: dict = dict(),
+                    check_delay: int = 30):
+        """
+        Sucht mit mehreren Vermittlungscodes bei einer Liste von Impfzentren nach
+        Terminen und bucht den erstbesten, der dem Zeitrahmen entspricht,
+        automatisch.
+
+        :param codes: Liste an Vermittlungscodes vom Schma XXXX-XXXX-XXXX
+        :param plz_impfzentren: Liste der PLZs der Impfzentren bei denen
+            gesucht werden soll
+        :param kontakt: Kontaktdaten der zu impfenden Person.
+            Wird bei der Terminbuchung im JSON-Format an den Server übertragen.
+            Zum Format, siehe tools.kontaktdaten.validate_kontakt.
+        :param PATH: Dateipfad zum vaccipy-Repo.
+            Wird verwendet, um die Chromedriver-Binary zu finden und Logs zu
+            speichern.
+        :param notifications: Daten zur Authentifizierung bei Benachrichtigungs Providern
+        :param zeitrahmen: Objekt, das den Zeitrahmen festlegt, in dem Termine
+            gebucht werden.
+            Zum Format, siehe tools.kontaktdaten.validate_zeitrahmen.
+        :param check_delay: Zeit zwischen Iterationen der Terminsuche.
         :return:
         """
 
+        validate_codes(codes)
         validate_kontakt(kontakt)
         validate_zeitrahmen(zeitrahmen)
 
-        its = ImpfterminService(code, plz_impfzentren, kontakt, PATH)
-        its.renew_cookies()
+        if len(plz_impfzentren) == 0:
+            raise ValueError("Kein Impfzentrum ausgewählt")
 
-        # login ist nicht zwingend erforderlich
-        its.login()
+        its = ImpfterminService(codes, kontakt, PATH, notifications)
+
+        # Prüfen, ob in allen angegebenen PLZs ein Impfzentrum verfügbar ist
+        izs_by_plz = {
+            iz["PLZ"]: iz
+            for gruppe in its.impfzentren.values()
+            for iz in gruppe
+        }
+        for plz in plz_impfzentren:
+            iz = izs_by_plz.get(plz)
+            if iz is None:
+                raise ValueError(f"Kein Impfzentrum in {plz} verfügbar")
+            zentrumsname = iz.get("Zentrumsname")
+            ort = iz.get("Ort")
+            its.log.info(f"'{zentrumsname}' in {plz} {ort} ausgewählt")
 
         while True:
-            termin_gefunden = False
-            while not termin_gefunden:
+            its.log.set_prefix(" ".join([
+                plz for plz in plz_impfzentren
+                if its.codes[izs_by_plz[plz]["URL"]]
+            ]))
+            reservierung = its.reservierung_finden(plz_impfzentren, zeitrahmen)
+            if reservierung is not None:
+                url = reservierung["impfzentrum"]["URL"]
+                try:
+                    its.termin_buchen(reservierung)
+                    msg = "Termin erfolgreich gebucht!"
+                    its.log.success(msg)
+                    self.notify(title="Terminbuchung:", message=msg)
+                    # Programm beenden, wenn Termin gefunden wurde
+                    return
+                except AppointmentGone:
+                    msg = f"Termin ist nicht mehr verfügbar"
+                    its.rotiere_codes(url)
+                except BookingError:
+                    msg = f"Termin konnte nicht gebucht werden."
+                its.log.error(msg)
+                self.notify(title="Terminbuchung:", message=msg)
 
-                # durchlaufe jede eingegebene PLZ und suche nach Termin
-                for plz in its.plz_impfzentren:
-                    termin_gefunden, status_code = its.termin_suchen(plz, zeitrahmen)
+            time.sleep(check_delay)
 
-                    # Durchlauf aller PLZ unterbrechen, wenn Termin gefunden wurde
-                    if termin_gefunden:
-                        break
-                    # Cookies erneuern
-                    elif status_code >= 400:
-                        its.renew_cookies()
-                    # Suche pausieren
-                    if not termin_gefunden:
-                        time.sleep(check_delay)
-
-            # Programm beenden, wenn Termin gefunden wurde
-            if its.termin_buchen():
-                return True
+    def notify(self, title: str, msg: str):
+        fire_notifications(self.notifications, self.operating_system, title, msg)
 
 
 def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
@@ -830,8 +1052,8 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
         zeitrahmen["von_uhrzeit"],
         "%H:%M").time() if "von_uhrzeit" in zeitrahmen else dtime.min
     bis_uhrzeit = (
-        datetime.strptime(zeitrahmen["bis_uhrzeit"], "%H:%M")
-        + timedelta(seconds=59)
+            datetime.strptime(zeitrahmen["bis_uhrzeit"], "%H:%M")
+            + timedelta(seconds=59)
     ).time() if "bis_uhrzeit" in zeitrahmen else dtime.max
     wochentage = [decode_wochentag(wt) for wt in set(
         zeitrahmen["wochentage"])] if "wochentage" in zeitrahmen else range(7)
@@ -850,3 +1072,13 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
             if not termin_zeit.weekday() in wochentage:
                 return False
     return True
+
+
+def get_headers(code: str):
+    b = bytes(f':{code}', encoding='utf-8')
+    bearer = f"Basic {b64encode(b).decode('utf-8')}"
+    return {"Authorization": bearer}
+
+
+def extrahiere_impfstoffe(qualifikation: dict):
+    return qualifikation.get("tssname", "N/A").replace(" ", "").split(",")
