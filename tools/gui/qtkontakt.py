@@ -25,7 +25,6 @@ from tools.exceptions import ValidationError, MissingValuesError
 # i_mail
 
 ### Checkboxes ###
-# i_checkBoxCodeGen
 # i_mo_check_box
 # i_di_check_box
 # i_mi_check_box
@@ -85,8 +84,6 @@ class QtKontakt(QtWidgets.QDialog):
 
         # Funktion vom Button zuordnen
         self.b_impfzentren_waehlen.clicked.connect(self.__open_impfzentren)
-        self.i_checkBoxCodeGen.stateChanged.connect(self.setDummyCode)
-        
 
     def setup(self):
         """
@@ -408,10 +405,3 @@ class QtKontakt(QtWidgets.QDialog):
                     widget.setTime(QTime(23, 59))
             elif isinstance(widget, QtWidgets.QFrame):
                 self.__reset_zeitrahmen(widget.children())
-
-    def setDummyCode(self):
-        if self.i_checkBoxCodeGen.isChecked():
-            self.i_code_impfzentren.setText("XXXXXXXXXXXX")
-        else:
-            self.i_code_impfzentren.setText("")
-       
