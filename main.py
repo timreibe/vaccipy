@@ -47,7 +47,7 @@ def update_kontaktdaten_interactive(
             print(i18n.t("i18n.InputPLZs"))
             input_kontaktdaten_key(kontaktdaten,
                                    ["plz_impfzentren"],
-                                   "> " + i18n.t('i18n.PLZVacCenters') + ": ",
+                                   f"> {i18n.t('i18n.PLZVacCenters')}: ",
                                    lambda x: list(set([plz.strip() for plz in x.split(",")])))
 
         if "code" not in kontaktdaten and command == "search":
@@ -58,37 +58,37 @@ def update_kontaktdaten_interactive(
 
         if "anrede" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
-                kontaktdaten, ["kontakt", "anrede"], "> " + i18n.t('i18n.Gender') + ": ")
+                kontaktdaten, ["kontakt", "anrede"], f"> {i18n.t('i18n.Gender')}: ")
 
         if "vorname" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
-                kontaktdaten, ["kontakt", "vorname"], "> " + i18n.t('i18n.Firstname') + ": ")
+                kontaktdaten, ["kontakt", "vorname"], f"> {i18n.t('i18n.Firstname')}: ")
 
         if "nachname" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
-                kontaktdaten, ["kontakt", "nachname"], "> " + i18n.t('i18n.Lastname') + ": ")
+                kontaktdaten, ["kontakt", "nachname"], f"> {i18n.t('i18n.Lastname')}: ")
 
         if "strasse" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
-                kontaktdaten, ["kontakt", "strasse"], "> " + i18n.t('i18n.Street') + ": ")
+                kontaktdaten, ["kontakt", "strasse"], f"> {i18n.t('i18n.Street')}: ")
 
         if "hausnummer" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
-                kontaktdaten, ["kontakt", "hausnummer"], "> " + i18n.t('i18n.NumberHouse') + ": ")
+                kontaktdaten, ["kontakt", "hausnummer"], f"> {i18n.t('i18n.HouseNumber')}: ")
 
         if "plz" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
-                kontaktdaten, ["kontakt", "plz"], "> " + i18n.t('i18n.PLZ') + ": ")
+                kontaktdaten, ["kontakt", "plz"], f"> {i18n.t('i18n.PLZ')}: ")
 
         if "ort" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
-                kontaktdaten, ["kontakt", "ort"], "> " + i18n.t('i18n.City') + ": ")
+                kontaktdaten, ["kontakt", "ort"], f"> {i18n.t('i18n.City')}: ")
 
         if "phone" not in kontaktdaten["kontakt"]:
             input_kontaktdaten_key(
                 kontaktdaten,
                 ["kontakt", "phone"],
-                "> " + i18n.t('i18n.Phonenumber') + ": +49",
+                f"> {i18n.t('i18n.Phonenumber')}: +49",
                 lambda x: x if x.startswith("+49") else f"+49{remove_prefix(x, '0')}")
 
         if "notificationChannel" not in kontaktdaten["kontakt"]:
@@ -100,31 +100,31 @@ def update_kontaktdaten_interactive(
 
         if "zeitrahmen" not in kontaktdaten and command == "search":
             kontaktdaten["zeitrahmen"] = {}
-            if input("> " + i18n.t('i18n.ConstrainTimeSlot') + ": ").lower() != "n":
+            if input(f"> {i18n.t('i18n.ConstrainTimeSlot')}: ").lower() != "n":
                 print()
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "einhalten_bei"],
-                    "> " + i18n.t('i18n.ForWhichAppointment') + ": ")
+                    f"> {i18n.t('i18n.ForWhichAppointment')}: ")
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "von_datum"],
-                    "> " + i18n.t('i18n.FromDate') + ": ",
+                    f"> {i18n.t('i18n.FromDate')}: ",
                     lambda x: x if x else None)  # Leeren String zu None umwandeln
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "bis_datum"],
-                    "> " + i18n.t('i18n.ToDate') + ": ",
+                    f"> {i18n.t('i18n.ToDate')}: ",
                     lambda x: x if x else None)  # Leeren String zu None umwandeln
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "von_uhrzeit"],
-                    "> " + i18n.t('i18n.FromTime') + ": ",
+                    f"> {i18n.t('i18n.FromTime')}: ",
                     lambda x: x if x else None)  # Leeren String zu None umwandeln
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "bis_uhrzeit"],
-                    "> " + i18n.t('i18n.ToTime') + ": ",
+                    f"> {i18n.t('i18n.ToTime')}: ",
                     lambda x: x if x else None)  # Leeren String zu None umwandeln
                 print(i18n.t("i18n.InputWeekday"))
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "wochentage"],
-                    "> " + i18n.t('i18n.AllowedWeekdays') + ": ", parse_wochentage)
+                    f"> {i18n.t('i18n.AllowedWeekdays')}: ", parse_wochentage)
 
         json.dump(kontaktdaten, file, ensure_ascii=False, indent=4)
 
@@ -182,14 +182,14 @@ def run_search_interactive(kontaktdaten_path, check_delay):
     kontaktdaten = {}
     if os.path.isfile(kontaktdaten_path):
         daten_laden = input(
-            f"> " + i18n.t("i18n.ShouldContactdataBeLoaded",filename=os.path.basename(kontaktdaten_path)) + ": ").lower()
+            f"> {i18n.t('i18n.ShouldContactdataBeLoaded',filename=os.path.basename(kontaktdaten_path))}: ").lower()
         if daten_laden.lower() != "n":
             kontaktdaten = get_kontaktdaten(kontaktdaten_path)
 
     print()
     kontaktdaten = update_kontaktdaten_interactive(
         kontaktdaten, "search", kontaktdaten_path)
-    return run_search(kontaktdaten, check_delay)
+    return run_search(kontaktdaten, check_delay, kontaktdaten_path)
 
 
 def run_search(kontaktdaten, check_delay):
@@ -204,17 +204,17 @@ def run_search(kontaktdaten, check_delay):
 
         # Hinweis, wenn noch alte Version der Kontaktdaten.json verwendet wird
         if kontaktdaten.get("plz"):
-            print(i18n.t("i18n.InputAttentionOldVersionOfContactdata"))
+            print(i18n.t("i18n.InputAttentionOldVersionOfContactdata",filename="kontaktdaten.json")) # Kontaktdaten_path not available
             plz_impfzentren = [kontaktdaten.get("plz")]
         else:
             plz_impfzentren = kontaktdaten["plz_impfzentren"]
 
         kontakt = kontaktdaten["kontakt"]
-        print(i18n.t("i18n.ContactdataLoadedFor",firstname=kontakt['vorname'],lastname=kontakt['nachname']) + "\n")
+        print(f"{i18n.t('i18n.ContactdataLoadedFor',firstname=kontakt['vorname'],lastname=kontakt['nachname'])}\n")
 
         zeitrahmen = kontaktdaten["zeitrahmen"]
     except KeyError as exc:
-        raise ValueError(i18n.t("i18n.ContactdataCouldNotBeLoaded")) from exc
+        raise ValueError(i18n.t('i18n.ContactdataCouldNotBeLoaded',filename='kontaktdaten.json')) from exc # Kontaktdaten_path not available
 
     ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
                                   zeitrahmen=zeitrahmen, check_delay=check_delay, PATH=PATH)
@@ -233,16 +233,12 @@ def gen_code_interactive(kontaktdaten_path):
     :param kontaktdaten_path: Pfad zur JSON-Datei mit Kontaktdaten. Default: kontaktdaten.json im aktuellen Ordner
     """
 
-    print(
-        "Du kannst dir jetzt direkt einen Impf-Code erstellen.\n"
-        "Dazu benötigst du eine Mailadresse, Telefonnummer und die PLZ deines Impfzentrums.\n"
-        f"Die Daten werden anschließend lokal in der Datei '{os.path.basename(kontaktdaten_path)}' abgelegt.\n"
-        "Du musst sie zukünftig nicht mehr eintragen.\n")
+    print(i18n.t('i18n.InfoVacCode',filename=os.path.basename(kontaktdaten_path)))
 
     kontaktdaten = {}
     if os.path.isfile(kontaktdaten_path):
         daten_laden = input(
-            f"> Sollen die vorhandenen Daten aus '{os.path.basename(kontaktdaten_path)}' geladen werden (y/n)?: ").lower()
+            f"> {i18n.t('i18n.ShouldContactdataBeLoaded',filename=os.path.basename(kontaktdaten_path))}?: ").lower()
         if daten_laden.lower() != "n":
             kontaktdaten = get_kontaktdaten(kontaktdaten_path)
 
@@ -267,7 +263,7 @@ def gen_code(kontaktdaten):
             telefonnummer = f"+49{remove_prefix(telefonnummer, '0')}"
     except KeyError as exc:
         raise ValueError(
-            i18n.t("i18n.ContactdataCouldNotBeLoaded")) from exc
+            i18n.t("i18n.ContactdataCouldNotBeLoaded",filename='kontaktdata.json')) from exc # Kontaktdaten_path not available here
 
     # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
     # für die Cookie-Generierung
@@ -280,11 +276,10 @@ def gen_code(kontaktdaten):
 
     its = ImpfterminService(random_code, [plz_impfzentrum], {}, PATH)
 
-    print(i18n.t('i18n.PleaseEnterBirthday') + ".\n" +
-          i18n.t('i18n.Example') + ": 02.03.1982\n")
+    print(f"{i18n.t('i18n.PleaseEnterBirthday')}.\n{i18n.t('i18n.Example')}: 02.03.1982\n")
     while True:
         try:
-            geburtsdatum = input("> " + i18n.t('i18n.Birthday') + ": ")
+            geburtsdatum = input(f"> {i18n.t('i18n.Birthday')}: ")
             validate_datum(geburtsdatum)
             break
         except ValidationError as exc:
@@ -297,16 +292,16 @@ def gen_code(kontaktdaten):
 
     if token is not None:
         # code bestätigen
-        print("\n" + i18n.t("i18n.ReceiveSMSCode"))
+        print(f"\n{i18n.t('i18n.ReceiveSMSCode')}")
 
         # 3 Versuche für die SMS-Code-Eingabe
         for _ in range(3):
             sms_pin = input("> SMS-Code: ").replace("-", "")
             if its.code_bestaetigen(token, sms_pin):
-                print("\n" + i18n.t('i18n.ContinueSearchForAppointment') + ".\n")
+                print(f"\n{i18n.t('i18n.ContinueSearchForAppointment')}.\n")
                 return True
 
-    print("\n" + i18n.t('i18n.CodeGenerationFailed') + ".\n")
+    print(f"\n{i18n.t('i18n.CodeGenerationFailed')}.\n")
     return False
 
 
@@ -409,8 +404,8 @@ def main():
         while True:
             print(
                 i18n.t("Menu") + "?\n"
-                "[1] " + i18n.t('i18n.SearchForAppointment') + "\n"
-                "[2] " + i18n.t('i18n.GenerateVacCode') + "\n"
+                f"[1] {i18n.t('i18n.SearchForAppointment')}\n"
+                f"[2] {i18n.t('i18n.GenerateVacCode')}\n"
                 f"[x] {i18n.t('i18n.HideAdvancedSettings') if extended_settings else i18n.t('i18n.ShowAdvancedSettings')}\n")
 
             if extended_settings:
@@ -449,7 +444,7 @@ def main():
                     print(i18n.t('i18n.InvalidInputPleaseTryAgain') + ".")
                 print()
             except Exception as exc:
-                print(f"\n" + i18n.t("Error") + ":\n{str(exc)}\n")
+                print(f"\n{i18n.t('i18n.Error')}:\n{str(exc)}\n")
 
 
 if __name__ == "__main__":
