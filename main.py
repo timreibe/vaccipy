@@ -62,7 +62,7 @@ def update_kontaktdaten_interactive(
 
         if "codes" not in kontaktdaten and command == "search":
             input_kontaktdaten_key(
-                kontaktdaten, ["codes"], "> Vermittlercodes: ", lambda c: list(set([codes.strip() for codes in c.split(",")])))
+                kontaktdaten, ["codes"], "> Vermittlungscodes: ", lambda c: list(set([codes.strip() for codes in c.split(",")])))
 
         if "kontakt" not in kontaktdaten:
             kontaktdaten["kontakt"] = {}
