@@ -14,24 +14,24 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 * Automatisches Suchen und Buchen von Impfterminen
 * Suche bei mehreren Impfzentren gleichzeitig
 * Warteschlange umgehen
-* Dauerhaft Impf-Codes generieren - egal wo, egal für wen!
+* Dauerhaft Vermittlungscodes generieren - egal wo, egal für wen!
 * Programmoberfläche (GUI) für einfache Bedienung
 
-**[Wusstest du: Du kannst mit einem Impf-Code in mehreren Impfzentren gleichzeitig nach freien Terminen suchen!](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)**
+**[Wusstest du: Du kannst mit einem Vermittlungscode in mehreren Impfzentren gleichzeitig nach freien Terminen suchen!](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)**
 
 
 ## Downloads
 
 > ⚠️ Google Chrome muss auf dem PC installiert sein (Windows, Mac und Linux)  
 
-### GUI Version (mit Programmoberfläche)
+### GUI Version (mit Programmoberfläche) [Funktionalitäten: Terminsuche]
 
 <a href="https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy_gui_installer.exe">
 <img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
 </a>
 
 
-### CLI Version (Kommandozeile)
+### CLI Version (Kommandozeile) [Funktionalitäten: Terminsuche und Impf-Codes generieren]
 
 <a href="https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy_installer.exe">
 <img width="60" height="50" src="https://upload.wikimedia.org/wikipedia/de/thumb/c/c2/Microsoft_Windows_7_logo.svg/2000px-Microsoft_Windows_7_logo.svg.png">
@@ -46,6 +46,15 @@ Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impf
 Hier kannst du dir das [Projekt (GUI) komprimiert als `.zip` herunterladen.](https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy-windows-gui.zip)
 
 Hier kannst du dir das [Projekt (CLI) komprimiert als `.zip` herunterladen.](https://github.com/iamnotturner/vaccipy/releases/latest/download/vaccipy-windows.zip)
+
+### MacOS
+
+Für die Ausführung auf MacOS gibt es bisher noch kein Build, also keine Datei, die man einfach ausführen kann. 
+Um `vaccipy` auf dem Mac auszuführen, musst du den [**Source Code** von `vaccipy` als `.zip` herunterladen](https://github.com/iamnotturner/vaccipy/releases/latest/) und die [notwendigen Requirements](#requirements) installieren. Anschließend kann das [Programm im Terminal](#ausführung-in-der-Kommandozeile) oder in einer beliebigen Python Entwicklungsumgebung ausgeführt werden.
+
+<a href="https://github.com/iamnotturner/vaccipy/releases/latest/">
+<img width="60" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/505px-Apple_logo_black.svg.png">
+</a>
 
 #### Releases
 
@@ -66,7 +75,7 @@ andererseits hat man aber auch keine Lust, deshalb nun den ganzen Tag vor dem Co
 ## Wie funktioniert vaccipy?
 
 `vaccipy` imitiert die manuelle Terminsuche und -buchung im Browser und führt die Anfragen automatisch aus.  
-Zunächst trägst du deinen "Impf-Code" (*Beispiel: A1B2-C3D4-E5F6*), die PLZ deines Impfzentrums 
+Zunächst trägst du deinen "Vermittlungscode" (*Beispiel: A1B2-C3D4-E5F6*), die PLZ deines Impfzentrums 
 und deine Daten (Anschrift, Telefon, Mail) ein, die bei der Terminbuchung angegeben werden sollen.
 Du wirst zur Eingabe aufgefordert und deine Daten werden in der Datei `./data/kontaktdaten.json` gespeichert.
 
@@ -78,7 +87,7 @@ Nachfolgend werden die zwei Grundfunktionalitäten von `vaccipy` kurz beschriebe
 
 Die folgenden Daten werden beim Programmstart benötigt:
 
-* Ein Impf-Code
+* Ein Vermittlungscode
 * [PLZ's eines oderer mehrerer Impfzentren](https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren)
 * Kontaktdaten
    *  Anrede
@@ -94,7 +103,7 @@ Die folgenden Daten werden beim Programmstart benötigt:
 #### Ablauf
 
 `vaccipy` übernimmt für dich die Suche und Buchung eines Impftermin auf [www.impfterminservice.de](https://www.impfterminservice.de/).
-Dazu musst du deinen Impf-Code, die PLZ's deiner gewählten Impfzentren und deine Daten beim Start des Tools eintragen. Anschließend beginnt `vaccipy` 
+Dazu musst du deinen Vermittlungscode, die PLZ's deiner gewählten Impfzentren und deine Daten beim Start des Tools eintragen. Anschließend beginnt `vaccipy` 
 die Suche und fragt in regelmäßigen Abständen (alle 60 Sekunden) verfügbare Termine in den gewählten Impfzentren ab.
 
 Sobald ein Termin verfügbar ist, wird dieser direkt mit den Anfangs eingegeben Daten gebucht und die Suche beendet.
@@ -116,9 +125,9 @@ Die folgenden Daten werden beim Programmstart benötigt:
 
 #### Ablauf
 
-`vaccipy` kann neben der Terminbuchung dir auch einen Impf-Code generieren - dauerhaft, für jede Person, in jedem Impfzentrum. 
-Dazu musst du deine Mailadresse, deine Telefonnummer und die PLZ des gewünschten Impfzentrums eintragen. Anschließend fragt `vaccipy` einen Impf-Code
-an und du erhältst eine SMS mit einem Bestätigungscode. Diesen Bestätigungscode kannst du anschließend im Tool eintragen. Der Impf-Code wird dir 
+`vaccipy` kann neben der Terminbuchung dir auch einen Vermittlungscode generieren - dauerhaft, für jede Person, in jedem Impfzentrum. 
+Dazu musst du deine Mailadresse, deine Telefonnummer und die PLZ des gewünschten Impfzentrums eintragen. Anschließend fragt `vaccipy` einen Vermittlungscode
+an und du erhältst eine SMS mit einem Bestätigungscode. Diesen Bestätigungscode kannst du anschließend im Tool eintragen. Der Vermittlungscode wird dir 
 anschließend per Mail zugesendet.
 
 > Es ist wichtig, dass du den Code entsprechend deiner Altersgruppe auswählst, ansonsten wird dir der Termin vor Ort abgesagt.
@@ -146,7 +155,7 @@ Beim nächsten Start kannst du deine Daten direkt laden und musst sie nicht erne
 > 
 > Sollte die Warteschlange aktiv sein, wird diese übersprungen.
 
-4) Mit dem Code "einloggen", im Browser ist das der Schritt: Impfzentrum auswählen und Impf-Code eintragen
+4) Mit dem Code "einloggen", im Browser ist das der Schritt: Impfzentrum auswählen und Vermittlungscode eintragen
 
 > Das Einloggen im Script erfolgt lediglich, um eine Übersicht über die zugewiesenen Impfstoffe zu erhalten.
 > Sollte der Login mal nicht klappen, ist das nicht weiter tragisch. Die Terminsuche kann fortgesetzt werden.
@@ -229,8 +238,10 @@ Dazu das Terminal zum `linux-64-terminservice`-Ordner navigieren und folgenden B
 sudo apt update && sudo apt install libqt5gui5
    
 2) Wenn Chrome noch fehlt:
+```bash
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo dpkg -i google-chrome-stable_current_amd64.deb
+```
 
 3) starten mittels 
 python3 gui.py
@@ -239,7 +250,7 @@ python3 gui.py
 
 `vaccipy` kannst du über die Kommandozeile oder in einer beliebigen python-Entwicklungsumgebung
 ausgeführen.
-Nach dem Programmstart kannst du interaktiv auswählen, ob du einen Impf-Code generieren möchtest,
+Nach dem Programmstart kannst du interaktiv auswählen, ob du einen Vermittlungscode generieren möchtest,
 oder einen Termin suchen möchtest.
 
 ```shell
@@ -249,16 +260,16 @@ python3 main.py
 Alternativ kannst du Subkommandos verwenden, um deine Auswahl zu treffen:
 
 ```bash
-# Kontaktdaten (für Impf-Code) eingeben und in kontaktdaten.json speichern:
+# Kontaktdaten (für Vermittlungscode) eingeben und in kontaktdaten.json speichern:
 python3 main.py code --configure-only
 
-# Kontaktdaten (für Impf-Code) eingeben und in beliebiger Datei speichern:
+# Kontaktdaten (für Vermittlungscode) eingeben und in beliebiger Datei speichern:
 python3 main.py code --configure-only -f max-mustermann.json
 
-# Impf-Code generieren:
+# Vermittlungscode generieren:
 python3 main.py code
 
-# Impf-Code generieren und dafür die Kontaktdaten aus beliebiger Datei verwenden:
+# Vermittlungscode generieren und dafür die Kontaktdaten aus beliebiger Datei verwenden:
 python3 main.py code -f max-mustermann.json
 
 # Kontaktdaten (für Terminsuche) eingeben und in kontaktdaten.json speichern:
@@ -317,7 +328,7 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 `vaccipy` dient lediglich als Unterstützung bei der Impftermin-Buchung **EINER EINZELNEN PERSON**,
 weshalb folgende Automatisierungen und Erweiterungen **NICHT** kommen werden:
 
-* Möglichkeit zum Eintragen mehrerer Impf-Codes und Kontaktdaten
+* Möglichkeit zum Eintragen mehrerer Vermittlungscodes und Kontaktdaten
 
 
 

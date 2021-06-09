@@ -1,13 +1,10 @@
-import calendar
 import datetime
 import json
-import os
 import re
-
 from email.utils import parseaddr
-from tools.exceptions import ValidationError, MissingValuesError
-from tools import Modus
 
+from tools import Modus
+from tools.exceptions import ValidationError, MissingValuesError
 
 WOCHENTAG_ABBRS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 WOCHENTAG_NAMES = [
@@ -34,6 +31,14 @@ def get_kontaktdaten(filepath: str):
         with open(filepath, encoding='utf-8') as f:
             try:
                 kontaktdaten = json.load(f)
+
+                # Backwards Compatibility: "code"
+                if "code" in kontaktdaten:
+                    code = kontaktdaten.pop("code")
+                    if "codes" not in kontaktdaten:
+                        kontaktdaten["codes"] = []
+                    kontaktdaten["codes"].append(code)
+
                 validate_kontaktdaten(kontaktdaten)
                 return kontaktdaten
             except json.JSONDecodeError:
@@ -57,7 +62,7 @@ def check_kontaktdaten(kontaktdaten: dict, mode: Modus):
     try:
         if mode == Modus.TERMIN_SUCHEN:
             # Wird nur bei Terminsuche benötigt
-            kontaktdaten["code"]
+            kontaktdaten["codes"]
             kontaktdaten["kontakt"]["anrede"]
             kontaktdaten["kontakt"]["vorname"]
             kontaktdaten["kontakt"]["nachname"]
@@ -67,6 +72,7 @@ def check_kontaktdaten(kontaktdaten: dict, mode: Modus):
             kontaktdaten["kontakt"]["ort"]
 
             kontaktdaten["zeitrahmen"]
+
             # Subkeys von "zeitrahmen" brauchen nicht gecheckt werden, da
             # `kontaktdaten["zeitrahmen"] == {}` zulässig ist.
 
@@ -95,14 +101,18 @@ def validate_kontaktdaten(kontaktdaten: dict):
 
     for key, value in kontaktdaten.items():
         try:
-            if key == "code":
-                validate_code(value)
+            if key == "codes":
+                validate_codes(value)
             elif key == "plz_impfzentren":
                 validate_plz_impfzentren(value)
             elif key == "kontakt":
                 validate_kontakt(value)
+            elif key == "notifications":
+                validate_notifications(value)
             elif key == "zeitrahmen":
                 validate_zeitrahmen(value)
+            elif key == "notifications":
+                validate_notifications(value)
             else:
                 raise ValidationError(f"Nicht unterstützter Key")
         except ValidationError as exc:
@@ -110,24 +120,24 @@ def validate_kontaktdaten(kontaktdaten: dict):
                 f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
 
 
-def validate_code(code: str):
+def validate_codes(codes: list):
     """
-    Überprüft, ob der Code Valide ist
+    Validiert eine Liste an Vermittlungscodes vom Schema XXXX-XXXX-XXXX
 
-    Args:
-        code (str): impf-code
-
-    Raises:
-        ValidationError: Code ist keine Zeichenkette oder entspricht nicht dem Schema
+    :raise ValidationError: Typ ist nicht list
+    :raise ValidationError: Liste enthält vom Schema abweichendes Element
     """
 
-    if not isinstance(code, str):
-        raise ValidationError("Muss eine Zeichenkette sein")
+    if not isinstance(codes, list):
+        raise ValidationError("Muss eine Liste sein")
 
-    c = "[0-9a-zA-Z]"
-    if not re.match(f"^{4 * c}-{4 * c}-{4 * c}$", code):
-        raise ValidationError(
-            f"{json.dumps(code)} entspricht nicht dem Schema \"XXXX-XXXX-XXXX\"")
+    for code in codes:
+        if not isinstance(code, str):
+            raise ValidationError("Darf nur Zeichenketten enthalten")
+        c = "[0-9a-zA-Z]"
+        if not re.match(f"^{4 * c}-{4 * c}-{4 * c}$", code):
+            raise ValidationError(
+                f"{json.dumps(code)} entspricht nicht dem Schema \"XXXX-XXXX-XXXX\"")
 
 
 def validate_plz_impfzentren(plz_impfzentren: list):
@@ -262,8 +272,15 @@ def validate_email(email: str):
         raise ValidationError("Muss eine Zeichenkette sein")
 
     # https://stackoverflow.com/a/14485817/7350842
-    if '@' not in parseaddr(email)[1]:
+    parsed_email = parseaddr(email)[1]
+    if '@' not in parsed_email:
         raise ValidationError(f"Ungültige E-Mail-Adresse {json.dumps(email)}")
+
+    # Gmail erlaubt Plus-Zeichen (https://support.google.com/a/users/answer/9308648?hl=en),
+    # der Impfterminservice leider nicht.
+    if '+' in parsed_email:
+        raise ValidationError(
+            f"Ungültige E-Mail-Adresse {json.dumps(email)} (Plus-Zeichen nicht möglich)")
 
 
 def validate_zeitrahmen(zeitrahmen: dict):
@@ -327,6 +344,81 @@ def validate_zeitrahmen(zeitrahmen: dict):
             raise ValidationError(
                 "Ungültige Kombination von Uhrzeiten: "
                 '"von_uhrzeit" liegt nach "bis_uhrzeit"')
+
+
+def validate_notifications(notifications: dict):
+    if not isinstance(notifications, dict):
+        raise ValidationError("Muss ein Dictionary sein")
+
+    for key, value in notifications.items():
+        try:
+            if key == "pushover":
+                validate_pushover(value)
+            elif key == "telegram":
+                validate_telegram(value)
+            else:
+                raise ValidationError(f"Nicht unterstützter Key")
+        except ValidationError as exc:
+            raise ValidationError(
+                f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
+
+
+def validate_pushover(pushover: dict):
+    if not isinstance(pushover, dict):
+        raise ValidationError("Muss ein Dictionary sein")
+
+    for key, value in pushover.items():
+        try:
+            if key == "app_token":
+                validate_pushover_app_token(value)
+            elif key == "user_key":
+                validate_pushover_user_key(value)
+            else:
+                raise ValidationError(f"Nicht unterstützter Key")
+        except ValidationError as exc:
+            raise ValidationError(
+                f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
+
+
+def validate_telegram(telegram: dict):
+    if not isinstance(telegram, dict):
+        raise ValidationError("Muss ein Dictionary sein")
+
+    for key, value in telegram.items():
+        try:
+            if key == "api_token":
+                validate_telegram_api_token(value)
+            elif key == "chat_id":
+                validate_telegram_chat_id(value)
+            else:
+                raise ValidationError(f"Nicht unterstützter Key")
+        except ValidationError as exc:
+            raise ValidationError(
+                f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
+
+
+def validate_pushover_app_token(pushover_app_token: str):
+    if not isinstance(pushover_app_token, str):
+        raise ValidationError("Muss eine Zeichenkette sein")
+    if len(pushover_app_token) != 30:
+        raise ValidationError("Der Pushover APP Token muss genau 30 Zeichen lang sein")
+
+
+def validate_pushover_user_key(pushover_user_key: str):
+    if not isinstance(pushover_user_key, str):
+        raise ValidationError("Muss eine Zeichenkette sein")
+    if len(pushover_user_key) != 30:
+        raise ValidationError("Der Pushover User Key muss genau 30 Zeichen lang sein")
+
+
+def validate_telegram_api_token(telegram_api_token: str):
+    if not isinstance(telegram_api_token, str):
+        raise ValidationError("Muss eine Zeichenkette sein")
+
+
+def validate_telegram_chat_id(telegram_chat_id: str):
+    if not isinstance(telegram_chat_id, str):
+        raise ValidationError("Muss eine Zeichenkette sein")
 
 
 def validate_datum(date: str):
