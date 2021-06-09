@@ -46,6 +46,7 @@ def update_kontaktdaten_interactive(
     with open(filepath, 'w', encoding='utf-8') as file:
         if "plz_impfzentren" not in kontaktdaten:
             print(i18n.t("i18n.InputPLZs"))
+            print()
             input_kontaktdaten_key(kontaktdaten,
                                    ["plz_impfzentren"],
                                    f"> {i18n.t('i18n.PLZVacCenters')}: ",
