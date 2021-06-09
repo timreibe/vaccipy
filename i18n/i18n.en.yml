@@ -20,7 +20,7 @@ en:
   SearchForAppointment: Search for appointment
   ShowAdvancedSettings: Show advanced settings
   HideAdvancedSettings: Hide advanced settings
-  Menu: Menu
+  Menu: What would you like to do
   PathContactData: Path to contactdata file
   ConfigureOnlyDescription: Only create and save contactdata file
   ReadOnlyDescription: Do not ask for contactdata. Throughs errors if contactdata file is not present
