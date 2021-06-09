@@ -197,23 +197,33 @@ class QtKontakt(QtWidgets.QDialog):
         plz_zentren = plz_zentrum_raw.split(",")
         plz_zentren = [plz.strip() for plz in plz_zentren]
 
-        kontaktdaten = {
-            "plz_impfzentren": plz_zentren,
-            "code": code,
-            "kontakt": {
-                "anrede": anrede,
-                "vorname": vorname,
-                "nachname": nachname,
-                "strasse": strasse,
-                "hausnummer": hausnummer,
-                "plz": plz_wohnort,
-                "ort": wohnort,
-                "phone": telefon,
-                "notificationChannel": "email",
-                "notificationReceiver": mail
-            },
-            "zeitrahmen": self.__get_zeitrahmen()
-        }
+        if self.modus == Modus.TERMIN_SUCHEN:
+            kontaktdaten = {
+                "plz_impfzentren": plz_zentren,
+                "code": code,
+                "kontakt": {
+                    "anrede": anrede,
+                    "vorname": vorname,
+                    "nachname": nachname,
+                    "strasse": strasse,
+                    "hausnummer": hausnummer,
+                    "plz": plz_wohnort,
+                    "ort": wohnort,
+                    "phone": telefon,
+                    "notificationChannel": "email",
+                    "notificationReceiver": mail
+                },
+                "zeitrahmen": self.__get_zeitrahmen()
+            }
+        else:
+            kontaktdaten = {
+                "plz_impfzentren": plz_zentren,
+                "kontakt": {
+                    "phone": telefon,
+                    "notificationChannel": "email",
+                    "notificationReceiver": mail
+                }
+            }
         return kontaktdaten
 
     def __check_werte(self, kontaktdaten: dict):

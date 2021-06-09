@@ -8,14 +8,11 @@ import time
 import sys
 
 from PyQt5 import QtCore, QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QIcon
 from tools.exceptions import ValidationError, MissingValuesError
-from tools.gui import oeffne_file_dialog_select
 
 from tools import Modus
 from tools import kontaktdaten as kontak_tools
-from tools.exceptions import MissingValuesError, ValidationError
 from tools.gui import oeffne_file_dialog_select, open_browser
 from tools.gui.qtkontakt import QtKontakt
 from tools.gui.qtterminsuche import QtTerminsuche
@@ -43,7 +40,7 @@ class HauptGUI(QtWidgets.QMainWindow):
 
     ### QSpinBox ###
     # i_interval
-    enableCodeBtn = pyqtSignal()
+
     def __init__(self, pfad_fenster_layout: str = os.path.join(PATH, "tools/gui/main.ui")):
         """
         Main der GUI Anwendung
@@ -63,9 +60,6 @@ class HauptGUI(QtWidgets.QMainWindow):
         # Laden der .ui Datei und Anpassungen
         self.setup(pfad_fenster_layout)
         
-        
-        #signal
-        self.enableCodeBtn.connect(self.enable_code_btn)
 
         # GUI anzeigen
         self.show()
@@ -169,11 +163,9 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         :param kontaktdaten: Dictionary mit Kontaktdaten
         """
-        
-        self.b_code_generieren.setEnabled(False) 
+
         try:
             kontaktdaten = self.__get_kontaktdaten(Modus.CODE_GENERIEREN)
-
         except FileNotFoundError as error:
             QtWidgets.QMessageBox.critical(self, "Datei nicht gefunden!", f"Datei zum Laden konnte nicht gefunden werden\n\nBitte erstellen")
             return
@@ -184,8 +176,34 @@ class HauptGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei Fehlen Daten:\n\n{error}")
             return
             
-    
-        dialog = QtCodeGen(self, kontaktdaten, PATH )
+        strProcName = "Codegen"
+        code_prozess = multiprocessing.Process(target=QtCodeGen.start_code_gen, 
+            name=strProcName, daemon=True, kwargs={
+                "kontaktdaten": kontaktdaten,
+                "ROOT_PATH": PATH
+            })
+        
+        # allow only 1 Code Gen at a time
+        for subProvess in self.such_prozesse:
+            if subProvess.name == strProcName:
+                QtWidgets.QMessageBox.information(self, "STOP", "Es läuft bereits eine Codegenerierung!")
+                return False
+
+        #add code search to list of prozesses
+        try:
+            code_prozess.start()
+            if not code_prozess.is_alive():
+                raise RuntimeError(
+                    f"Code suche wurde gestartet, lebt aber nicht mehr!"
+                )
+        except Exception as error:
+            QtWidgets.QMessageBox.critical(self, "Fehler - Codegenerierung nicht gestartet!", str(error))
+        else:
+            self.such_prozesse.append(code_prozess)
+            self.__add_prozess_in_gui(code_prozess)
+            self.prozesse_counter += 1
+
+
         
     def __termin_suchen(self):
         """
@@ -378,9 +396,7 @@ class HauptGUI(QtWidgets.QMainWindow):
                 raise ValidationError("\"zeitrahmen\" fehlt -> Alte Version")
 
         return kontaktdaten
-        
-    def enable_code_btn(self):
-        self.b_code_generieren.setEnabled(True)
+
 
 
 def main():

@@ -154,10 +154,8 @@ class Worker(QObject):
 
 
 class QtCodeGen(QtWidgets.QDialog):
-
     # Folgende Widgets stehen zur Verfügung:
-
-    def __init__(self, parent, kontaktdaten: dict,  ROOT_PATH: str):
+    def __init__(self, kontaktdaten: dict, ROOT_PATH: str, parent = None):
         super().__init__(parent)
         uic.loadUi(os.path.join(PATH, "ui_qtcodegen.ui"), self)
         self.setupUi(self)
@@ -173,7 +171,6 @@ class QtCodeGen(QtWidgets.QDialog):
         sys.stdout = EigenerStream(text_schreiben=self.update_ausgabe)
         sys.stderr = EigenerStream(text_schreiben=self.update_ausgabe)
 
-    
         # Entsprechend Konfigurieren
         self.setup_thread()
         self.thread.start()
@@ -298,7 +295,8 @@ class QtCodeGen(QtWidgets.QDialog):
                 
             
         #exit
-        self.parent.enableCodeBtn.emit() # enable Code Btn again
+        if self.parent is not None:
+            self.parent.enableCodeBtn.emit() # enable Code Btn again
 
         #stop worker
         self.worker.stop()
@@ -306,7 +304,7 @@ class QtCodeGen(QtWidgets.QDialog):
 
         #stop thread
         self.thread.quit()
-        self.thread.wait()
+        self.thread.wait(5000)
         self.thread.terminate()
 
         # Streams wieder korrigieren, damit kein Fehler kommt
@@ -315,3 +313,10 @@ class QtCodeGen(QtWidgets.QDialog):
 
         self.deleteLater()
         event.accept()
+
+    @staticmethod
+    def start_code_gen(kontaktdaten: dict,  ROOT_PATH: str):
+        app = QtWidgets.QApplication(list())
+        window = QtCodeGen(kontaktdaten, ROOT_PATH)
+        app.exec_()
+        
