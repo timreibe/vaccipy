@@ -470,8 +470,8 @@ def main():
                 print(
                     f"[c] --configure-only {i18n.t('i18n.deactivate') if args.configure_only else i18n.t('i18n.activate')}\n"
                     f"[r] --read-only {i18n.t('i18n.deactivate') if args.read_only else i18n.t('i18n.activate')}\n"
-                    f"[s] --retry-sec {i18n.t('i18n.set')}\n")
-                    f"[n] --configure-notifications {i18n.t('i18n.deactivate') if args.read_only else i18n.t('i18n.activate')}\n\n"
+                    f"[s] --retry-sec {i18n.t('i18n.set')}\n"
+                    f"[n] --configure-notifications {i18n.t('i18n.deactivate') if args.read_only else i18n.t('i18n.activate')}\n\n")
 
 
             option = input("> Option: ").lower()
@@ -506,7 +506,7 @@ def main():
                     validate_args(new_args)
                     args = new_args
                     print(
-                        f"--configure-notifications {'de' if not args.configure_notifications else ''}aktiviert.")
+                        f"--configure-notifications {i18n.t('i18n.deactivate') if not args.configure_notifications else i18n.t('i18n.activate')}.")
                 else:
                     print(i18n.t('i18n.InvalidInputPleaseTryAgain') + ".")
                 print()
