@@ -308,6 +308,22 @@ class ImpfterminService():
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
+        time.sleep(.5)
+
+    # Zufälliges anklicken von 10-15 Elementen auf der Seite
+    # ggf. werden andere Seiten aufgerufen
+        # Zufälliges anklicken von 10-15 Elementen auf der Seite
+        # ggf. werden andere Seiten aufgerufen
+        for i in range(randint(10, 15)):
+            try:
+                action = ActionChains(driver)
+                elements = driver.find_elements_by_tag_name('div')
+                action.move_to_element(choice(elements)).click().perform()
+                time.sleep(.5)
+            except Exception as exc:
+                pass
+
+        driver.get(location)
 
         # Klick auf "Vermittlungscode bereits vorhanden"
         button_xpath = "//input[@name=\"vaccination-approval-checked\"]/.."
@@ -333,15 +349,8 @@ class ImpfterminService():
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
+        time.sleep(1.5)
 
-        # Maus-Bewegung hinzufügen (nicht sichtbar)
-        action = ActionChains(driver)
-        for i in range(3):
-            try:
-                action.move_by_offset(randint(1, 100), randint(1, 100)).perform()
-                time.sleep(randint(1, 3))
-            except:
-                pass
 
     def driver_get_cookies(self, driver, url, manual):
         # Erstelle zufälligen Vermittlungscode für die Cookie-Generierung
