@@ -238,8 +238,10 @@ Dazu das Terminal zum `linux-64-terminservice`-Ordner navigieren und folgenden B
 sudo apt update && sudo apt install libqt5gui5
    
 2) Wenn Chrome noch fehlt:
+```bash
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo dpkg -i google-chrome-stable_current_amd64.deb
+```
 
 3) starten mittels 
 python3 gui.py

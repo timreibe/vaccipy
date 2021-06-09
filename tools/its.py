@@ -26,6 +26,7 @@ from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
 from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
     validate_zeitrahmen
+from tools.utils import fire_notifications
 
 try:
     import beepy
@@ -307,6 +308,22 @@ class ImpfterminService():
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
+        time.sleep(.5)
+
+    # Zufälliges anklicken von 10-15 Elementen auf der Seite
+    # ggf. werden andere Seiten aufgerufen
+        # Zufälliges anklicken von 10-15 Elementen auf der Seite
+        # ggf. werden andere Seiten aufgerufen
+        for i in range(randint(10, 15)):
+            try:
+                action = ActionChains(driver)
+                elements = driver.find_elements_by_tag_name('div')
+                action.move_to_element(choice(elements)).click().perform()
+                time.sleep(.5)
+            except Exception as exc:
+                pass
+
+        driver.get(location)
 
         # Klick auf "Vermittlungscode bereits vorhanden"
         button_xpath = "//input[@name=\"vaccination-approval-checked\"]/.."
@@ -332,15 +349,8 @@ class ImpfterminService():
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
+        time.sleep(1.5)
 
-        # Maus-Bewegung hinzufügen (nicht sichtbar)
-        action = ActionChains(driver)
-        for i in range(3):
-            try:
-                action.move_by_offset(randint(1, 100), randint(1, 100)).perform()
-                time.sleep(randint(1, 3))
-            except:
-                pass
 
     def driver_get_cookies(self, driver, url, manual):
         # Erstelle zufälligen Vermittlungscode für die Cookie-Generierung
@@ -369,7 +379,7 @@ class ImpfterminService():
             if name not in cookies:
                 raise RuntimeError(f"{name} fehlt!")
 
-        self.log.success(f"Browser-Cookie generiert: *{cookies['bm_sz'][-6:]}")
+        self.log.info(f"Browser-Cookie generiert: *{cookies['bm_sz'][-6:]}")
         return cookies
 
     def driver_termin_buchen(self, driver, reservierung):
@@ -951,6 +961,9 @@ class ImpfterminService():
         codes = self.codes[url]
         self.codes[url] = codes[1:] + codes[:1]
 
+    def notify(self, title: str, msg: str):
+        fire_notifications(self.notifications, self.operating_system, title, msg)
+
     @staticmethod
     def terminsuche(codes: list, plz_impfzentren: list, kontakt: dict,
                     PATH: str, notifications: dict = {}, zeitrahmen: dict = dict(),
@@ -1012,7 +1025,7 @@ class ImpfterminService():
                     its.termin_buchen(reservierung)
                     msg = "Termin erfolgreich gebucht!"
                     its.log.success(msg)
-                    self.notify(title="Terminbuchung:", message=msg)
+                    its.notify(title="Terminbuchung:", message=msg)
                     # Programm beenden, wenn Termin gefunden wurde
                     return
                 except AppointmentGone:
@@ -1021,12 +1034,10 @@ class ImpfterminService():
                 except BookingError:
                     msg = f"Termin konnte nicht gebucht werden."
                 its.log.error(msg)
-                self.notify(title="Terminbuchung:", message=msg)
+                its.notify(title="Terminbuchung:", message=msg)
 
             time.sleep(check_delay)
 
-    def notify(self, title: str, msg: str):
-        fire_notifications(self.notifications, self.operating_system, title, msg)
 
 
 def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):

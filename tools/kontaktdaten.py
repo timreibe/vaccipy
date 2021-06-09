@@ -111,6 +111,8 @@ def validate_kontaktdaten(kontaktdaten: dict):
                 validate_notifications(value)
             elif key == "zeitrahmen":
                 validate_zeitrahmen(value)
+            elif key == "notifications":
+                validate_notifications(value)
             else:
                 raise ValidationError(f"Nicht unterstützter Key")
         except ValidationError as exc:
