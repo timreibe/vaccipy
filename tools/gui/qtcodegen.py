@@ -191,6 +191,7 @@ class QtCodeGen(QtWidgets.QDialog):
         self.setWindowModality(QtCore.Qt.WindowModal)
         self.setModal(False)
         self.resize(700, 300)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint);
 
 
     def setup_thread(self):
