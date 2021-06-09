@@ -11,7 +11,7 @@ from tools.gui import *
 from tools.its import ImpfterminService
 from tools.kontaktdaten import validate_datum
 from tools.exceptions import MissingValuesError, ValidationError
-from tools.utils import gen_random_code
+
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -75,6 +75,19 @@ class Worker(QObject):
     def stop(self):
         self.stopped = True
 
+    # send a signal and wait for received return
+    def sendSignalAndWait(self, strSignal, strSigParam):
+        if strSignal == "signalShowInput":
+            self.signalShowInput.emit(strSigParam)
+
+        while True and self.stopped is False:
+            if self.signalGot is True:
+                break
+            QtCore.QThread.msleep(100)
+        #reset member for next signal
+        self.signalGot = False
+
+
     def updateData(self, strmode, txt):
         if strmode == "GEBURTSDATUM":
             print(txt)
@@ -105,49 +118,42 @@ class Worker(QObject):
         if self.stopped is True:
             return False
             
-        # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
-        # für die Cookie-Generierung
-        random_code = gen_random_code()
-        print(f"Für die Cookies-Generierung wird ein zufälliger Code verwendet ({random_code}).\n")
-
-        its = ImpfterminService(random_code, [self.plz_impfzentrum], {}, self.ROOT_PATH)
+        its = ImpfterminService([], {}, self.ROOT_PATH)
         
         # send signal for GUI
-        self.signalShowInput.emit("GEBURTSDATUM")
-        while True and self.stopped is False:
-            if self.signalGot is True:
-                break
-            QtCore.QThread.msleep(100)
+        self.sendSignalAndWait("signalShowInput","GEBURTSDATUM")
 
-        #reset member for next signal
-        self.signalGot = False
-        
         #stop requested in the meanwhile?
         if self.stopped is True:
             return False
             
-        # cookies erneuern und code anfordern
-        its.renew_cookies_code()
-        token = its.code_anfordern(self.mail, self.telefonnummer,  self.plz_impfzentrum, self.geburtsdatum)
-
-        if token is not None:
-            # code bestätigen            
-            # 3 Versuche für die SMS-Code-Eingabe
-            self.signalShowInput.emit("SMSCODE")
+        # code anfordern
+        try:
+            token, cookies = its.code_anfordern(self.mail, self.telefonnummer,  self.plz_impfzentrum, self.geburtsdatum)
+        except RuntimeError as exc:
+            print(
+                f"\nDie Code-Generierung war leider nicht erfolgreich:\n{str(exc)}")
+            self.signalShowDlg.emit("CRITICAL_CLOSE",f"\nDie Code-Generierung war leider nicht erfolgreich:\n{str(exc)}")
             while True and self.stopped is False:
-                if self.signalGot is True:
-                    break
                 QtCore.QThread.msleep(100)
-                
-            #stop requested in the meanwhile?
-            if self.stopped is True:
-                return False
-                
-            if its.code_bestaetigen(token, self.sms_pin):
-                self.signalShowInput.emit("SMSCODE_OK")
-                return True
+            return False
 
-        print( "Die Code-Generierung war leider nicht erfolgreich.")
+        # code bestätigen            
+        # 3 Versuche für die SMS-Code-Eingabe
+        self.sendSignalAndWait("signalShowInput","SMSCODE")
+            
+        #stop requested in the meanwhile?
+        if self.stopped is True:
+            return False
+            
+        if its.code_bestaetigen(token, cookies, self.sms_pin, self.plz_impfzentrum):
+            self.sendSignalAndWait("signalShowInput","SMSCODE_OK")
+            return True
+
+        print("\nSMS-Code ungültig")
+        print("Die Code-Generierung war leider nicht erfolgreich.")
+
+        self.signalShowDlg.emit("CRITICAL_CLOSE",f"SMS-Code ungültig.\n\nDie Code-Generierung war leider nicht erfolgreich")
         return False
 
 
@@ -236,8 +242,7 @@ class QtCodeGen(QtWidgets.QDialog):
         cursor.insertText(str("\n"))
         self.textAusgabe.setTextCursor(cursor)
         self.textAusgabe.ensureCursorVisible()
-        
-        
+
     def showInputDlg(self, dlgType):
         
         if dlgType == "GEBURTSDATUM":
@@ -266,6 +271,7 @@ class QtCodeGen(QtWidgets.QDialog):
                 self.worker.signalUpdateData.emit("SMSCODE",sms_pin) 
         elif dlgType == "SMSCODE_OK":
             QtWidgets.QMessageBox.information(self, "Erfolgreich", "Code erfolgreich generiert. Du kannst jetzt mit der Terminsuche fortfahren.")
+            self.worker.signalUpdateData.emit("SMSCODE_OK","") 
             
     def showDlg(self, strMode, strTxt):
         if strMode == "MISSING_KONTAKT":
@@ -273,6 +279,11 @@ class QtCodeGen(QtWidgets.QDialog):
                 "Die Kontakdaten sind nicht korrekt!.\n\nBitte Datei neu erstellen!", QMessageBox.StandardButton.Ok)
             if ret == QMessageBox.StandardButton.Ok:
                 self.hardClose()
+        elif strMode == "CRITICAL_CLOSE":
+            ret = QtWidgets.QMessageBox.critical(self, "Error", strTxt, QMessageBox.StandardButton.Ok)
+            if ret == QMessageBox.StandardButton.Ok:
+                self.hardClose()
+
                 
     # force to close the dialog without confirmation
     def hardClose(self):
@@ -304,7 +315,7 @@ class QtCodeGen(QtWidgets.QDialog):
 
         #stop thread
         self.thread.quit()
-        self.thread.wait(5000)
+        self.thread.wait(3000)
         self.thread.terminate()
 
         # Streams wieder korrigieren, damit kein Fehler kommt

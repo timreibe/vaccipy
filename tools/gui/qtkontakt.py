@@ -224,7 +224,7 @@ class QtKontakt(QtWidgets.QDialog):
         if self.modus == Modus.TERMIN_SUCHEN:
             kontaktdaten = {
                 "plz_impfzentren": plz_zentren,
-                "code": code,
+                "code": codes,
                 "kontakt": {
                     "anrede": anrede,
                     "vorname": vorname,

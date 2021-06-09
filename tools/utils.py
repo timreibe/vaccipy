@@ -175,15 +175,6 @@ def get_latest_version():
     latest_version = requests.get(json_url).json()['tag_name']
     return latest_version
 
-# Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
-# für die Cookie-Generierung
-def gen_random_code():
-    code_chars = string.ascii_uppercase + string.digits
-    one = 'VACC'
-    two = 'IPY' + random.choice(code_chars)
-    three = ''.join(random.choices(code_chars, k=4))
-    random_code = f"{one}-{two}-{three}"
-    return random_code
 
 def pushover_notification(notifications: dict, title: str, message: str):
     if 'app_token' not in notifications or 'user_key' not in notifications:
