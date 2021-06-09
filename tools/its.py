@@ -369,7 +369,7 @@ class ImpfterminService():
             if name not in cookies:
                 raise RuntimeError(f"{name} fehlt!")
 
-        self.log.success(f"Browser-Cookie generiert: *{cookies['bm_sz'][-6:]}")
+        self.log.info(f"Browser-Cookie generiert: *{cookies['bm_sz'][-6:]}")
         return cookies
 
     def driver_termin_buchen(self, driver, reservierung):
