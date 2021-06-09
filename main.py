@@ -4,7 +4,6 @@ import argparse
 import copy
 import json
 import os
-
 from tools.exceptions import ValidationError
 from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, \
