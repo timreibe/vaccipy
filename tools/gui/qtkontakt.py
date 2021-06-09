@@ -190,9 +190,13 @@ class QtKontakt(QtWidgets.QDialog):
         if clicked_button == QtWidgets.QDialogButtonBox.Save:
             self.bestaetigt()
         elif clicked_button == QtWidgets.QDialogButtonBox.Reset:
+            self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
         elif clicked_button == QtWidgets.QDialogButtonBox.Open:
+            self.__reset_vermittlungscodes()
+            self.__reset_kontakdaten()
+            self.__reset_zeitrahmen()
             self.__lade_einstellungen()
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
             self.close()
@@ -206,7 +210,7 @@ class QtKontakt(QtWidgets.QDialog):
         """
 
         plz_zentrum_raw = self.i_plz_impfzentren.text()
-        codes = [self.i_code_impfzentren.text().strip()]
+        codes = self.__get_vermittlungscodes()
         anrede = self.i_anrede_combo_box.currentText().strip()
         vorname = self.i_vorname.text().strip()
         nachname = self.i_nachname.text().strip()
@@ -294,7 +298,7 @@ class QtKontakt(QtWidgets.QDialog):
                     return
             
             # Wird nur bei Terminsuche benötigt
-            self.i_code_impfzentren.setText(kontaktdaten["codes"][0])
+            self.__set_vermittlungscodes(kontaktdaten["codes"])
             self.i_anrede_combo_box.setEditText(kontaktdaten["kontakt"]["anrede"])
             self.i_vorname.setText(kontaktdaten["kontakt"]["vorname"])
             self.i_nachname.setText(kontaktdaten["kontakt"]["nachname"])
@@ -317,6 +321,7 @@ class QtKontakt(QtWidgets.QDialog):
                 pass
          
         except MissingValuesError as exc:
+            self.__reset_vermittlungscodes
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
             self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
@@ -325,6 +330,7 @@ class QtKontakt(QtWidgets.QDialog):
                        "Datei, indem Sie auf Speichern klicken.")
 
         except ValidationError as exc:
+            self.__reset_vermittlungscodes
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
             self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
@@ -391,6 +397,16 @@ class QtKontakt(QtWidgets.QDialog):
         # Telefon wieder mit Prefix befüllen
         self.i_telefon.setText("+49")
 
+    def __reset_vermittlungscodes(self):
+        """
+        Setzt alle Werte für die Vermittlungscodes in der GUI zurück
+        """
+
+        for widget in self.vermittlungscodes_tab.children():
+            if isinstance(widget, QtWidgets.QLineEdit):
+                widget.setText("")
+
+
     def __get_impfzentren_plz(self, plzList : list) -> str: 
         """
         Erstellt ein String aus einer Liste an PLZ für die GUI
@@ -406,6 +422,38 @@ class QtKontakt(QtWidgets.QDialog):
         for plz in plzList:
             plz_zentrum_raw += plz + ', '
         return plz_zentrum_raw[:-2]
+
+    def __get_vermittlungscodes(self) -> list:
+        """
+        Erstellt ein Liste mit Vermittlungscodes aus der GUI.
+        Unvolständige oder leere Codes werden nicht gespeichert.
+
+        Returns:
+            Liste mit allen vollständigen Vermittlungscodes
+
+        """
+        codes = []
+
+        for widget in self.vermittlungscodes_tab.children():
+            if isinstance(widget, QtWidgets.QLineEdit) and len(widget.text().strip()) == 14:
+                codes.append(widget.text().strip())
+
+        return codes
+
+    def __set_vermittlungscodes(self, codes: list):
+        """
+        Schreibt die Vermittlungscodes in die GUI
+
+        Args:
+            codes: List der codes
+
+        """
+        lineEdits = self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit)
+        lineEdits = lineEdits[:len(codes)]
+
+        for code, lineEdit in zip(codes, lineEdits):
+            lineEdit.setText(code)
+
 
 
     ##############################
