@@ -185,17 +185,19 @@ class HauptGUI(QtWidgets.QMainWindow):
             return
             
         strProcName = "Codegen"
-        code_prozess = multiprocessing.Process(target=QtCodeGen.start_code_gen, 
-            name=strProcName, daemon=True, kwargs={
-                "kontaktdaten": kontaktdaten,
-                "ROOT_PATH": PATH
-            })
-        
+
         # allow only 1 Code Gen at a time
         for subProvess in self.such_prozesse:
             if subProvess.name == strProcName:
                 QtWidgets.QMessageBox.information(self, "STOP", "Es läuft bereits eine Codegenerierung!")
                 return False
+
+        #start codegen process
+        code_prozess = multiprocessing.Process(target=QtCodeGen.start_code_gen, 
+            name=strProcName, daemon=True, kwargs={
+                "kontaktdaten": kontaktdaten,
+                "ROOT_PATH": PATH
+            })
 
         #add code search to list of prozesses
         try:
