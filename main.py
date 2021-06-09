@@ -321,7 +321,7 @@ def gen_code(kontaktdaten):
 
     its = ImpfterminService([], {}, PATH)
 
-    print(f"{i18n.t('i18n.PleaseEnterBirthday')}.\n{i18n.t('i18n.Example')}: 02.03.1982\n")
+    print(f"{i18n.t('i18n.PleaseEnterBirthday')}.\n{i18n.t('i18n.Example')}: 24.03.1982\n")
     while True:
         try:
             geburtsdatum = input(f"> {i18n.t('i18n.Birthday')}: ")
