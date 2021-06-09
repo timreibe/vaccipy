@@ -111,6 +111,8 @@ def validate_kontaktdaten(kontaktdaten: dict):
                 validate_notifications(value)
             elif key == "zeitrahmen":
                 validate_zeitrahmen(value)
+            elif key == "notifications":
+                validate_notifications(value)
             else:
                 raise ValidationError(f"Nicht unterstützter Key")
         except ValidationError as exc:
@@ -352,10 +354,8 @@ def validate_notifications(notifications: dict):
         try:
             if key == "pushover":
                 validate_pushover(value)
-            elif key == "telegram":
+            if key == "telegram":
                 validate_telegram(value)
-            else:
-                raise ValidationError(f"Nicht unterstützter Key")
         except ValidationError as exc:
             raise ValidationError(
                 f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
