@@ -16,7 +16,7 @@ en:
   ErrorIn: Error in
   InvalidInputPleaseTryAgain: Invalid input! Please try again
   Error: Fehler
-  GenerateVacCode: Generate vaccination code
+  GenerateVacCode: Generate vaccination code ('Vermittlungscode')
   SearchForAppointment: Search for appointment
   ShowAdvancedSettings: Show advanced settings
   HideAdvancedSettings: Hide advanced settings
@@ -45,7 +45,7 @@ en:
   HouseNumber: House number
   PLZ: PLZ/ZIP code
   Phonenumber: Phonenumber
-  PLZVacCenters: PLZ/ZIP codes of vac. centers
+  PLZVacCenters: PLZ/ZIP codes of vaccination centers
   InputPLZs: |-
     You can use one 'Vermittlungscode' to search at multiple vaccination centers.
     Please find a table with vaccination centers and their grouping here:
@@ -72,7 +72,7 @@ en:
   FromTime: From time (leave blank to skip)
   ToTime: To time (leave blank to skip)
   InputVacCodeAndContactdata: |-
-    Please insert you vaccination code and your contact data first.
+    Please insert you 'Vermittlungscode' and your contact data first.
     Both will be save in the file '%{filename}'.
     There is no need to enter them again afterwards.
   ShouldContactdataBeLoaded: |-
@@ -81,6 +81,6 @@ en:
     Contactdata for %{firstname} %{lastname} where loaded
   InfoVacCode: |-
     You can create an appointment now.
-    You will need your mailaddress, phonenumber and the plz/zip code of your desired vaccation center.
+    You will need your mailaddress, phonenumber and the plz/zip code of your desired vaccination center.
     This information will be saved in the file '%{filename}' afterwards.
     You will not need to input them afterwards again.
