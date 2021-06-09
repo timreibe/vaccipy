@@ -445,13 +445,15 @@ def main():
     if not hasattr(args, "configure_notifications"):
         args.configure_notifications = False
     if not hasattr(args, "lang"):
-        args.lang = "de"
+        args.lang = 'de'
 
     try:
         validate_args(args)
     except ValueError as exc:
         parser.error(str(exc))
         # parser.error terminates the program with status code 2.
+
+    i18n.set('locale', args.lang)
 
     if args.command is not None:
         try:
