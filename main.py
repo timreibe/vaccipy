@@ -250,7 +250,7 @@ def run_search(kontaktdaten, check_delay):
 
         # Hinweis, wenn noch alte Version der Kontaktdaten.json verwendet wird
         if kontaktdaten.get("plz"):
-            print(i18n.t("i18n.InputAttentionOldVersionOfContactdata",filename="kontaktdaten.json")) # Kontaktdaten_path not available
+            print(i18n.t("i18n.InputAttentionOldVersionOfContactdata",filename="kontaktdaten.json")) # TODO Kontaktdaten_path not available
             plz_impfzentren = [kontaktdaten.get("plz")]
         else:
             plz_impfzentren = kontaktdaten["plz_impfzentren"]
@@ -262,7 +262,7 @@ def run_search(kontaktdaten, check_delay):
 
         zeitrahmen = kontaktdaten["zeitrahmen"]
     except KeyError as exc:
-        raise ValueError(i18n.t('i18n.ContactdataCouldNotBeLoaded',filename='kontaktdaten.json')) from exc # Kontaktdaten_path not available
+        raise ValueError(i18n.t('i18n.ContactdataCouldNotBeLoaded',filename='kontaktdaten.json')) from exc # TODO Kontaktdaten_path not available
 
     ImpfterminService.terminsuche(
         codes=codes,
@@ -317,7 +317,7 @@ def gen_code(kontaktdaten):
             telefonnummer = f"+49{remove_prefix(telefonnummer, '0')}"
     except KeyError as exc:
         raise ValueError(
-            i18n.t("i18n.ContactdataCouldNotBeLoaded",filename='kontaktdata.json')) from exc # Kontaktdaten_path not available here
+            i18n.t("i18n.ContactdataCouldNotBeLoaded",filename='kontaktdata.json')) from exc # TODO Kontaktdaten_path not available here
 
     its = ImpfterminService([], {}, PATH)
 
