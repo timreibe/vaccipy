@@ -40,6 +40,7 @@ class Worker(QObject):
 
     # Signal wenn Suche abgeschlossen oder fehlgeschlagen
     signalShowInput = pyqtSignal(str)
+    signalShowDlg = pyqtSignal(str,str)
     signalUpdateData = pyqtSignal(str,str)
     signalStop = pyqtSignal()
 
@@ -52,6 +53,7 @@ class Worker(QObject):
         super().__init__()
         
         self.stopped = False
+        self.signalGot = False
 
         self.kontaktdaten = kontaktdaten
         self.ROOT_PATH = ROOT_PATH
@@ -65,14 +67,15 @@ class Worker(QObject):
         self.telefonnummer = ""
         self.sms_pin = ""
         
-        self.signalGot = False
+        
         
     def __del__(self):
         print("Worker quit")
-        
+
     def stop(self):
         self.stopped = True
-        
+
+
     def updateData(self, strmode, txt):
         if strmode == "GEBURTSDATUM":
             print(txt)
@@ -93,11 +96,17 @@ class Worker(QObject):
         Codegenerierung ohne interaktive Eingabe der Kontaktdaten
         :param kontaktdaten: Dictionary mit Kontaktdaten
         """
-        
-        self.plz_impfzentrum = self.kontaktdaten["plz_impfzentren"][0]
-        self.mail = self.kontaktdaten["kontakt"]["notificationReceiver"]
-        self.telefonnummer = self.kontaktdaten["kontakt"]["phone"]
-
+        try:
+            self.plz_impfzentrum = self.kontaktdaten["plz_impfzentren"][0]
+            self.mail = self.kontaktdaten["kontakt"]["notificationReceiver"]
+            self.telefonnummer = self.kontaktdaten["kontakt"]["phone"]
+        except KeyError as error:
+            self.signalShowDlg.emit("MISSING_KONTAKT","")
+            self.stop()
+           
+        if self.stopped is True:
+            return False
+            
         # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
         # für die Cookie-Generierung
         random_code = gen_random_code()
@@ -110,6 +119,7 @@ class Worker(QObject):
         while True and self.stopped is False:
             if self.signalGot is True:
                 break
+            time.sleep(.1)
 
         #reset member for next signal
         self.signalGot = False
@@ -129,6 +139,8 @@ class Worker(QObject):
             while True and self.stopped is False:
                 if self.signalGot is True:
                     break
+                time.sleep(.1)
+                
             #stop requested in the meanwhile?
             if self.stopped is True:
                 return False
@@ -153,6 +165,7 @@ class QtCodeGen(QtWidgets.QDialog):
         self.setupUi(self)
         
         self.parent = parent
+        self._hardClose = False
         
         # Attribute erstellen
         self.kontaktdaten = kontaktdaten
@@ -194,6 +207,7 @@ class QtCodeGen(QtWidgets.QDialog):
         # Signale setzen
         self.thread.started.connect(self.worker.run)
         self.worker.signalShowInput.connect(self.showInputDlg)
+        self.worker.signalShowDlg.connect(self.showDlg)
 
 
     def update_ausgabe(self, text):
@@ -257,34 +271,45 @@ class QtCodeGen(QtWidgets.QDialog):
         elif dlgType == "SMSCODE_OK":
             QtWidgets.QMessageBox.information(self, "Erfolgreich", "Code erfolgreich generiert. Du kannst jetzt mit der Terminsuche fortfahren.")
             
-
+    def showDlg(self, strMode, strTxt):
+        if strMode == "MISSING_KONTAKT":
+            ret = QtWidgets.QMessageBox.critical(self, "Kontaktdaten ungültig",
+                "Die Kontakdaten sind nicht korrekt!.\n\nBitte Datei neu erstellen!", QMessageBox.StandardButton.Ok)
+            if ret == QMessageBox.StandardButton.Ok:
+                self.hardClose()
+                
+    # force to close the dialog without confirmation
+    def hardClose(self):
+        self._hardClose = True
+        self.close()
+         
     def closeEvent(self, event):
         """
         Wird aufgerufen, wenn die Anwendung geschlossen wird
         """
 
         if self.thread.isRunning():
-            res = QtWidgets.QMessageBox.warning(self, "Suche beenden", "Suche wirklich beenden?\n",
-                                                (QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel))
+            if self._hardClose is False:
+                res = QtWidgets.QMessageBox.warning(self, "Suche beenden", "Suche wirklich beenden?\n",
+                                                    (QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel))
 
-            if res != QMessageBox.StandardButton.Ok:
-                event.ignore()
-                return
+                if res != QMessageBox.StandardButton.Ok:
+                    event.ignore()
+                    return
                 
             
         #exit
         self.parent.enableCodeBtn.emit() # enable Code Btn again
-        
+
         #stop worker
         self.worker.stop()
         self.worker.deleteLater()
-        
+
         #stop thread
         self.thread.quit()
         self.thread.wait()
         self.thread.terminate()
-       
-        
+
         # Streams wieder korrigieren, damit kein Fehler kommt
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__

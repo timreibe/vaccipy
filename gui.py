@@ -170,7 +170,6 @@ class HauptGUI(QtWidgets.QMainWindow):
         :param kontaktdaten: Dictionary mit Kontaktdaten
         """
         
-        #disable button after click
         self.b_code_generieren.setEnabled(False) 
         try:
             kontaktdaten = self.__get_kontaktdaten(Modus.CODE_GENERIEREN)
