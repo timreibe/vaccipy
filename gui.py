@@ -55,6 +55,9 @@ class HauptGUI(QtWidgets.QMainWindow):
         super().__init__()
 
         create_missing_dirs(PATH)
+        
+        #Spawn for now (The parent process starts a fresh python interpreter process. The child process will only inherit those resources necessary to run the process object’s)
+        multiprocessing.set_start_method('spawn')
 
         # Laden der .ui Datei und Anpassungen
         self.setup(pfad_fenster_layout)
@@ -100,7 +103,11 @@ class HauptGUI(QtWidgets.QMainWindow):
         ### GUI ###
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
-        self.setWindowTitle('vaccipy ' + get_current_version())
+        try:
+            self.setWindowTitle('vaccipy ' + get_current_version())
+        except Exception as error:
+            self.setWindowTitle('vaccipy')
+            pass
 
         # Meldung falls alte Daten von alter Version
         self.__check_old_kontakt_version()
@@ -131,18 +138,26 @@ class HauptGUI(QtWidgets.QMainWindow):
             # Auf Update prüfen
             if update_available():
                 url = f"https://github.com/iamnotturner/vaccipy/releases/tag/{get_latest_version()}"
+                
+                if get_current_version() != 'source': 
+                    title = "Alte Version!"
+                    text = "Bitte Update installieren"
+                    info_text = f"Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest ({get_current_version()})"
+                else:
+                    title = "Sourcecode"
+                    text = "Updateprüfung nicht möglich!"
+                    info_text = "Du benutzt die nicht paketierten Skripte von Github. Die Terminsuche funktioniert möglicherweise nicht, da die Version veraltet sein könnten."
 
                 msg = QtWidgets.QMessageBox()
-                msg.setIcon(QtWidgets.QMessageBox.Warning)
-                msg.setWindowTitle("Alte Version!")
-                msg.setText("Bitte Update installieren")
-                msg.setInformativeText(f"Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest ({get_current_version()})")
+                msg.setIcon(QtWidgets.QMessageBox.information)
+                msg.setWindowTitle(title)
+                msg.setText(text)
+                msg.setInformativeText(info_text)
                 msg.addButton(msg.Close)
                 btn_download = msg.addButton("Download", msg.ApplyRole)
-
                 btn_download.clicked.connect(lambda: open_browser(url))
-
-                msg.exec_()
+                msg.exec_()      
+                    
         except Exception as error:
             # warum auch immer konnte nicht überprüft werden
             # einfach nichts machen
@@ -189,8 +204,8 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
 
         check_delay = self.i_interval.value()
-        code = kontaktdaten["code"]
-        terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{code}-{self.prozesse_counter}", daemon=True, kwargs={
+        codes = kontaktdaten["codes"]
+        terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{codes[0]}-{self.prozesse_counter}", daemon=True, kwargs={
                                                       "kontaktdaten": kontaktdaten,
                                                       "zeitrahmen": zeitrahmen,
                                                       "ROOT_PATH": PATH,
@@ -228,7 +243,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             try:
                 pfad = oeffne_file_dialog_select(self, "Kontakdaten", self.pfad_kontaktdaten)
             except FileNotFoundError:
-                pass
+                return
 
         self.pfad_kontaktdaten = pfad
         self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
