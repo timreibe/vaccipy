@@ -2,7 +2,7 @@
 
 import sys
 import os
-import time
+
 
 from PyQt5 import QtWidgets, uic, QtCore, QtGui
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
@@ -58,23 +58,22 @@ class Worker(QObject):
         self.kontaktdaten = kontaktdaten
         self.ROOT_PATH = ROOT_PATH
         
-        self.signalUpdateData.connect(self.updateData)
-        self.signalStop.connect(self.stop)
-        
         self.geburtsdatum = ""
         self.plz_impfzentrum = ""
         self.mail = ""
         self.telefonnummer = ""
         self.sms_pin = ""
         
-        
-        
+        # connect to signals
+        self.signalUpdateData.connect(self.updateData)
+        self.signalStop.connect(self.stop)
+
+
     def __del__(self):
         print("Worker quit")
 
     def stop(self):
         self.stopped = True
-
 
     def updateData(self, strmode, txt):
         if strmode == "GEBURTSDATUM":
@@ -87,8 +86,7 @@ class Worker(QObject):
         self.signalGot = True
         return True
         
-    def run(self):
-
+    def code_gen(self):
         """
         Startet den Prozess der Codegenerierung
         """
@@ -119,7 +117,7 @@ class Worker(QObject):
         while True and self.stopped is False:
             if self.signalGot is True:
                 break
-            time.sleep(.1)
+            QtCore.QThread.msleep(100)
 
         #reset member for next signal
         self.signalGot = False
@@ -139,7 +137,7 @@ class Worker(QObject):
             while True and self.stopped is False:
                 if self.signalGot is True:
                     break
-                time.sleep(.1)
+                QtCore.QThread.msleep(100)
                 
             #stop requested in the meanwhile?
             if self.stopped is True:
@@ -206,7 +204,7 @@ class QtCodeGen(QtWidgets.QDialog):
         self.worker.moveToThread(self.thread)
         
         # Signale setzen
-        self.thread.started.connect(self.worker.run)
+        self.thread.started.connect(self.worker.code_gen)
         self.worker.signalShowInput.connect(self.showInputDlg)
         self.worker.signalShowDlg.connect(self.showDlg)
 
