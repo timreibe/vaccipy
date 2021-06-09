@@ -390,6 +390,14 @@ def main():
     create_missing_dirs(PATH)
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-l",
+        "--lang",
+        default='de',
+        choices=['de', 'en'],
+        action="store",
+        help=i18n.t("i18n.LangDescription"))
+
     subparsers = parser.add_subparsers(help="commands", dest="command")
 
     base_subparser = argparse.ArgumentParser(add_help=False)
@@ -412,14 +420,13 @@ def main():
         "--configure-notifications",
         action='store_true',
         help="Gibt bei der Erfassung der Kontaktdaten die Möglichkeit, Benachrichtungen über Pushover und Telegram zu konfigurieren.")
-    base_subparser.add_argument(
-        "-l",
-        "--lang",
-        action='store_true',
-        help=i18n.t("i18n.LangDescription"))
+
 
     parser_search = subparsers.add_parser(
-        "search", parents=[base_subparser], help=i18n.t("i18n.SearchForAppointment"))
+        "search",
+        parents=[base_subparser],
+        help=i18n.t("i18n.SearchForAppointment"))
+
     parser_search.add_argument(
         "-s",
         "--retry-sec",
