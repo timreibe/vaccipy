@@ -54,10 +54,10 @@ def update_kontaktdaten_interactive(
                                    "> PLZ's der Impfzentren: ",
                                    lambda x: list(set([plz.strip() for plz in x.split(",")])))
 
-        print("\nBitte gebe jetzt die  Vermittlercodes passend zu den ausgewählten Impfzentren ein.\n"
-              "Beachte dabei, dass nur ein Vermittlercode je Gruppierung benötigt wird.\n"
+            print("\nBitte gebe jetzt die  Vermittlungscodes passend zu den ausgewählten Impfzentren ein.\n"
+              "Beachte dabei, dass nur ein Vermittlungscode je Gruppierung benötigt wird.\n"
               "Weitere Infos unter: https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren\n\n"
-              "Mehrere Vermittlercodes müssen durch Kommas getrennt werden.\n"
+              "Mehrere Vermittlungscodes müssen durch Kommas getrennt werden.\n"
               "Beispiel: ABCD-1234-EFGH, ABCD-4321-EFGH, 1234-56AB-CDEF\n")
 
         if "codes" not in kontaktdaten and command == "search":
