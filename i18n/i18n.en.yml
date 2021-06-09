@@ -1,0 +1,90 @@
+en:
+  YouAreUsingTheLatestVersionOfVaccipy: You are using the latest version of vaccipy
+  CannotVerifyIfVaccipyIsRunningInItsLatestVersion: Cannot verify if vaccipy is running in its latest version.
+  YouAreUsingAnOldVersionOfVaccipy: |-
+    You are using an old version of vaccipy.
+    Please install the lastest version. Link:
+    https://github.com/iamnotturner/vaccipy/releases/tag/
+  CheckIfYouAreAllowedForVaccination: |-
+    Automatic vaccination appointment for corona "Impfterminservice"
+    Check if you are allowed for vaccination before running this program.
+    Please find this information here.
+    https://www.impfterminservice.de/terminservice/faq
+  activate: activate
+  deactivate: deactivate
+  set: set
+  ErrorIn: Error in
+  InvalidInputPleaseTryAgain: Invalid input! Please try again
+  Error: Fehler
+  GenerateVacCode: Generate vaccination code ('Vermittlungscode')
+  SearchForAppointment: Search for appointment
+  ShowAdvancedSettings: Show advanced settings
+  HideAdvancedSettings: Hide advanced settings
+  Menu: What would you like to do
+  PathContactData: Path to contactdata file
+  ConfigureOnlyDescription: Only create and save contactdata file
+  ReadOnlyDescription: Do not ask for contactdata. Throughs errors if contactdata file is not present
+  RetrySecDescription: Delay between to two successive request (in seconds)
+  CodeGenerationFailed: Code generation was not successful
+  ContinueSearchForAppointment: Please continue by searching for an appointment
+  ReceiveSMSCode: |-
+    You will receive a SMS code to verify your phonenumber.
+    Enter this code here. You got 3 tries.
+    Example: 123-456
+  InvalidBirthdayFormat: |-
+    Invalid date format (DD.MM.YYYY).
+    Please try again.
+  Birthday: Birthday
+  PleaseEnterBirthday: Please enter your birthday (DD.MM.YYYY)
+  UsingRandomCodeForCookieGeneration: Using random code for cookie generation
+  Gender: Gender ('Frau' for Ms./'Herr' for Mr./...)
+  Firstname: Firstname
+  Lastname: Lastname
+  Street: Street (without house number)
+  City: City
+  HouseNumber: House number
+  PLZ: PLZ/ZIP code
+  Phonenumber: Phonenumber
+  PLZVacCenters: PLZ/ZIP codes of vaccination centers
+  InputPLZs: |-
+    You can use one 'Vermittlungscode' to search at multiple vaccination centers.
+    Please find a table with vaccination centers and their grouping here:
+    https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren
+    Please enter the PLZ/ZIP code of your desired vaccination centers, separated by commata.
+    Example: 68163, 69124, 69469
+  InputWeekday: |-
+    Please enter weekdays at which you can manage to make the appointment.
+    Enter multiple day be separating them with commata.
+    Example: Mo, Di, Mi, Do, Fr, Sa, So
+    Please leave the field empty to select every weekday.
+  AllowedWeekdays: Allowed weekdays
+  InputAttentionOldVersionOfContactdata: |-
+    ATTENTION: You are using an old version of '%{filename}'!
+    Delete the file before restarting the program and enter the contact data again.
+  ContactdataCouldNotBeLoaded: |-
+    Contactdata file '%{filename}' could not be loaded.
+    Please check if they are in a correct JSON format or enter your data again at the programmstart.
+  ConfigureOnlyReadOnlyNotBoth: --configure-only und --read-only kann nicht gleichzeitig verwendet werden
+  ConstrainTimeSlot: Would you like to restrict the time slot (y/n)
+  ForWhichAppointment: For which appointment would you like to restrict the splot? (1/2/beide)
+  FromDate: From date (leave blank to skip)
+  ToDate: To date (leave blank to skip)
+  FromTime: From time (leave blank to skip)
+  ToTime: To time (leave blank to skip)
+  InputVacCodeAndContactdata: |-
+    Please insert you 'Vermittlungscode' and your contact data first.
+    Both will be save in the file '%{filename}'.
+    There is no need to enter them again afterwards.
+  ShouldContactdataBeLoaded: |-
+    Should the contactdata be loaded from '%{filename}'? (y/n)
+  ContactdataLoadedFor: |-
+    Contactdata for %{firstname} %{lastname} where loaded
+  InfoVacCode: |-
+    You can create an appointment now.
+    You will need your mailaddress, phonenumber and the plz/zip code of your desired vaccination center.
+    This information will be saved in the file '%{filename}' afterwards.
+    You will not need to input them afterwards again.
+  SMSCodeInvalid: SMS-Code invalid
+  LangDescription: Select language (en,de)
+  LangInvalid: Selected language invalid
+  ChangeLanguage: Change language
