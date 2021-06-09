@@ -149,10 +149,9 @@ def get_grouped_impfzentren() -> dict:
 
 
 def update_available():
-    # 2 Zeichen Puffer für zukünftige Versionssprünge
     current_version = get_current_version()
     latest_version = get_latest_version()
-
+    
     if latest_version.strip() == current_version.strip():
         return False
     else:
