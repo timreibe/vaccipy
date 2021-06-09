@@ -1013,6 +1013,11 @@ class ImpfterminService():
             ort = iz.get("Ort")
             its.log.info(f"'{zentrumsname}' in {plz} {ort} ausgewählt")
 
+        # Einmal Chrome starten, um früh einen Fehler zu erzeugen, falls die
+        # erforderliche Software nicht installiert ist.
+        its.log.info("Teste Chromedriver")
+        its.get_chromedriver(headless=True).quit()
+
         while True:
             its.log.set_prefix(" ".join([
                 plz for plz in plz_impfzentren
