@@ -354,8 +354,10 @@ def validate_notifications(notifications: dict):
         try:
             if key == "pushover":
                 validate_pushover(value)
-            if key == "telegram":
+            elif key == "telegram":
                 validate_telegram(value)
+            else:
+                raise ValidationError(f"Nicht unterstützter Key")
         except ValidationError as exc:
             raise ValidationError(
                 f"Ungültiger Key {json.dumps(key)}:\n{str(exc)}")
