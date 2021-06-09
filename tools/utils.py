@@ -4,8 +4,6 @@ import traceback
 from json import JSONDecodeError
 from pathlib import Path
 from threading import Thread
-import random
-import string
 
 import requests
 from plyer import notification
