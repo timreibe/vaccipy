@@ -96,14 +96,14 @@
        <string>Kontaktdaten</string>
       </attribute>
       <layout class="QFormLayout" name="formLayout">
-       <item row="0" column="0">
+       <item row="1" column="0">
         <widget class="QLabel" name="plz_impfzent_label">
          <property name="text">
           <string>PLZ's der Impfzentren:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="1" column="1">
         <layout class="QGridLayout" name="plz_zentren_grid_layout">
          <item row="0" column="0">
           <widget class="QLineEdit" name="i_plz_impfzentren">
@@ -130,14 +130,14 @@
          </item>
         </layout>
        </item>
-       <item row="1" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="code_label">
          <property name="text">
           <string>Code:</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QLineEdit" name="i_code_impfzentren">
          <property name="inputMask">
           <string>NNNN-NNNN-NNNN</string>
@@ -153,14 +153,14 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="anrede_label">
          <property name="text">
           <string>Anrede:</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="QComboBox" name="i_anrede_combo_box">
          <property name="editable">
           <bool>true</bool>
@@ -188,14 +188,14 @@
          </item>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="vorname_label">
          <property name="text">
           <string>Vorname:</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="4" column="1">
         <widget class="QLineEdit" name="i_vorname">
          <property name="placeholderText">
           <string>Max</string>
@@ -205,14 +205,14 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="nachname_label">
          <property name="text">
           <string>Nachname:</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="5" column="1">
         <widget class="QLineEdit" name="i_nachname">
          <property name="placeholderText">
           <string>Mustermann</string>
@@ -222,14 +222,14 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
+       <item row="6" column="0">
         <widget class="QLabel" name="strasse_label">
          <property name="text">
           <string>Straße:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="6" column="1">
         <layout class="QGridLayout" name="strasse_grid_layout">
          <item row="0" column="2">
           <widget class="QLabel" name="hausnummer_label">
@@ -282,14 +282,14 @@
          </item>
         </layout>
        </item>
-       <item row="6" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="label_plz_wohnort">
          <property name="text">
           <string>PLZ Wohnort:</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="7" column="1">
         <layout class="QGridLayout" name="plz_grid_layout">
          <item row="0" column="3">
           <widget class="QLineEdit" name="i_wohnort">
@@ -339,14 +339,14 @@
          </item>
         </layout>
        </item>
-       <item row="7" column="0">
+       <item row="8" column="0">
         <widget class="QLabel" name="telefon_label">
          <property name="text">
           <string>Telefonnummer:</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="8" column="1">
         <widget class="QLineEdit" name="i_telefon">
          <property name="inputMask">
           <string/>
@@ -362,17 +362,24 @@
          </property>
         </widget>
        </item>
-       <item row="8" column="0">
+       <item row="9" column="0">
         <widget class="QLabel" name="mail_label">
          <property name="text">
           <string>Mail:</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
+       <item row="9" column="1">
         <widget class="QLineEdit" name="i_mail">
          <property name="clearButtonEnabled">
           <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QCheckBox" name="i_checkBoxCodeGen">
+         <property name="text">
+          <string>Code Gen</string>
          </property>
         </widget>
        </item>
