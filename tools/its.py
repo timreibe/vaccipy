@@ -26,6 +26,7 @@ from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
 from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
     validate_zeitrahmen
+from tools.utils import fire_notifications
 
 try:
     import beepy
@@ -951,6 +952,9 @@ class ImpfterminService():
         codes = self.codes[url]
         self.codes[url] = codes[1:] + codes[:1]
 
+    def notify(self, title: str, msg: str):
+        fire_notifications(self.notifications, self.operating_system, title, msg)
+
     @staticmethod
     def terminsuche(codes: list, plz_impfzentren: list, kontakt: dict,
                     PATH: str, notifications: dict = {}, zeitrahmen: dict = dict(),
@@ -1012,7 +1016,7 @@ class ImpfterminService():
                     its.termin_buchen(reservierung)
                     msg = "Termin erfolgreich gebucht!"
                     its.log.success(msg)
-                    self.notify(title="Terminbuchung:", message=msg)
+                    its.notify(title="Terminbuchung:", message=msg)
                     # Programm beenden, wenn Termin gefunden wurde
                     return
                 except AppointmentGone:
@@ -1021,12 +1025,10 @@ class ImpfterminService():
                 except BookingError:
                     msg = f"Termin konnte nicht gebucht werden."
                 its.log.error(msg)
-                self.notify(title="Terminbuchung:", message=msg)
+                its.notify(title="Terminbuchung:", message=msg)
 
             time.sleep(check_delay)
 
-    def notify(self, title: str, msg: str):
-        fire_notifications(self.notifications, self.operating_system, title, msg)
 
 
 def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
