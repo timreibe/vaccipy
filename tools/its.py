@@ -315,7 +315,7 @@ class ImpfterminService():
                 elements = driver.find_elements_by_tag_name('div')
                 action.move_to_element(choice(elements)).click().perform()
                 time.sleep(.5)
-            except:
+            except Exception as exc:
                 pass
 
         driver.get(location)
