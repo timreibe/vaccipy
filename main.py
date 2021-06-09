@@ -15,7 +15,7 @@ from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, 
     get_current_version, pushover_validation, telegram_validation
 
 PATH = os.path.dirname(os.path.realpath(__file__))
-
+LANGUAGES = ["de","en"]
 
 def update_kontaktdaten_interactive(
         known_kontaktdaten,
@@ -394,7 +394,7 @@ def main():
         "-l",
         "--lang",
         default='de',
-        choices=['de', 'en'],
+        choices=LANGUAGES,
         action="store",
         help=i18n.t("i18n.LangDescription"))
 
@@ -521,7 +521,7 @@ def main():
                 elif extended_settings and option == "l":
                     lang = input("> --lang=")
                     # Check if lang is available.
-                    if lang in ["de","en"]:
+                    if lang in LANGUAGES:
                         args.lang = lang
                         i18n.set('locale', lang)
                     else:
