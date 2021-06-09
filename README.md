@@ -2,6 +2,8 @@
 [![build](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml)
 [![deploy](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml/badge.svg)](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml)
 
+English: Please run the script with `--lang=en` appended to get english logs.
+
 Automatisierte Impfterminbuchung auf [www.impfterminservice.de](https://www.impfterminservice.de/).
 
 > **Disclaimer**
