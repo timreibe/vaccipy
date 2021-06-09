@@ -304,7 +304,7 @@ class QtKontakt(QtWidgets.QDialog):
                     return
             
             # Wird nur bei Terminsuche benötigt
-            self.i_code_impfzentren.setText(kontaktdaten["code"])
+            self.i_code_impfzentren.setText(kontaktdaten["codes"][0])
             self.i_anrede_combo_box.setEditText(kontaktdaten["kontakt"]["anrede"])
             self.i_vorname.setText(kontaktdaten["kontakt"]["vorname"])
             self.i_nachname.setText(kontaktdaten["kontakt"]["nachname"])
