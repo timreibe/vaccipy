@@ -67,10 +67,10 @@ en:
   ConfigureOnlyReadOnlyNotBoth: --configure-only und --read-only kann nicht gleichzeitig verwendet werden
   ConstrainTimeSlot: Would you like to restrict the time slot (y/n)
   ForWhichAppointment: For which appointment would you like to restrict the splot? (1/2/beide)
-  FromDate: From date (empty to skip)
-  ToDate: To date (empty to skip)
-  FromTime: From time (empty to skip)
-  ToTime: To time (empty to skip)
+  FromDate: From date (leave blank to skip)
+  ToDate: To date (leave blank to skip)
+  FromTime: From time (leave blank to skip)
+  ToTime: To time (leave blank to skip)
   InputVacCodeAndContactdata: |-
     Please insert you vaccination code and your contact data first.
     Both will be save in the file '%{filename}'.
