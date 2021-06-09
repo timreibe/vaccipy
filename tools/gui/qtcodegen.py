@@ -254,7 +254,7 @@ class QtCodeGen(QtWidgets.QDialog):
                         self.worker.signalUpdateData.emit("GEBURTSDATUM",geburtsdatum)
                         break
                     else:
-                        self.worker.signalStop.emit()
+                        self.hardClose()
                         break
                 except ValidationError as exc:
                     QtWidgets.QMessageBox.critical(self, "Geburtsdatum ungültiges Format", "Das Datum entspricht nicht dem richtigen Format (DD.MM.YYYY).")
