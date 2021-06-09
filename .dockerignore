@@ -1,0 +1,16 @@
+.git
+.github
+.idea
+docs
+images
+specs
+venv
+.dockerignore
+.gitignore
+Dockerfile
+docker-compose.yaml
+FAQ.md
+gui.py
+impfzentren_gruppiert.md
+LICENSE
+README.md
