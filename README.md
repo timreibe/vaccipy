@@ -307,6 +307,7 @@ werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 
 - [ ] Datum eingrenzen bei der Terminwahl
 - [ ] Github Pages
+- [ ] Integrierter updater.
 - [ ] Macosx Build / Pipeline (Mac currently blocks the app: [Branch](https://github.com/iamnotturner/vaccipy/tree/mac-intel-build))
 - [ ] Code Zertifikate für Windows (gegen Virusmeldung)
 
