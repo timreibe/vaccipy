@@ -425,6 +425,8 @@ def subcommand_install_chromium():
     else:
         if not check_chromium():
             download_chromium()
+        else:
+            print('Eigene Chromium Instanz bereits installiert.')
         if not check_webdriver():
             download_webdriver()
 
