@@ -43,8 +43,9 @@ except ImportError:
 
 
 class ImpfterminService():
-    def __init__(self, codes: list, kontakt: dict, PATH: str, notifications: dict = dict()):
+    def __init__(self, codes: list, kontakt: dict, PATH: str, notifications: dict = dict(), docker:bool= False):
         self.PATH = PATH
+        self.docker = docker
         self.kontakt = kontakt
         self.operating_system = platform.system().lower()
 
@@ -272,9 +273,10 @@ class ImpfterminService():
 
         # deaktiviere Selenium Logging
         chrome_options.add_argument('disable-infobars')
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
+        # chrome_options.add_argument("--headless")
+        if self.docker:
+            chrome_options.add_argument("--no-sandbox")
+        # chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_experimental_option('useAutomationExtension', False)
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
@@ -296,7 +298,7 @@ class ImpfterminService():
 
         chrome_options.headless = headless
 
-        return Chrome(options=chrome_options)
+        return Chrome(self.get_chromedriver_path(), options=chrome_options)
 
     def generate_way_between_coordinates(self, source_x: int, source_y: int, target_x: int, target_y: int) -> tuple:
         """Generate random waypoints between two x,y coordinates without numpy
@@ -1462,7 +1464,7 @@ class ImpfterminService():
     @staticmethod
     def terminsuche(codes: list, plz_impfzentren: list, kontakt: dict,
                     PATH: str, notifications: dict = {}, zeitrahmen: dict = dict(),
-                    check_delay: int = 30):
+                    check_delay: int = 30, docker:bool = False):
         """
         Sucht mit mehreren Vermittlungscodes bei einer Liste von Impfzentren nach
         Terminen und bucht den erstbesten, der dem Zeitrahmen entspricht,
@@ -1492,7 +1494,7 @@ class ImpfterminService():
         if len(plz_impfzentren) == 0:
             raise ValueError("Kein Impfzentrum ausgewählt")
 
-        its = ImpfterminService(codes, kontakt, PATH, notifications)
+        its = ImpfterminService(codes, kontakt, PATH, notifications, docker)
 
         # Prüfen, ob in allen angegebenen PLZs ein Impfzentrum verfügbar ist
         izs_by_plz = {
