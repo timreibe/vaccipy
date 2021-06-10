@@ -9,8 +9,9 @@ from tools.exceptions import ValidationError
 from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, \
     validate_kontaktdaten, validate_datum
-from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, \
-    get_current_version
+from tools.utils import create_missing_dirs, get_current_version, \
+    get_latest_version, pushover_validation, remove_prefix, \
+    telegram_validation, unique, update_available
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -52,11 +53,20 @@ def update_kontaktdaten_interactive(
             input_kontaktdaten_key(kontaktdaten,
                                    ["plz_impfzentren"],
                                    "> PLZ's der Impfzentren: ",
-                                   lambda x: list(set([plz.strip() for plz in x.split(",")])))
+                                   lambda x: unique([plz.strip() for plz in x.split(",")]))
+            print()
 
         if "codes" not in kontaktdaten and command == "search":
+            print(
+                "Bitte gebe jetzt die Vermittlungscodes passend zu den ausgewählten Impfzentren ein.\n"
+                "Beachte dabei, dass nur ein Vermittlungscode je Gruppierung benötigt wird.\n"
+                "Weitere Infos: https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren\n\n"
+                "Mehrere Vermittlungscodes müssen durch Kommas getrennt werden.\n"
+                "Beispiel: ABCD-1234-EFGH, ABCD-4321-EFGH, 1234-56AB-CDEF\n")
             input_kontaktdaten_key(
-                kontaktdaten, ["codes"], "> Code: ", lambda c: [c])
+                kontaktdaten, ["codes"], "> Vermittlungscodes: ",
+                lambda x: unique([code.strip() for code in x.split(",")]))
+            print()
 
         if "kontakt" not in kontaktdaten:
             kontaktdaten["kontakt"] = {}
@@ -107,26 +117,48 @@ def update_kontaktdaten_interactive(
             if "notifications" not in kontaktdaten:
                 kontaktdaten["notifications"] = {}
             if "pushover" not in kontaktdaten["notifications"]:
-                kontaktdaten["notifications"]["pushover"] = {}
-                if input("> Benachtigung mit Pushover einrichten? (y/n): ").lower() != "n":
-                    print()
-                    input_kontaktdaten_key(
-                        kontaktdaten, ["notifications", "pushover", "app_token"],
-                        "> Geben Sie den Pushover APP Token ein: ")
-                    input_kontaktdaten_key(
-                        kontaktdaten, ["notifications", "pushover", "user_key"],
-                        "> Geben Sie den Pushover User Key ein: ")
+                while True:
+                    kontaktdaten["notifications"]["pushover"] = {}
+                    if input("> Benachtigung mit Pushover einrichten? (y/n): ").lower() != "n":
+                        print()
+                        input_kontaktdaten_key(
+                            kontaktdaten, ["notifications", "pushover", "app_token"],
+                            "> Geben Sie den Pushover APP Token ein: ")
+                        input_kontaktdaten_key(
+                            kontaktdaten, ["notifications", "pushover", "user_key"],
+                            "> Geben Sie den Pushover User Key ein: ")
+                        validation_code = str(pushover_validation(kontaktdaten["notifications"]["pushover"]))
+                        validation_input = input("Geben Sie den Validierungscode ein:").strip()
+                        if validation_input == validation_code:
+                            break
+                        del kontaktdaten["notifications"]["pushover"]
+                        print("Validierung fehlgeschlagen.")
+                        print()
+                    else:
+                        print()
+                        break
 
             if "telegram" not in kontaktdaten["notifications"]:
-                kontaktdaten["notifications"]["telegram"] = {}
-                if input("> Benachtigung mit Telegram einrichten? (y/n): ").lower() != "n":
-                    print()
-                    input_kontaktdaten_key(
-                        kontaktdaten, ["notifications", "telegram", "api_token"],
-                        "> Geben Sie den Telegram API Token ein: ")
-                    input_kontaktdaten_key(
-                        kontaktdaten, ["notifications", "telegram", "chat_id"],
-                        "> Geben Sie die Telegram Chat ID ein: ")
+                while True:
+                    kontaktdaten["notifications"]["telegram"] = {}
+                    if input("> Benachtigung mit Telegram einrichten? (y/n): ").lower() != "n":
+                        print()
+                        input_kontaktdaten_key(
+                            kontaktdaten, ["notifications", "telegram", "api_token"],
+                            "> Geben Sie den Telegram API Token ein: ")
+                        input_kontaktdaten_key(
+                            kontaktdaten, ["notifications", "telegram", "chat_id"],
+                            "> Geben Sie die Telegram Chat ID ein: ")
+                        validation_code = str(telegram_validation(kontaktdaten["notifications"]["telegram"]))
+                        validation_input = input("Geben Sie den Validierungscode ein:").strip()
+                        if validation_input == validation_code:
+                            break
+                        del kontaktdaten["notifications"]["telegram"]
+                        print("Validierung fehlgeschlagen.")
+                        print()
+                    else:
+                        print()
+                        break
 
         if "zeitrahmen" not in kontaktdaten and command == "search":
             kontaktdaten["zeitrahmen"] = {}
@@ -159,6 +191,7 @@ def update_kontaktdaten_interactive(
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "wochentage"],
                     "> Erlaubte Wochentage: ", parse_wochentage)
+            print()
 
         json.dump(kontaktdaten, file, ensure_ascii=False, indent=4)
 
