@@ -11,8 +11,6 @@ services:
     build: .
     # Arguments passed to vaccipy.
     command: ${VACCIPY_ARGUMENTS}
-    depends_on:
-      - google-chrome
     environment:
       - VACCIPY_CHROME_REMOTE_ADDRESS=http://google-chrome:4444/wd/hub
     image: vaccipy
