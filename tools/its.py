@@ -1037,7 +1037,7 @@ class ImpfterminService():
                     its.termin_buchen(reservierung)
                     msg = "Termin erfolgreich gebucht!"
                     its.log.success(msg)
-                    its.notify(title="Terminbuchung:", message=msg)
+                    its.notify(title="Terminbuchung:", msg=msg)
                     # Programm beenden, wenn Termin gefunden wurde
                     return
                 except AppointmentGone:
@@ -1046,7 +1046,7 @@ class ImpfterminService():
                 except BookingError:
                     msg = f"Termin konnte nicht gebucht werden."
                 its.log.error(msg)
-                its.notify(title="Terminbuchung:", message=msg)
+                its.notify(title="Terminbuchung:", msg=msg)
 
             time.sleep(check_delay)
 
