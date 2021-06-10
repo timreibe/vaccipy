@@ -102,8 +102,6 @@ class Worker(QObject):
     def code_gen(self):
         """
         Startet den Prozess der Codegenerierung
-        """
-        """
         Codegenerierung ohne interaktive Eingabe der Kontaktdaten
         :param kontaktdaten: Dictionary mit Kontaktdaten
         """
