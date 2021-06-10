@@ -236,3 +236,15 @@ def fire_notifications(notifications: dict, operating_system: str, title: str, m
         pushover_notification(notifications["pushover"], title, message)
     if 'telegram' in notifications:
         telegram_notification(notifications["telegram"], message)
+
+
+def unique(seq):
+    """
+    Removes duplicates from a sequence while preserving order
+
+    :return: New sequence without duplicates
+    """
+    # https://stackoverflow.com/a/480227/7350842
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
