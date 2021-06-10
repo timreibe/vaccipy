@@ -165,8 +165,6 @@ class HauptGUI(QtWidgets.QMainWindow):
     def __code_generieren(self):
         """
         Startet den Prozess der Codegenerierung
-        """
-        """
         Codegenerierung ohne interaktive Eingabe der Kontaktdaten
 
         :param kontaktdaten: Dictionary mit Kontaktdaten
