@@ -174,6 +174,11 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         try:
             kontaktdaten = self.__get_kontaktdaten(Modus.CODE_GENERIEREN)
+            
+            #return if no data was returned
+            if not kontaktdaten:
+                return
+
         except FileNotFoundError as error:
             QtWidgets.QMessageBox.critical(self, "Datei nicht gefunden!", f"Datei zum Laden konnte nicht gefunden werden\n\nBitte erstellen")
             return
@@ -224,6 +229,8 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         try:
             kontaktdaten = self.__get_kontaktdaten(Modus.TERMIN_SUCHEN)
+            if not kontaktdaten:
+                return
             zeitrahmen = kontaktdaten["zeitrahmen"]
 
         except FileNotFoundError as error:
@@ -404,6 +411,10 @@ class HauptGUI(QtWidgets.QMainWindow):
         if modus == Modus.TERMIN_SUCHEN:
             if not self.__check_old_kontakt_version(kontaktdaten):
                 raise ValidationError("\"zeitrahmen\" fehlt -> Alte Version")
+           
+            if "codes" in kontaktdaten:
+                if "XXXX-XXXX-XXXX" in kontaktdaten["codes"]:
+                    raise ValidationError("Der Code is ungültig. Bitte trage einen korrekten Code ein!")
 
         return kontaktdaten
 
