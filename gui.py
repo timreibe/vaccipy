@@ -406,6 +406,8 @@ class HauptGUI(QtWidgets.QMainWindow):
             self.kontaktdaten_erstellen(modus)
 
         kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
+        kontak_tools.check_kontaktdaten(kontaktdaten, modus)
+        
         if modus == Modus.TERMIN_SUCHEN:
             if not self.__check_old_kontakt_version(kontaktdaten):
                 raise ValidationError("\"zeitrahmen\" fehlt -> Alte Version")
