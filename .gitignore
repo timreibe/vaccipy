@@ -19,5 +19,3 @@ installer/
 build/    
 dist/
 
-# local chromium
-/tools/local-chromium/

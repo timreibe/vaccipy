@@ -12,7 +12,6 @@ from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktda
 from tools.utils import create_missing_dirs, get_current_version, \
     get_latest_version, pushover_validation, remove_prefix, \
     telegram_validation, unique, update_available
-from tools.chromium_downloader import check_chromium, download_chromium, check_webdriver, download_webdriver, current_platform
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -418,19 +417,6 @@ def subcommand_code(args):
         gen_code_interactive(args.file)
 
 
-def subcommand_install_chromium():
-    # Mac_Arm currently not working
-    if current_platform() == 'mac-arm':
-        print('Zur Zeit kann keine eigene Chromium Instanz auf einem Mac M1 installiert werden.')
-    else:
-        if not check_chromium():
-            download_chromium()
-        else:
-            print('Eigene Chromium Instanz bereits installiert.')
-        if not check_webdriver():
-            download_webdriver()
-
-
 def validate_args(args):
     """
     Raises ValueError if args contain invalid settings.
@@ -520,7 +506,6 @@ def main():
                 "Was möchtest du tun?\n"
                 "[1] Termin suchen\n"
                 "[2] Vermittlungscode generieren\n"
-                "[3] Eigene Chromium Instanz im Vaccipy Ordner installieren\n"
                 f"[x] Erweiterte Einstellungen {'verbergen' if extended_settings else 'anzeigen'}\n")
 
             if extended_settings:
@@ -538,8 +523,6 @@ def main():
                     subcommand_search(args)
                 elif option == "2":
                     subcommand_code(args)
-                elif option == "3":
-                    subcommand_install_chromium()
                 elif option == "x":
                     extended_settings = not extended_settings
                 elif extended_settings and option == "c":
@@ -574,14 +557,14 @@ def main():
 
 if __name__ == "__main__":
     print("""
-                                _
-                               (_)
- __   __   __ _    ___    ___   _   _ __    _   _
+                                _                 
+                               (_)                
+ __   __   __ _    ___    ___   _   _ __    _   _ 
  \ \ / /  / _` |  / __|  / __| | | | '_ \  | | | |
   \ V /  | (_| | | (__  | (__  | | | |_) | | |_| |
    \_/    \__,_|  \___|  \___| |_| | .__/   \__, |
                                    | |       __/ |
-                                   |_|      |___/
+                                   |_|      |___/ 
 """)
 
     # Auf aktuelle Version prüfen

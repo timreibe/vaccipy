@@ -27,7 +27,6 @@ from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, Unm
 from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
     validate_zeitrahmen
 from tools.utils import fire_notifications
-from tools.chromium_downloader import chromium_executable, check_chromium, webdriver_executable, check_webdriver
 
 try:
     import beepy
@@ -233,8 +232,6 @@ class ImpfterminService():
         chromedriver_from_env = os.getenv("VACCIPY_CHROMEDRIVER")
         if chromedriver_from_env:
             return chromedriver_from_env
-        if check_webdriver():
-            return webdriver_executable()
 
         # Chromedriver anhand des OS auswählen
         if 'linux' in self.operating_system:
@@ -272,8 +269,6 @@ class ImpfterminService():
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
             chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
-        elif check_chromium():
-            chrome_options.binary_location = str(chromium_executable())
 
         chrome_options.headless = headless
 
@@ -748,7 +743,6 @@ class ImpfterminService():
                 ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                     '%d.%m.%Y um %H:%M Uhr')
                 self.log.warn(f"{num}. Termin: {ts}")
-            self.log.warn(f"Link: {url}impftermine/suche/{code}/{plz}")
             self.log.info('-' * 50)
 
         if not terminpaare_angenommen:
@@ -762,7 +756,6 @@ class ImpfterminService():
             ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                 '%d.%m.%Y um %H:%M Uhr')
             self.log.success(f"{num}. Termin: {ts}")
-        self.log.success(f"Link: {url}impftermine/suche/{code}/{plz}")
 
         # Reservierungs-Objekt besteht aus Terminpaar und Impfzentrum
         return {
