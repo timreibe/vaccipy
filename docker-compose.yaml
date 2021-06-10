@@ -2,13 +2,15 @@ version: "3.9"
 services:
   google-chrome:
     environment:
-      # Necessary to allow connections other than local ones.
+      # Necessary to allow connections other than from the local address.
       - JAVA_OPTS=-Dwebdriver.chrome.whitelistedIps=
     image: selenium/standalone-chrome:91.0
     ports:
       - "4444:4444"
   vaccipy:
     build: .
+    # Arguments passed to vaccipy.
+    command: ${VACCIPY_ARGUMENTS}
     depends_on:
       - google-chrome
     environment:
@@ -17,5 +19,5 @@ services:
     volumes:
       - type: bind
         read_only: true
-        source: ~/kontaktdaten.json
+        source: ${VACCIPY_CONTACT_ADDRESS_PATH}
         target: /vaccipy/kontaktdaten.json
