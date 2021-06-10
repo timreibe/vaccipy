@@ -187,7 +187,7 @@ class QtCodeGen(QtWidgets.QDialog):
     def __del__(self):
         print("QtCodeGen destruct")
         
-    def setupUi(self, QtCodeGen):
+    def setupUi(self, QtCodeGen, ROOT_PATH):
         self.setObjectName("QtCodeGen")
         self.setWindowModality(QtCore.Qt.WindowModal)
         self.setModal(False)
