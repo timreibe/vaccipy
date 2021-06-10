@@ -19,7 +19,10 @@ import urllib3
 from tqdm import tqdm
 import pathlib
 
-strPrintPrefix = "chromium_downloader: "
+
+log = CLogger("chromium")
+log.set_prefix("download")
+
 
 def current_platform() -> str:
     """Get current platform name by short string."""
@@ -134,8 +137,8 @@ def get_url(binary: str) -> str:
 
 def download_zip(url: str, binary: str) -> BytesIO:
     """Download data from url."""
-    print(
-        f'{strPrintPrefix}Starte den Download von {binary}. Dieser Vorgang kann einige Minuten dauern.'
+    log.info(
+        f'Starte den Download von {binary}. Dieser Vorgang kann einige Minuten dauern.'
     )
 
     # Uncomment the statement below to disable HTTPS warnings and allow
@@ -172,7 +175,7 @@ def download_zip(url: str, binary: str) -> BytesIO:
             process_bar.close()
 
     print()
-    print(f'{strPrintPrefix}Download von {binary} abgeschlossen.')
+    log.info(f'Download von {binary} abgeschlossen.')
     return _data
 
 
@@ -200,7 +203,7 @@ def extract_zip(data: BytesIO, path: Path, binary: str) -> None:
             stderr=subprocess.STDOUT,
         )
         if proc.returncode != 0:
-            print(proc.stdout.decode())
+            log.error(proc.stdout.decode())
             raise OSError(f'Failed to unzip {zip_path}.')
         if chromium_executable().exists() and zip_path.exists():
             zip_path.unlink()
@@ -216,7 +219,7 @@ def extract_zip(data: BytesIO, path: Path, binary: str) -> None:
     exec_path.chmod(
         exec_path.stat().st_mode | stat.S_IXOTH | stat.S_IXGRP | stat.S_IXUSR
     )
-    print(f"{strPrintPrefix}{binary} exportiert nach '{path}'")
+    log.info(f"{binary} exportiert nach '{path}'")
 
 
 def download_chromium(binary='chromium') -> None:
