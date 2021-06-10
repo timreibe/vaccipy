@@ -57,11 +57,11 @@ class Worker(QObject):
         """
 
         kontakt = self.kontaktdaten["kontakt"]
-        code = self.kontaktdaten["code"]
+        codes = self.kontaktdaten["codes"]
         plz_impfzentren = self.kontaktdaten["plz_impfzentren"]
 
         try:
-            ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
+            ImpfterminService.terminsuche(codes=codes, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
                                           PATH=self.ROOT_PATH, check_delay=self.check_delay, zeitrahmen=self.zeitrahmen)
 
             self.fertig.emit()
@@ -140,7 +140,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         Setzt die entsprechende Labels
         """
         self.interval_label.setText(f"{self.check_delay} Sekunden")
-        self.code_label.setText(self.kontaktdaten["code"])
+        self.code_label.setText(", ".join(self.kontaktdaten["codes"]))
         self.vorname_label.setText(self.kontaktdaten["kontakt"]["vorname"])
         self.nachname_label.setText(self.kontaktdaten["kontakt"]["nachname"])
 
