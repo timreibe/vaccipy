@@ -748,6 +748,7 @@ class ImpfterminService():
                 ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                     '%d.%m.%Y um %H:%M Uhr')
                 self.log.warn(f"{num}. Termin: {ts}")
+            self.log.warn(f"Link: {url}impftermine/suche/{code}/{plz}")
             self.log.info('-' * 50)
 
         if not terminpaare_angenommen:
@@ -761,6 +762,7 @@ class ImpfterminService():
             ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                 '%d.%m.%Y um %H:%M Uhr')
             self.log.success(f"{num}. Termin: {ts}")
+        self.log.success(f"Link: {url}impftermine/suche/{code}/{plz}")
 
         # Reservierungs-Objekt besteht aus Terminpaar und Impfzentrum
         return {
