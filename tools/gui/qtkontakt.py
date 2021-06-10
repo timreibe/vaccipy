@@ -439,20 +439,12 @@ class QtKontakt(QtWidgets.QDialog):
 
         """
         codes = []
-        warn = False
-
         line_edits = self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit)
         for line_edit in line_edits:
-            if len(line_edit.text().strip()) == 14:
-                codes.append(line_edit.text().strip())
-            elif line_edit.text().strip() != "--":
-                warn = True
-
-        if warn:
-            self.__oeffne_error(title="Kontaktdaten", text="Ungültiger Code",
-                                info="Mindestens einer der eingegebenen Codes "
-                                "ist ungültig und wird nicht gespeichert.")
-
+            code = line_edit.text()
+            # Nur wenn Code nicht leer ist hinzufügen
+            if code != "--":
+                codes.append(line_edit.text())
         return codes
 
     def __set_vermittlungscodes(self, codes: list):
