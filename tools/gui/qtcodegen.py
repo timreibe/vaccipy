@@ -193,7 +193,7 @@ class QtCodeGen(QtWidgets.QDialog):
         self.setModal(False)
         self.resize(700, 300)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint);
-
+        self.setWindowIcon(QIcon(os.path.join(ROOT_PATH, "images/spritze.ico")))
 
     def setup_thread(self):
         """
