@@ -308,8 +308,6 @@ class QtCodeGen(QtWidgets.QDialog):
                 
             
         #exit
-        if self.parent is not None:
-            self.parent.enableCodeBtn.emit() # enable Code Btn again
 
         #stop worker
         self.worker.stop()
