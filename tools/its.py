@@ -296,7 +296,7 @@ class ImpfterminService():
 
         chrome_options.headless = headless
 
-        return Chrome(self.get_chromedriver_path(), options=chrome_options)
+        return Chrome(options=chrome_options)
 
     def generate_way_between_coordinates(self, source_x: int, source_y: int, target_x: int, target_y: int) -> tuple:
         """Generate random waypoints between two x,y coordinates without numpy
