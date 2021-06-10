@@ -88,6 +88,9 @@ class QtKontakt(QtWidgets.QDialog):
         # Versuche Kontakdaten zu laden 
         self.__lade_alle_werte()
 
+        # Wähle ersten Reiter aus
+        self.tabWidget.setCurrentIndex(0)
+
     def setup(self):
         """
         Aktiviert abhänig vom Modus die Eingabefelder
@@ -321,7 +324,7 @@ class QtKontakt(QtWidgets.QDialog):
                 pass
          
         except MissingValuesError as exc:
-            self.__reset_vermittlungscodes
+            self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
             self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
@@ -330,13 +333,16 @@ class QtKontakt(QtWidgets.QDialog):
                        "Datei, indem Sie auf Speichern klicken.")
 
         except ValidationError as exc:
-            self.__reset_vermittlungscodes
+            self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
             self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
                 info= "Die von Ihnen gewählte Datei hat ein falsches Format. "
                        "Laden Sie eine andere Datei oder überschreiben Sie die "
                        "Datei, indem Sie auf Speichern klicken.")
+
+        # Wechsel auf den ersten Reiter
+        self.tabWidget.setCurrentIndex(0)
 
 
 
@@ -402,9 +408,9 @@ class QtKontakt(QtWidgets.QDialog):
         Setzt alle Werte für die Vermittlungscodes in der GUI zurück
         """
 
-        for widget in self.vermittlungscodes_tab.children():
-            if isinstance(widget, QtWidgets.QLineEdit):
-                widget.setText("")
+        line_edits = self.findChildren(QtWidgets.QLineEdit)
+        for line_edit in line_edits:
+                line_edit.setText("")
 
 
     def __get_impfzentren_plz(self, plzList : list) -> str: 
@@ -433,10 +439,19 @@ class QtKontakt(QtWidgets.QDialog):
 
         """
         codes = []
+        warn = False
 
-        for widget in self.vermittlungscodes_tab.children():
-            if isinstance(widget, QtWidgets.QLineEdit) and len(widget.text().strip()) == 14:
-                codes.append(widget.text().strip())
+        line_edits = self.findChildren(QtWidgets.QLineEdit)
+        for line_edit in line_edits:
+            if len(line_edit.text().strip()) == 14:
+                codes.append(line_edit.text().strip())
+            elif line_edit.text().strip() != "--":
+                warn = True
+
+        if warn:
+            self.__oeffne_error(title="Kontaktdaten", text="Ungültiger Code",
+                                info="Mindestens einer der eingegebenen Codes "
+                                "ist ungültig und wird nicht gespeichert.")
 
         return codes
 
@@ -448,10 +463,10 @@ class QtKontakt(QtWidgets.QDialog):
             codes: List der codes
 
         """
-        lineEdits = self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit)
-        lineEdits = lineEdits[:len(codes)]
+        line_edits = self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit)
+        line_edits = line_edits[:len(codes)]
 
-        for code, lineEdit in zip(codes, lineEdits):
+        for code, lineEdit in zip(codes, line_edits):
             lineEdit.setText(code)
 
 
