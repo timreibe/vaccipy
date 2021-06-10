@@ -258,11 +258,7 @@ class QtKontakt(QtWidgets.QDialog):
         """
 
         kontakt_tools.check_kontaktdaten(kontaktdaten, self.modus)
-
-        if self.modus == Modus.TERMIN_SUCHEN:
-            kontakt_tools.validate_kontaktdaten(kontaktdaten)
-        elif self.modus == Modus.CODE_GENERIEREN:
-            kontakt_tools.validate_kontaktdaten(kontaktdaten)
+        kontakt_tools.validate_kontaktdaten(kontaktdaten)
 
 
     def __lade_alle_werte(self):
@@ -390,6 +386,10 @@ class QtKontakt(QtWidgets.QDialog):
 
         # Telefon wieder mit Prefix befüllen
         self.i_telefon.setText("+49")
+
+        # set dummy code on reset
+        if self.modus == Modus.CODE_GENERIEREN:
+            self.i_code_impfzentren.setText("XXXXXXXXXXXX")
 
     def __get_impfzentren_plz(self, plzList : list) -> str: 
         """
