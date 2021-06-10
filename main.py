@@ -272,7 +272,7 @@ def run_search_interactive(kontaktdaten_path, configure_notifications, check_del
     return run_search(kontaktdaten, check_delay)
 
 
-def run_search(kontaktdaten, check_delay):
+def run_search(kontaktdaten, check_delay, docker):
     """
     Nicht-interaktive Terminsuche
 
@@ -411,7 +411,7 @@ def subcommand_search(args):
         update_kontaktdaten_interactive(
             get_kontaktdaten(args.file), "search", args.configure_notifications, args.file)
     elif args.read_only:
-        run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec)
+        run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec, docker=args.docker)
     else:
         run_search_interactive(args.file, args.configure_notifications, check_delay=args.retry_sec)
 
@@ -484,6 +484,12 @@ def main():
         type=int,
         default=60,
         help="Wartezeit zwischen zwei Versuchen (in Sekunden)")
+
+    parser_search.add_argument(
+        "-d",
+        "--docker",
+        action='store_true',
+        help="Schaltet die Sandbox für Docker aus. Bitte nicht außerhalb eines Containers verwenden.")
 
     parser_code = subparsers.add_parser(
         "code",
