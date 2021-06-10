@@ -164,7 +164,7 @@ class QtCodeGen(QtWidgets.QDialog):
     def __init__(self, kontaktdaten: dict, ROOT_PATH: str, parent = None):
         super().__init__(parent)
         uic.loadUi(os.path.join(PATH, "ui_qtcodegen.ui"), self)
-        self.setupUi(self)
+        self.setupUi(self, ROOT_PATH)
         
         self.parent = parent
         self._hardClose = False
