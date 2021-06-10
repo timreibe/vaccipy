@@ -408,7 +408,7 @@ class QtKontakt(QtWidgets.QDialog):
         Setzt alle Werte für die Vermittlungscodes in der GUI zurück
         """
 
-        line_edits = self.findChildren(QtWidgets.QLineEdit)
+        line_edits = self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit)
         for line_edit in line_edits:
                 line_edit.setText("")
 
@@ -441,7 +441,7 @@ class QtKontakt(QtWidgets.QDialog):
         codes = []
         warn = False
 
-        line_edits = self.findChildren(QtWidgets.QLineEdit)
+        line_edits = self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit)
         for line_edit in line_edits:
             if len(line_edit.text().strip()) == 14:
                 codes.append(line_edit.text().strip())
