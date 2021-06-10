@@ -1,0 +1,15 @@
+version: "3.8"
+
+vaccipy:
+    image: vaccipy
+    container_name: vaccipy
+    restart: always
+    environment:
+      - VNC_PASSWORD=<password>
+      - VNC_PORT=5901
+      - WEB_PORT=6901
+    ports:
+      - 5901:5901
+      - 6901:6901
+    volumes: 
+      - ./vaccipy/kontaktdaten.json/:/app/kontaktdaten.json

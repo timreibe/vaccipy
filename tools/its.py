@@ -270,6 +270,9 @@ class ImpfterminService():
 
         # deaktiviere Selenium Logging
         chrome_options.add_argument('disable-infobars')
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_experimental_option('useAutomationExtension', False)
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
@@ -290,7 +293,7 @@ class ImpfterminService():
 
         chrome_options.headless = headless
 
-        return Chrome(self.get_chromedriver_path(), options=chrome_options)
+        return Chrome(options=chrome_options)
 
     def generate_way_between_coordinates(self, source_x: int, source_y: int, target_x: int, target_y: int) -> tuple:
         """Generate random waypoints between two x,y coordinates without numpy
