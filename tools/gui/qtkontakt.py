@@ -466,8 +466,8 @@ class QtKontakt(QtWidgets.QDialog):
         line_edits = self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit)
         line_edits = line_edits[:len(codes)]
 
-        for code, lineEdit in zip(codes, line_edits):
-            lineEdit.setText(code)
+        for code, line_edit in zip(codes, line_edits):
+            line_edit.setText(code)
 
 
 
