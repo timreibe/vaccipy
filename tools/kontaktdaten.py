@@ -83,7 +83,7 @@ def check_kontaktdaten(kontaktdaten: dict, mode: Modus):
         kontaktdaten["kontakt"]["notificationReceiver"]
 
     except KeyError as exc:
-        raise MissingValuesError("Schlüsselwort fehlt!") from exc
+        raise MissingValuesError(f"Schlüsselwort fehlt!\n{str(exc)}") from exc
 
 
 def validate_kontaktdaten(kontaktdaten: dict):

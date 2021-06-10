@@ -10,15 +10,13 @@ import sys
 from PyQt5 import QtCore, QtWidgets, uic
 from PyQt5.QtGui import QIcon
 from tools.exceptions import ValidationError, MissingValuesError
-from tools.gui import oeffne_file_dialog_select
-
 
 from tools import Modus
 from tools import kontaktdaten as kontak_tools
-from tools.exceptions import MissingValuesError, ValidationError
 from tools.gui import oeffne_file_dialog_select, open_browser
 from tools.gui.qtkontakt import QtKontakt
 from tools.gui.qtterminsuche import QtTerminsuche
+from tools.gui.qtcodegen import QtCodeGen
 from tools.utils import create_missing_dirs, update_available, get_latest_version, get_current_version
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -61,6 +59,7 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         # Laden der .ui Datei und Anpassungen
         self.setup(pfad_fenster_layout)
+        
 
         # GUI anzeigen
         self.show()
@@ -166,11 +165,59 @@ class HauptGUI(QtWidgets.QMainWindow):
     def __code_generieren(self):
         """
         Startet den Prozess der Codegenerierung
+        Codegenerierung ohne interaktive Eingabe der Kontaktdaten
+
+        :param kontaktdaten: Dictionary mit Kontaktdaten
         """
 
-        # TODO: code generierung implementieren
-        QtWidgets.QMessageBox.information(self, "Noch nicht verfügbar", "Funktion nur über Konsolenanwendung verfügbar")
+        try:
+            kontaktdaten = self.__get_kontaktdaten(Modus.CODE_GENERIEREN)
+            
+            #return if no data was returned
+            if not kontaktdaten:
+                return
 
+        except FileNotFoundError as error:
+            QtWidgets.QMessageBox.critical(self, "Datei nicht gefunden!", f"Datei zum Laden konnte nicht gefunden werden\n\nBitte erstellen")
+            return
+        except ValidationError as error:
+            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei sind Fehler:\n\n{error}")
+            return
+        except MissingValuesError as error:
+            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei Fehlen Daten:\n\n{error}")
+            return
+            
+        strProcName = "Codegen"
+
+        # allow only 1 Code Gen at a time
+        for subProvess in self.such_prozesse:
+            if subProvess.name == strProcName:
+                QtWidgets.QMessageBox.information(self, "STOP", "Es läuft bereits eine Codegenerierung!")
+                return False
+
+        #start codegen process
+        code_prozess = multiprocessing.Process(target=QtCodeGen.start_code_gen, 
+            name=strProcName, daemon=True, kwargs={
+                "kontaktdaten": kontaktdaten,
+                "ROOT_PATH": PATH
+            })
+
+        #add code search to list of prozesses
+        try:
+            code_prozess.start()
+            if not code_prozess.is_alive():
+                raise RuntimeError(
+                    f"Code suche wurde gestartet, lebt aber nicht mehr!"
+                )
+        except Exception as error:
+            QtWidgets.QMessageBox.critical(self, "Fehler - Codegenerierung nicht gestartet!", str(error))
+        else:
+            self.such_prozesse.append(code_prozess)
+            self.__add_prozess_in_gui(code_prozess)
+            self.prozesse_counter += 1
+
+
+        
     def __termin_suchen(self):
         """
         Startet den Prozess der terminsuche mit Impfterminservice.terminsuche in einem neuen Thread
@@ -180,6 +227,8 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         try:
             kontaktdaten = self.__get_kontaktdaten(Modus.TERMIN_SUCHEN)
+            if not kontaktdaten:
+                return
             zeitrahmen = kontaktdaten["zeitrahmen"]
 
         except FileNotFoundError as error:
@@ -357,10 +406,18 @@ class HauptGUI(QtWidgets.QMainWindow):
             self.kontaktdaten_erstellen(modus)
 
         kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
-        if not self.__check_old_kontakt_version(kontaktdaten):
-            raise ValidationError("\"zeitrahmen\" fehlt -> Alte Version")
+        kontak_tools.check_kontaktdaten(kontaktdaten, modus)
+        
+        if modus == Modus.TERMIN_SUCHEN:
+            if not self.__check_old_kontakt_version(kontaktdaten):
+                raise ValidationError("\"zeitrahmen\" fehlt -> Alte Version")
+           
+            if "codes" in kontaktdaten:
+                if "XXXX-XXXX-XXXX" in kontaktdaten["codes"]:
+                    raise ValidationError("Der Code is ungültig. Bitte trage einen korrekten Code ein!")
 
         return kontaktdaten
+
 
 
 def main():

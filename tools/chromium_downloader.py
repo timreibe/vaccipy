@@ -21,8 +21,8 @@ from tqdm import tqdm
 import pathlib
 
 
-log = CLogger("impfterminservice")
-log.set_prefix("chromium downloader")
+log = CLogger("chromium")
+log.set_prefix("download")
 
 
 def current_platform() -> str:
