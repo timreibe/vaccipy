@@ -240,7 +240,7 @@ def input_kontaktdaten_key(
             print(f"\n{str(exc)}\n")
 
 
-def run_search_interactive(kontaktdaten_path, configure_notifications, check_delay):
+def run_search_interactive(kontaktdaten_path, configure_notifications, check_delay, docker):
     """
     Interaktives Setup für die Terminsuche:
     1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen
@@ -269,7 +269,7 @@ def run_search_interactive(kontaktdaten_path, configure_notifications, check_del
     print()
     kontaktdaten = update_kontaktdaten_interactive(
         kontaktdaten, "search", configure_notifications, kontaktdaten_path)
-    return run_search(kontaktdaten, check_delay)
+    return run_search(kontaktdaten, check_delay, docker)
 
 
 def run_search(kontaktdaten, check_delay, docker):
@@ -311,7 +311,8 @@ def run_search(kontaktdaten, check_delay, docker):
         notifications=notifications,
         zeitrahmen=zeitrahmen,
         check_delay=check_delay,
-        PATH=PATH)
+        PATH=PATH,
+        docker=docker)
 
 
 def gen_code_interactive(kontaktdaten_path):
@@ -413,7 +414,7 @@ def subcommand_search(args):
     elif args.read_only:
         run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec, docker=args.docker)
     else:
-        run_search_interactive(args.file, args.configure_notifications, check_delay=args.retry_sec)
+        run_search_interactive(args.file, args.configure_notifications, check_delay=args.retry_sec, docker=args.docker)
 
 
 def subcommand_code(args):
@@ -508,6 +509,8 @@ def main():
         args.retry_sec = 60
     if not hasattr(args, "configure_notifications"):
         args.configure_notifications = False
+    if not hasattr(args, "docker"):
+        args.docker = False
 
     try:
         validate_args(args)
