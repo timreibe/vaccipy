@@ -378,7 +378,7 @@ class HauptGUI(QtWidgets.QMainWindow):
     #        Kontaktdaten        #
     ##############################
 
-    def kontaktdaten_erstellen(self, modus: Modus = Modus.TERMIN_SUCHEN):
+    def kontaktdaten_erstellen(self, modus: Modus = Modus.TERMIN_SUCHEN) -> bool:
         """
         Ruft den Dialog für die Kontaktdaten auf
 
@@ -389,7 +389,10 @@ class HauptGUI(QtWidgets.QMainWindow):
         dialog = QtKontakt(self, modus, self.pfad_kontaktdaten, PATH)
         dialog.update_path.connect(self.__update_kontaktdaten_pfad)
         dialog.show()
-        dialog.exec_()
+        if dialog.exec_() == QtWidgets.QDialog.Rejected:
+            return False
+        else:
+            return True
 
     def __get_kontaktdaten(self, modus: Modus) -> dict:
         """
@@ -401,11 +404,16 @@ class HauptGUI(QtWidgets.QMainWindow):
         Returns:
             dict: Kontakdaten
         """
-
+        bDialogAborted = False
         if not os.path.isfile(self.pfad_kontaktdaten):
-            self.kontaktdaten_erstellen(modus)
-
+            bDialogAborted = not self.kontaktdaten_erstellen(modus)
+         
         kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
+       
+        # we need to check data if we got no dict or the dialog was aborted 
+        if bDialogAborted is True and not kontaktdaten:
+            return {}
+
         kontak_tools.check_kontaktdaten(kontaktdaten, modus)
         
         if modus == Modus.TERMIN_SUCHEN:
