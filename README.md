@@ -203,6 +203,7 @@ pip3 install -r requirements.txt
 ```
 
 #### Developer Collaboration
+Bitte schau einmal in die [CONTRIBUTING.md](https://github.com/iamnotturner/vaccipy/blob/master/CONTRIBUTING.md)
 
 Für direkte Kommunikation kannst du als Entwickler gerne unserem Slack beitreten!
 
