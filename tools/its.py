@@ -1063,6 +1063,7 @@ class ImpfterminService():
                     its.termin_buchen(reservierung)
                     msg = "Termin erfolgreich gebucht!"
                     its.log.success(msg)
+                    its.log.info("[SPENDE] Unterstütze hier unsere Spendenkampagne für 'Ärzte ohne Grenzen': https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m")
                     its.notify(title="Terminbuchung:", msg=msg)
                     # Programm beenden, wenn Termin gefunden wurde
                     return
