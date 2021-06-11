@@ -830,15 +830,13 @@ class ImpfterminService():
             except RequestException as exc:
                 raise RuntimeError(
                     f"Termin konnte nicht gebucht werden: {str(exc)}")
+            if res.status_code == 400:
+                # Example response data with status 400:
+                # {"errors":[{"code":"BU004","text":"Slot nicht frei"}]}
+                # {"errors":[{"code":"WP009","text":"Buchung bereits durchgefuehrt"}]}
+                # {"errors":[{"code":"WP011","text":"Der ausgewählte Termin ist nicht mehr verfügbar. Bitte wählen Sie einen anderen Termin aus"}]}
+                raise AppointmentGone()
             if res.status_code != 201:
-                # Example res: {"errors":[{"code":"WP009","text":"Buchung bereits durchgefuehrt"}]}
-                if '"code":"WP009"' in res.text:
-                    raise AppointmentGone
-
-                # Example res: {"errors":[{"code":"WP011","text":"Der ausgewählte Termin ist nicht mehr verfügbar. Bitte wählen Sie einen anderen Termin aus"}]}
-                if '"code":"WP011"' in res.text:
-                    raise AppointmentGone()
-
                 raise RuntimeError(
                     f"Termin konnte nicht gebucht werden: {res.status_code} {res.text}")
         except RuntimeError as exc:
@@ -1063,6 +1061,7 @@ class ImpfterminService():
                     its.termin_buchen(reservierung)
                     msg = "Termin erfolgreich gebucht!"
                     its.log.success(msg)
+                    its.log.info("[SPENDE] Unterstütze hier unsere Spendenkampagne für 'Ärzte ohne Grenzen': https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m")
                     its.notify(title="Terminbuchung:", msg=msg)
                     # Programm beenden, wenn Termin gefunden wurde
                     return
