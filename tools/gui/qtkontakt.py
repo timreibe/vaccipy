@@ -135,7 +135,7 @@ class QtKontakt(QtWidgets.QDialog):
             self.update_path.emit(speicherpfad)
 
             # Fenster schließen
-            self.close()
+            self.accept()
 
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
@@ -206,7 +206,7 @@ class QtKontakt(QtWidgets.QDialog):
             self.__reset_zeitrahmen()
             self.__lade_einstellungen()
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
-            self.close()
+            self.reject()
 
     def __get_alle_werte(self) -> dict:
         """
