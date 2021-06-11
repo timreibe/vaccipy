@@ -26,7 +26,7 @@ from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
 from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
     validate_zeitrahmen
-from tools.utils import fire_notifications
+from tools.utils import fire_notifications, unique
 from tools.chromium_downloader import chromium_executable, check_chromium, webdriver_executable, check_webdriver
 
 try:
@@ -64,9 +64,19 @@ class ImpfterminService():
                 self.log.info("Erneuter Versuch in 30 Sekunden")
                 time.sleep(30)
 
-        # Zunächst alle Codes zu allen URLs zuordnen. Aussortiert wird später.
-        self.codes = {
-            url: copy.copy(codes)
+        # Ein "Codepoint" ist ein dict, das einen Vermittlungscode ("code")
+        # und den Zeitpunkt ("next_use") enthält, zu dem der Code frühestens
+        # verwendet werden soll.
+        # So kann man die Verwendung eines Codes z. B. für 10 Minuten
+        # unterbinden.
+        # Wir ordnen zunächst alle Codepoints zu allen URLs zu.
+        # Aussortiert wird später, wenn die Verwendung von Codes fehlschlägt.
+        codepoints = [
+            {"code": code, "next_use": datetime.min}
+            for code in unique(codes)
+        ]
+        self.codepoints = {
+            url: copy.deepcopy(codepoints)
             for url in self.impfzentren
         }
 
@@ -642,18 +652,28 @@ class ImpfterminService():
                 continue
 
             plz = choice(ausgewaehlte_impfzentren)["PLZ"]
-            codes = self.codes[url]
-            if not codes:
+            codepoints = self.codepoints[url]
+            if not codepoints:
                 self.log.warn(f"Kein gültiger Vermittlungscode vorhanden für PLZ {plz}")
                 continue
 
+            now = datetime.now()
+            usable_codepoints = [
+                cp for cp in codepoints if cp["next_use"] <= now
+            ]
+            if not usable_codepoints:
+                continue
+
+            codepoint = usable_codepoints[0]
+            code = codepoint["code"]
+
             try:
                 reservierung = self.reservierung_hier_finden(
-                    zeitrahmen, plz, codes[0])
+                    zeitrahmen, plz, code)
                 if reservierung is not None:
                     return reservierung
             except UnmatchingCodeError:
-                code = codes.pop(0)
+                codepoints.remove(codepoint)
                 plz_ausgeschlossen = [
                     iz["PLZ"] for iz in ausgewaehlte_impfzentren
                 ]
@@ -661,7 +681,13 @@ class ImpfterminService():
                     f"Überspringe Code {code[:4]}* "
                     f"für {', '.join(plz_ausgeschlossen)}")
             except TimeframeMissed:
-                self.rotiere_codes(url)
+                # Es wurden Termine gefunden und alle gefundenen Termine
+                # abgelehnt.
+                # Der verwendete Code soll frühestens in 10 Minuten erneut
+                # verwendet werden, da sonst immer wieder die gleichen Termine
+                # gefunden und abgelehnt werden.
+                self.log.info(f"Pausiere Code {code[:4]}* für 10 Minuten")
+                codepoint["next_use"] = now + timedelta(minutes=10)
             except RuntimeError as exc:
                 self.log.error(str(exc))
 
@@ -988,9 +1014,9 @@ class ImpfterminService():
         raise ValueError(
             f"Gewünschte PLZ {plz_impfzentrum} wurde bei Initialisierung nicht angegeben")
 
-    def rotiere_codes(self, url):
-        codes = self.codes[url]
-        self.codes[url] = codes[1:] + codes[:1]
+    def rotiere_codepoints(self, url):
+        codepoints = self.codepoints[url]
+        self.codepoints[url] = codepoints[1:] + codepoints[:1]
 
     def notify(self, title: str, msg: str):
         fire_notifications(self.notifications, self.operating_system, title, msg)
@@ -1052,7 +1078,7 @@ class ImpfterminService():
         while True:
             its.log.set_prefix(" ".join([
                 plz for plz in plz_impfzentren
-                if its.codes[izs_by_plz[plz]["URL"]]
+                if its.codepoints[izs_by_plz[plz]["URL"]]
             ]))
             reservierung = its.reservierung_finden(plz_impfzentren, zeitrahmen)
             if reservierung is not None:
@@ -1067,11 +1093,26 @@ class ImpfterminService():
                     return
                 except AppointmentGone:
                     msg = f"Termin ist nicht mehr verfügbar"
-                    its.rotiere_codes(url)
+                    its.log.error(msg)
+                    its.notify(title="Terminbuchung:", msg=msg)
+                    # Der verwendete Code soll frühestens in 10 Minuten erneut
+                    # verwendet werden, da sonst immer wieder der gleiche
+                    # Termin zu buchen versucht wird.
+                    code = reservierung["code"]
+                    its.log.info(f"Pausiere Code {code[:4]}* für 10 Minuten")
+                    now = datetime.now()
+                    for codepoint in its.codepoints[url]:
+                        if codepoint["code"] == code:
+                            codepoint["next_use"] = now + timedelta(minutes=10)
                 except BookingError:
                     msg = f"Termin konnte nicht gebucht werden."
-                its.log.error(msg)
-                its.notify(title="Terminbuchung:", msg=msg)
+                    its.log.error(msg)
+                    its.notify(title="Terminbuchung:", msg=msg)
+
+            # Rotiere Codes, um in nächster Iteration andere Codes zu
+            # verwenden.
+            for url in its.impfzentren:
+                its.rotiere_codepoints(url)
 
             time.sleep(check_delay)
 
