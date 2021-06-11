@@ -88,6 +88,9 @@ class QtKontakt(QtWidgets.QDialog):
         # Versuche Kontakdaten zu laden 
         self.__lade_alle_werte()
 
+        # Wähle ersten Reiter aus
+        self.tabWidget.setCurrentIndex(0)
+
     def setup(self):
         """
         Aktiviert abhänig vom Modus die Eingabefelder
@@ -194,9 +197,13 @@ class QtKontakt(QtWidgets.QDialog):
         if clicked_button == QtWidgets.QDialogButtonBox.Save:
             self.bestaetigt()
         elif clicked_button == QtWidgets.QDialogButtonBox.Reset:
+            self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
         elif clicked_button == QtWidgets.QDialogButtonBox.Open:
+            self.__reset_vermittlungscodes()
+            self.__reset_kontakdaten()
+            self.__reset_zeitrahmen()
             self.__lade_einstellungen()
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
             self.close()
@@ -210,7 +217,7 @@ class QtKontakt(QtWidgets.QDialog):
         """
 
         plz_zentrum_raw = self.i_plz_impfzentren.text()
-        codes = [self.i_code_impfzentren.text().strip()]
+        codes = self.__get_vermittlungscodes()
         anrede = self.i_anrede_combo_box.currentText().strip()
         vorname = self.i_vorname.text().strip()
         nachname = self.i_nachname.text().strip()
@@ -290,7 +297,7 @@ class QtKontakt(QtWidgets.QDialog):
                     return
             
             # Wird nur bei Terminsuche benötigt
-            self.i_code_impfzentren.setText(kontaktdaten["codes"][0])
+            self.__set_vermittlungscodes(kontaktdaten["codes"])
             self.i_anrede_combo_box.setEditText(kontaktdaten["kontakt"]["anrede"])
             self.i_vorname.setText(kontaktdaten["kontakt"]["vorname"])
             self.i_nachname.setText(kontaktdaten["kontakt"]["nachname"])
@@ -313,6 +320,7 @@ class QtKontakt(QtWidgets.QDialog):
                 pass
          
         except MissingValuesError as exc:
+            self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
             self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
@@ -321,12 +329,16 @@ class QtKontakt(QtWidgets.QDialog):
                        "Datei, indem Sie auf Speichern klicken.")
 
         except ValidationError as exc:
+            self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
             self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
                 info= "Die von Ihnen gewählte Datei hat ein falsches Format. "
                        "Laden Sie eine andere Datei oder überschreiben Sie die "
                        "Datei, indem Sie auf Speichern klicken.")
+
+        # Wechsel auf den ersten Reiter
+        self.tabWidget.setCurrentIndex(0)
 
 
 
@@ -387,9 +399,14 @@ class QtKontakt(QtWidgets.QDialog):
         # Telefon wieder mit Prefix befüllen
         self.i_telefon.setText("+49")
 
-        # set dummy code on reset
-        if self.modus == Modus.CODE_GENERIEREN:
-            self.i_code_impfzentren.setText("XXXXXXXXXXXX")
+    def __reset_vermittlungscodes(self):
+        """
+        Setzt alle Werte für die Vermittlungscodes in der GUI zurück
+        """
+
+        line_edits = self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit)
+        for line_edit in line_edits:
+                line_edit.setText("")
 
     def __get_impfzentren_plz(self, plzList : list) -> str: 
         """
@@ -406,6 +423,39 @@ class QtKontakt(QtWidgets.QDialog):
         for plz in plzList:
             plz_zentrum_raw += plz + ', '
         return plz_zentrum_raw[:-2]
+
+    def __get_vermittlungscodes(self) -> list:
+        """
+        Erstellt ein Liste mit Vermittlungscodes aus der GUI.
+        Unvolständige oder leere Codes werden nicht gespeichert.
+
+        Returns:
+            Liste mit allen vollständigen Vermittlungscodes
+
+        """
+        codes = []
+        line_edits = self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit)
+        for line_edit in line_edits:
+            code = line_edit.text()
+            # Nur wenn Code nicht leer ist hinzufügen
+            if code != "--":
+                codes.append(line_edit.text())
+        return codes
+
+    def __set_vermittlungscodes(self, codes: list):
+        """
+        Schreibt die Vermittlungscodes in die GUI
+
+        Args:
+            codes: List der codes
+
+        """
+        line_edits = self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit)
+        line_edits = line_edits[:len(codes)]
+
+        for code, line_edit in zip(codes, line_edits):
+            line_edit.setText(code)
+
 
 
     ##############################
