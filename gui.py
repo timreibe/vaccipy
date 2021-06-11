@@ -384,6 +384,9 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         Args:
             modus (Modus): Abhängig vom Modus werden nicht alle Daten benötigt. Defalut TERMIN_SUCHEN
+
+        Returns:
+            bool: True bei Erfolg, False bei Abbruch
         """
 
         dialog = QtKontakt(self, modus, self.pfad_kontaktdaten, PATH)
