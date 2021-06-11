@@ -641,8 +641,7 @@ class ImpfterminService():
             if not ausgewaehlte_impfzentren:
                 continue
 
-            iz = choice(ausgewaehlte_impfzentren)
-            plz = iz["PLZ"]
+            plz = choice(ausgewaehlte_impfzentren)["PLZ"]
             codes = self.codes[url]
             if not codes:
                 self.log.warn(f"Kein gültiger Vermittlungscode vorhanden für PLZ {plz}")
@@ -650,7 +649,7 @@ class ImpfterminService():
 
             try:
                 reservierung = self.reservierung_hier_finden(
-                    zeitrahmen, iz, codes[0])
+                    zeitrahmen, plz, codes[0])
                 if reservierung is not None:
                     return reservierung
             except UnmatchingCodeError:
@@ -669,29 +668,56 @@ class ImpfterminService():
         return None
 
     def reservierung_hier_finden(
-            self, zeitrahmen: dict, impfzentrum: dict, code: str):
-        """Es wird nach einen verfügbaren Termin in der gewünschten PLZ gesucht.
-        Ausgewählt wird der erstbeste Termin, welcher im entsprechenden Zeitraum liegt (!).
-        Zurückgegeben wird das Ergebnis der Abfrage und der Status-Code.
-        Bei Status-Code > 400 müssen die Cookies erneuert werden.
+            self, zeitrahmen: dict, plz: str, code: str):
+        """
+        Es wird überprüft, ob im Impfzentrum in der gegebenen PLZ ein oder
+        mehrere Terminpaare (oder Einzeltermine) verfügbar sind, die dem
+        Zeitrahmen entsprechen.
+        Falls ja, wird ein zufälliger davon ausgewählt und zusammen mit
+        Impfzentrum und Code zurückgegeben.
+        Zum Format der Rückgabe, siehe Beispiel.
 
-        Beispiel für ein Termin-Paar:
+        Beispiel:
+            zeitrahmen = {
+                'einhalten_bei': '1',
+                'von_datum': '29.03.2021'
+            }
 
-        [{
-            'slotId': 'slot-56817da7-3f46-4f97-9868-30a6ddabcdef',
-            'begin': 1616999901000,
-            'bsnr': '005221080'
-        }, {
-            'slotId': 'slot-d29f5c22-384c-4928-922a-30a6ddabcdef',
-            'begin': 1623999901000,
-            'bsnr': '005221080'
-        }]
+            self.reservierung_hier_finden(
+                zeitrahmen, '68163', 'XXXX-XXXX-XXXX')
+            {
+                'code': 'XXXX-XXXX-XXXX',
+                'impfzentrum': {
+                    'Zentrumsname': 'Maimarkthalle',
+                    'PLZ': '68163',
+                    'Ort': 'Mannheim',
+                    'URL': 'https://001-iz.impfterminservice.de/',
+                },
+                'terminpaar': [
+                    {
+                        'slotId': 'slot-56817da7-3f46-4f97-9868-30a6ddabcdef',
+                        'begin': 1616999901000,
+                        'bsnr': '005221080'
+                    },
+                    {
+                        'slotId': 'slot-d29f5c22-384c-4928-922a-30a6ddabcdef',
+                        'begin': 1623999901000,
+                        'bsnr': '005221080'
+                    }
+                ]
+            }
 
-        :return: bool, status-code
+        :param zeitrahmen: Zeitrahmen, dem das Terminpaar entsprechen muss
+        :param plz: PLZ des Impfzentrums, in dem geprüft wird
+        :param code: Vermittlungscode, für den eventuell gefundene Terminpaare
+            reserviert werden.
+        :return: Reservierungs-Objekt (siehe obiges Beispiel), falls ein
+            passender Termin gefunden wurde, sonst None.
+        :raise RuntimeError: Termine können nicht geladen werden
         """
 
+        impfzentrum = self.impfzentrum_in_plz(plz)
         url = impfzentrum["URL"]
-        plz = impfzentrum["PLZ"]
         location = f"{url}rest/suche/impfterminsuche?plz={plz}"
 
         try:
@@ -804,15 +830,13 @@ class ImpfterminService():
             except RequestException as exc:
                 raise RuntimeError(
                     f"Termin konnte nicht gebucht werden: {str(exc)}")
+            if res.status_code == 400:
+                # Example response data with status 400:
+                # {"errors":[{"code":"BU004","text":"Slot nicht frei"}]}
+                # {"errors":[{"code":"WP009","text":"Buchung bereits durchgefuehrt"}]}
+                # {"errors":[{"code":"WP011","text":"Der ausgewählte Termin ist nicht mehr verfügbar. Bitte wählen Sie einen anderen Termin aus"}]}
+                raise AppointmentGone()
             if res.status_code != 201:
-                # Example res: {"errors":[{"code":"WP009","text":"Buchung bereits durchgefuehrt"}]}
-                if '"code":"WP009"' in res.text:
-                    raise AppointmentGone
-
-                # Example res: {"errors":[{"code":"WP011","text":"Der ausgewählte Termin ist nicht mehr verfügbar. Bitte wählen Sie einen anderen Termin aus"}]}
-                if '"code":"WP011"' in res.text:
-                    raise AppointmentGone()
-
                 raise RuntimeError(
                     f"Termin konnte nicht gebucht werden: {res.status_code} {res.text}")
         except RuntimeError as exc:
@@ -1037,6 +1061,7 @@ class ImpfterminService():
                     its.termin_buchen(reservierung)
                     msg = "Termin erfolgreich gebucht!"
                     its.log.success(msg)
+                    its.log.info("[SPENDE] Unterstütze hier unsere Spendenkampagne für 'Ärzte ohne Grenzen': https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m")
                     its.notify(title="Terminbuchung:", msg=msg)
                     # Programm beenden, wenn Termin gefunden wurde
                     return

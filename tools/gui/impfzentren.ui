@@ -37,7 +37,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Wähle die Impfzentren - nicht Gruppenübergreifend</string>
+        <string>Wähle die Impfzentren</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
