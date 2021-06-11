@@ -15,9 +15,7 @@ WORKDIR /app
 
 ENV VACCIPY_CHROMEDRIVER="/usr/bin/chromedriver"
 
-# copy whole folder into container
-COPY . .
-
+COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
 # setup vnc
@@ -31,5 +29,8 @@ RUN echo "# XScreenSaver Preferences File\nmode:		off\nselected:  -1" > /root/.x
   chmod +x /root/vnc-startup.sh && \
   cat /root/vnc-startup.sh && \
   chmod go-rwx /root/.vnc 
+
+# copy whole folder into container
+COPY . .
 
 CMD ["/root/vnc-startup.sh"]
