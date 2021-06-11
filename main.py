@@ -5,7 +5,7 @@ import copy
 import json
 import os
 
-from tools.exceptions import ValidationError
+from tools.exceptions import ValidationError, PushoverNotificationError, TelegramNotificationError
 from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, \
     validate_kontaktdaten, validate_datum
@@ -128,7 +128,11 @@ def update_kontaktdaten_interactive(
                         input_kontaktdaten_key(
                             kontaktdaten, ["notifications", "pushover", "user_key"],
                             "> Geben Sie den Pushover User Key ein: ")
-                        validation_code = str(pushover_validation(kontaktdaten["notifications"]["pushover"]))
+                        try:
+                            validation_code = str(pushover_validation(kontaktdaten["notifications"]["pushover"]))
+                        except PushoverNotificationError as exc:
+                            print(f"Fehler: {exc}\nBitte versuchen Sie es erneut.")
+                            continue
                         validation_input = input("Geben Sie den Validierungscode ein:").strip()
                         if validation_input == validation_code:
                             break
@@ -150,7 +154,11 @@ def update_kontaktdaten_interactive(
                         input_kontaktdaten_key(
                             kontaktdaten, ["notifications", "telegram", "chat_id"],
                             "> Geben Sie die Telegram Chat ID ein: ")
-                        validation_code = str(telegram_validation(kontaktdaten["notifications"]["telegram"]))
+                        try:
+                            validation_code = str(telegram_validation(kontaktdaten["notifications"]["telegram"]))
+                        except TelegramNotificationError as exc:
+                            print(f"Fehler: {exc}\nBitte versuchen Sie es erneut.")
+                            continue
                         validation_input = input("Geben Sie den Validierungscode ein:").strip()
                         if validation_input == validation_code:
                             break
