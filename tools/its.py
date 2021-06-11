@@ -830,15 +830,13 @@ class ImpfterminService():
             except RequestException as exc:
                 raise RuntimeError(
                     f"Termin konnte nicht gebucht werden: {str(exc)}")
+            if res.status_code == 400:
+                # Example response data with status 400:
+                # {"errors":[{"code":"BU004","text":"Slot nicht frei"}]}
+                # {"errors":[{"code":"WP009","text":"Buchung bereits durchgefuehrt"}]}
+                # {"errors":[{"code":"WP011","text":"Der ausgewählte Termin ist nicht mehr verfügbar. Bitte wählen Sie einen anderen Termin aus"}]}
+                raise AppointmentGone()
             if res.status_code != 201:
-                # Example res: {"errors":[{"code":"WP009","text":"Buchung bereits durchgefuehrt"}]}
-                if '"code":"WP009"' in res.text:
-                    raise AppointmentGone
-
-                # Example res: {"errors":[{"code":"WP011","text":"Der ausgewählte Termin ist nicht mehr verfügbar. Bitte wählen Sie einen anderen Termin aus"}]}
-                if '"code":"WP011"' in res.text:
-                    raise AppointmentGone()
-
                 raise RuntimeError(
                     f"Termin konnte nicht gebucht werden: {res.status_code} {res.text}")
         except RuntimeError as exc:
