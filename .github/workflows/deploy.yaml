@@ -54,7 +54,6 @@ jobs:
         with: 
           certificate: '${{ secrets.CERTIFICATE }}'
           password: '${{ secrets.CERT_PASSWORD }}'
-          certificatename: '${{ secrets.CERTNAME }}'
           folder: 'installers'
           recursive: false
 
