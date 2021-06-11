@@ -48,6 +48,7 @@ Use our [Slack](#we-have-an-official-slack) for communication between developers
 3. Make sure your code doesn't break stuff. Test your code on the different available os. 
 4. Test if all pipeline checks passed.
 5. Request reviews from one or multiple contributors
+6. Squash commits
 
 
 ## Creating issues
