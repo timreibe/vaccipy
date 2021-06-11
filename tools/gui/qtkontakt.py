@@ -103,10 +103,14 @@ class QtKontakt(QtWidgets.QDialog):
             # Default - Alle Felder aktiv
             pass
         elif self.modus == Modus.CODE_GENERIEREN:
-            # Benötig wird: PLZ's der Impfzentren, Telefonnummer, Mail
+            # Benötigt wird: PLZ's der Impfzentren, Telefonnummer, Mail
             # Alles andere wird daher deaktiviert
-            self.readonly_alle_line_edits(("i_plz_impfzentren", "i_telefon", "i_mail"))
-            self.i_code_impfzentren.setInputMask("")
+            # !!!! wir erlauben aktuell alle eingaben, da diese später für die terminsuche benötigt werden. !!!
+            # self.readonly_alle_line_edits(("i_plz_impfzentren", "i_telefon", "i_mail"))
+            # self.i_code_impfzentren.setInputMask("")
+
+            self.i_code_impfzentren.setText("XXXXXXXXXXXX")
+            self.i_code_impfzentren.setReadOnly(True)
         else:
             raise RuntimeError("Modus ungueltig!")
 
@@ -238,6 +242,7 @@ class QtKontakt(QtWidgets.QDialog):
             },
             "zeitrahmen": self.__get_zeitrahmen()
         }
+
         return kontaktdaten
 
     def __check_werte(self, kontaktdaten: dict):
@@ -253,16 +258,7 @@ class QtKontakt(QtWidgets.QDialog):
         """
 
         kontakt_tools.check_kontaktdaten(kontaktdaten, self.modus)
-
-        if self.modus == Modus.TERMIN_SUCHEN:
-            kontakt_tools.validate_kontaktdaten(kontaktdaten)
-        elif self.modus == Modus.CODE_GENERIEREN:
-            kontakt_tools.validate_plz_impfzentren(kontaktdaten["plz_impfzentren"])
-            kontakt_tools.validate_email(kontaktdaten["kontakt"]["notificationReceiver"])
-            try:
-                kontakt_tools.validate_phone(kontaktdaten["kontakt"]["phone"])
-            except ValidationError as error:
-                raise ValidationError("Telefonnummer: +49 nicht vergessen") from error
+        kontakt_tools.validate_kontaktdaten(kontaktdaten)
 
 
     def __lade_alle_werte(self):
@@ -390,6 +386,10 @@ class QtKontakt(QtWidgets.QDialog):
 
         # Telefon wieder mit Prefix befüllen
         self.i_telefon.setText("+49")
+
+        # set dummy code on reset
+        if self.modus == Modus.CODE_GENERIEREN:
+            self.i_code_impfzentren.setText("XXXXXXXXXXXX")
 
     def __get_impfzentren_plz(self, plzList : list) -> str: 
         """

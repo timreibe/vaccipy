@@ -27,6 +27,7 @@ from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, Unm
 from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
     validate_zeitrahmen
 from tools.utils import fire_notifications
+from tools.chromium_downloader import chromium_executable, check_chromium, webdriver_executable, check_webdriver
 
 try:
     import beepy
@@ -232,6 +233,8 @@ class ImpfterminService():
         chromedriver_from_env = os.getenv("VACCIPY_CHROMEDRIVER")
         if chromedriver_from_env:
             return chromedriver_from_env
+        if check_webdriver():
+            return webdriver_executable()
 
         # Chromedriver anhand des OS auswählen
         if 'linux' in self.operating_system:
@@ -269,6 +272,8 @@ class ImpfterminService():
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
             chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
+        elif check_chromium():
+            chrome_options.binary_location = str(chromium_executable())
 
         chrome_options.headless = headless
 
@@ -743,6 +748,7 @@ class ImpfterminService():
                 ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                     '%d.%m.%Y um %H:%M Uhr')
                 self.log.warn(f"{num}. Termin: {ts}")
+            self.log.warn(f"Link: {url}impftermine/suche/{code}/{plz}")
             self.log.info('-' * 50)
 
         if not terminpaare_angenommen:
@@ -756,6 +762,7 @@ class ImpfterminService():
             ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                 '%d.%m.%Y um %H:%M Uhr')
             self.log.success(f"{num}. Termin: {ts}")
+        self.log.success(f"Link: {url}impftermine/suche/{code}/{plz}")
 
         # Reservierungs-Objekt besteht aus Terminpaar und Impfzentrum
         return {
@@ -1013,6 +1020,11 @@ class ImpfterminService():
             ort = iz.get("Ort")
             its.log.info(f"'{zentrumsname}' in {plz} {ort} ausgewählt")
 
+        # Einmal Chrome starten, um früh einen Fehler zu erzeugen, falls die
+        # erforderliche Software nicht installiert ist.
+        its.log.info("Teste Chromedriver")
+        its.get_chromedriver(headless=True).quit()
+
         while True:
             its.log.set_prefix(" ".join([
                 plz for plz in plz_impfzentren
@@ -1025,7 +1037,7 @@ class ImpfterminService():
                     its.termin_buchen(reservierung)
                     msg = "Termin erfolgreich gebucht!"
                     its.log.success(msg)
-                    its.notify(title="Terminbuchung:", message=msg)
+                    its.notify(title="Terminbuchung:", msg=msg)
                     # Programm beenden, wenn Termin gefunden wurde
                     return
                 except AppointmentGone:
@@ -1034,7 +1046,7 @@ class ImpfterminService():
                 except BookingError:
                     msg = f"Termin konnte nicht gebucht werden."
                 its.log.error(msg)
-                its.notify(title="Terminbuchung:", message=msg)
+                its.notify(title="Terminbuchung:", msg=msg)
 
             time.sleep(check_delay)
 

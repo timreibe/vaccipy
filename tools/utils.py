@@ -1,6 +1,9 @@
 import os
 import time
 import traceback
+import random
+import json
+import sys
 from json import JSONDecodeError
 from pathlib import Path
 from threading import Thread
@@ -11,7 +14,6 @@ from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
 
 from tools.exceptions import DesktopNotificationError, PushoverNotificationError, TelegramNotificationError
 
-from tools.kontaktdaten import get_kontaktdaten
 
 def retry_on_failure(retries=10):
     """Decorator zum Errorhandling beim Ausführen einer Methode im Loop.
@@ -193,6 +195,13 @@ def pushover_notification(notifications: dict, title: str, message: str):
         raise PushoverNotificationError(r.status_code, r.text)
 
 
+def pushover_validation(notifications: dict):
+    validation_code = random.randint(1000, 9999)
+    validation_msg = f"Ihr Validierungscode lautet: {validation_code}"
+    pushover_notification(notifications, "Vaccipy - Validierung", validation_msg)
+    return validation_code
+
+
 def telegram_notification(notifications: dict, message: str):
     if 'api_token' not in notifications or 'chat_id' not in notifications:
         return
@@ -214,9 +223,28 @@ def telegram_notification(notifications: dict, message: str):
         raise TelegramNotificationError(r.status_code, r.text)
 
 
+def telegram_validation(notifications: dict):
+    validation_code = random.randint(1000, 9999)
+    validation_msg = f"Ihr Vaccipy Validierungscode lautet: {validation_code}"
+    telegram_notification(notifications, validation_msg)
+    return validation_code
+
+
 def fire_notifications(notifications: dict, operating_system: str, title: str, message: str):
     desktop_notification(operating_system, title, message)
     if 'pushover' in notifications:
         pushover_notification(notifications["pushover"], title, message)
     if 'telegram' in notifications:
         telegram_notification(notifications["telegram"], message)
+
+
+def unique(seq):
+    """
+    Removes duplicates from a sequence while preserving order
+
+    :return: New sequence without duplicates
+    """
+    # https://stackoverflow.com/a/480227/7350842
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
