@@ -407,16 +407,11 @@ class HauptGUI(QtWidgets.QMainWindow):
         Returns:
             dict: Kontakdaten
         """
-        dialog_agebrochen = False
         if not os.path.isfile(self.pfad_kontaktdaten):
-            dialog_agebrochen = not self.kontaktdaten_erstellen(modus)
-         
-        kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
-       
-        # prüfen ob der Dialog abgebrochen und keine Kontaktdaten vorhanden sind (Bsp. öffnen von Daten)
-        if dialog_agebrochen is True and not kontaktdaten:
-            return {}
+            if not self.kontaktdaten_erstellen(modus):
+                return {}
 
+        kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
         kontak_tools.check_kontaktdaten(kontaktdaten, modus)
         
         if modus == Modus.TERMIN_SUCHEN:
