@@ -13,6 +13,7 @@ zeitspanne.json
 
 #building: 
 installer/
+certificate/
 
 # pyinstaller 
 # temporary building files:
