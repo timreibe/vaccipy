@@ -48,7 +48,17 @@ jobs:
       - name: Innosetup windows-terminservice-gui
         # Run innosetup and set application version to git tag
         run: ../innosetup/ISCC.exe specs/windows-terminservice-gui.iss /DApplicationVersion=${{ env.GIT_TAG_NAME }}
-      
+
+      - name: sign-installers
+        uses: DanaBear/code-sign-action@v4
+        with: 
+          certificate: '${{ secrets.CERTIFICATE }}'
+          password: '${{ secrets.PASSWORD }}'
+          certificatename: '${{ secrets.CERTNAME }}'
+          folder: 'installers'
+          recursive: false
+
+
       - name: Zip Windows
         uses: papeloto/action-zip@v1
         with:
