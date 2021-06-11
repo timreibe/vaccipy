@@ -125,11 +125,15 @@ def validate_codes(codes: list):
     Validiert eine Liste an Vermittlungscodes vom Schema XXXX-XXXX-XXXX
 
     :raise ValidationError: Typ ist nicht list
+    :raise ValidationError: Liste ist leer
     :raise ValidationError: Liste enthält vom Schema abweichendes Element
     """
 
     if not isinstance(codes, list):
         raise ValidationError("Muss eine Liste sein")
+
+    if len(codes) == 0:
+        raise ValidationError("Darf keine leere Liste sein")
 
     for code in codes:
         if not isinstance(code, str):
