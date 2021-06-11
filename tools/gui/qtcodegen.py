@@ -136,17 +136,16 @@ class Worker(QObject):
                 QtCore.QThread.msleep(100)
             return False
 
-        # code bestätigen            
-        # 3 Versuche für die SMS-Code-Eingabe
-        self.sendSignalAndWait("signalShowInput","SMSCODE")
-            
-        #stop requested in the meanwhile?
-        if self.stopped is True:
-            return False
-            
-        if its.code_bestaetigen(token, cookies, self.sms_pin, self.plz_impfzentrum):
-            self.sendSignalAndWait("signalShowInput","SMSCODE_OK")
-            return True
+        # code bestätigen
+        # allow 3 retries
+        for _ in range(3):
+            if self.stopped is False:
+                self.sendSignalAndWait("signalShowInput","SMSCODE")
+                if its.code_bestaetigen(token, cookies, self.sms_pin, self.plz_impfzentrum):
+                    self.sendSignalAndWait("signalShowInput","SMSCODE_OK")
+                    return True
+            else:
+                return False
 
         print("\nSMS-Code ungültig")
         print("Die Code-Generierung war leider nicht erfolgreich.")
@@ -258,7 +257,6 @@ class QtCodeGen(QtWidgets.QDialog):
                         break
                 except ValidationError as exc:
                     QtWidgets.QMessageBox.critical(self, "Geburtsdatum ungültiges Format", "Das Datum entspricht nicht dem richtigen Format (DD.MM.YYYY).")
-                    
         elif dlgType == "SMSCODE":
             text, ok = QtWidgets.QInputDialog.getText(self, 'SMS Code', 
                 'Du erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer\n'
@@ -270,8 +268,10 @@ class QtCodeGen(QtWidgets.QDialog):
             else:
                 self.hardClose()
         elif dlgType == "SMSCODE_OK":
-            QtWidgets.QMessageBox.information(self, "Erfolgreich", "Code erfolgreich generiert. Du kannst jetzt mit der Terminsuche fortfahren.")
-            self.worker.signalUpdateData.emit("SMSCODE_OK","") 
+            ret = QtWidgets.QMessageBox.information(self, "Erfolgreich", "Code erfolgreich generiert. Du kannst jetzt mit der Terminsuche fortfahren.",QMessageBox.StandardButton.Ok)
+            if ret == QMessageBox.StandardButton.Ok:
+                self.worker.signalUpdateData.emit("SMSCODE_OK","")
+                self.hardClose()
             
     def showDlg(self, strMode, strTxt):
         if strMode == "MISSING_KONTAKT":
