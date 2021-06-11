@@ -74,7 +74,7 @@ def update_kontaktdaten_interactive(
 
         if "anrede" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
-                kontaktdaten, ["kontakt", "anrede"], "> Anrede (Frau/Herr/...): ")
+                kontaktdaten, ["kontakt", "anrede"], "> Anrede (Frau/Herr/Kind/Divers): ")
 
         if "vorname" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
