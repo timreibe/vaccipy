@@ -1,6 +1,7 @@
 import os
 import time
 import traceback
+import random
 import json
 import sys
 from json import JSONDecodeError
@@ -11,7 +12,7 @@ import requests
 from plyer import notification
 from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
 
-from tools.exceptions import DesktopNotificationError
+from tools.exceptions import DesktopNotificationError, PushoverNotificationError, TelegramNotificationError
 
 
 def retry_on_failure(retries=10):
@@ -148,28 +149,102 @@ def get_grouped_impfzentren() -> dict:
         result[f"Gruppe {gruppe}"] = impfzentren
     return result
 
+
 def update_available():
-   
-    # 2 Zeichen Puffer für zukünftige Versionssprünge
     current_version = get_current_version()
     latest_version = get_latest_version()
-
-
+    
     if latest_version.strip() == current_version.strip():
         return False
     else:
         return True
 
+
 def get_current_version():
     try:
         with open("version.txt") as file:
-                file_contents = file.readlines()
-                current_version = file_contents[0]
-                return current_version
+            file_contents = file.readlines()
+            current_version = file_contents[0]
+            return current_version
     except:
         pass
+
 
 def get_latest_version():
     json_url = 'https://api.github.com/repos/iamnotturner/vaccipy/releases/latest'
     latest_version = requests.get(json_url).json()['tag_name']
     return latest_version
+
+
+def pushover_notification(notifications: dict, title: str, message: str):
+    if 'app_token' not in notifications or 'user_key' not in notifications:
+        return
+
+    url = f'https://api.pushover.net/1/messages.json'
+    data = {
+        'token': notifications['app_token'],
+        'user': notifications['user_key'],
+        'title': title,
+        'sound': 'persistent',
+        'priority': 1,
+        'message': message
+    }
+
+    r = requests.post(url, data=data)
+    if r.status_code != 200:
+        raise PushoverNotificationError(r.status_code, r.text)
+
+
+def pushover_validation(notifications: dict):
+    validation_code = random.randint(1000, 9999)
+    validation_msg = f"Ihr Validierungscode lautet: {validation_code}"
+    pushover_notification(notifications, "Vaccipy - Validierung", validation_msg)
+    return validation_code
+
+
+def telegram_notification(notifications: dict, message: str):
+    if 'api_token' not in notifications or 'chat_id' not in notifications:
+        return
+
+    headers = {
+        'Accept': 'application/json',
+        'User-Agent': 'vaccipy'
+    }
+
+    url = f'https://api.telegram.org/bot{notifications["api_token"]}/sendMessage'
+    params = {
+        'chat_id': notifications["chat_id"],
+        'parse_mode': 'Markdown',
+        'text': message
+    }
+
+    r = requests.get(url, params=params, headers=headers)
+    if r.status_code != 200:
+        raise TelegramNotificationError(r.status_code, r.text)
+
+
+def telegram_validation(notifications: dict):
+    validation_code = random.randint(1000, 9999)
+    validation_msg = f"Ihr Vaccipy Validierungscode lautet: {validation_code}"
+    telegram_notification(notifications, validation_msg)
+    return validation_code
+
+
+def fire_notifications(notifications: dict, operating_system: str, title: str, message: str):
+    desktop_notification(operating_system, title, message)
+    if 'pushover' in notifications:
+        pushover_notification(notifications["pushover"], title, message)
+    if 'telegram' in notifications:
+        telegram_notification(notifications["telegram"], message)
+
+
+def unique(seq):
+    """
+    Removes duplicates from a sequence while preserving order
+
+    :return: New sequence without duplicates
+    """
+    # https://stackoverflow.com/a/480227/7350842
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]

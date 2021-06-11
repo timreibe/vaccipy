@@ -10,15 +10,13 @@ import sys
 from PyQt5 import QtCore, QtWidgets, uic
 from PyQt5.QtGui import QIcon
 from tools.exceptions import ValidationError, MissingValuesError
-from tools.gui import oeffne_file_dialog_select
-
 
 from tools import Modus
 from tools import kontaktdaten as kontak_tools
-from tools.exceptions import MissingValuesError, ValidationError
 from tools.gui import oeffne_file_dialog_select, open_browser
 from tools.gui.qtkontakt import QtKontakt
 from tools.gui.qtterminsuche import QtTerminsuche
+from tools.gui.qtcodegen import QtCodeGen
 from tools.utils import create_missing_dirs, update_available, get_latest_version, get_current_version
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -55,9 +53,13 @@ class HauptGUI(QtWidgets.QMainWindow):
         super().__init__()
 
         create_missing_dirs(PATH)
+        
+        #Spawn for now (The parent process starts a fresh python interpreter process. The child process will only inherit those resources necessary to run the process object’s)
+        multiprocessing.set_start_method('spawn')
 
         # Laden der .ui Datei und Anpassungen
         self.setup(pfad_fenster_layout)
+        
 
         # GUI anzeigen
         self.show()
@@ -100,7 +102,11 @@ class HauptGUI(QtWidgets.QMainWindow):
         ### GUI ###
         uic.loadUi(pfad_fenster_layout, self)
         self.setWindowIcon(QIcon(os.path.join(PATH, "images/spritze.ico")))
-        self.setWindowTitle('vaccipy ' + get_current_version())
+        try:
+            self.setWindowTitle('vaccipy ' + get_current_version())
+        except Exception as error:
+            self.setWindowTitle('vaccipy')
+            pass
 
         # Meldung falls alte Daten von alter Version
         self.__check_old_kontakt_version()
@@ -131,18 +137,26 @@ class HauptGUI(QtWidgets.QMainWindow):
             # Auf Update prüfen
             if update_available():
                 url = f"https://github.com/iamnotturner/vaccipy/releases/tag/{get_latest_version()}"
+                
+                if get_current_version() != 'source': 
+                    title = "Alte Version!"
+                    text = "Bitte Update installieren"
+                    info_text = f"Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest ({get_current_version()})"
+                else:
+                    title = "Sourcecode"
+                    text = "Updateprüfung nicht möglich!"
+                    info_text = "Du benutzt die nicht paketierten Skripte von Github. Die Terminsuche funktioniert möglicherweise nicht, da die Version veraltet sein könnten."
 
                 msg = QtWidgets.QMessageBox()
-                msg.setIcon(QtWidgets.QMessageBox.Warning)
-                msg.setWindowTitle("Alte Version!")
-                msg.setText("Bitte Update installieren")
-                msg.setInformativeText(f"Die Terminsuche funktioniert möglicherweise nicht, da du eine alte Version verwendest ({get_current_version()})")
+                msg.setIcon(QtWidgets.QMessageBox.information)
+                msg.setWindowTitle(title)
+                msg.setText(text)
+                msg.setInformativeText(info_text)
                 msg.addButton(msg.Close)
                 btn_download = msg.addButton("Download", msg.ApplyRole)
-
                 btn_download.clicked.connect(lambda: open_browser(url))
-
-                msg.exec_()
+                msg.exec_()      
+                    
         except Exception as error:
             # warum auch immer konnte nicht überprüft werden
             # einfach nichts machen
@@ -151,11 +165,59 @@ class HauptGUI(QtWidgets.QMainWindow):
     def __code_generieren(self):
         """
         Startet den Prozess der Codegenerierung
+        Codegenerierung ohne interaktive Eingabe der Kontaktdaten
+
+        :param kontaktdaten: Dictionary mit Kontaktdaten
         """
 
-        # TODO: code generierung implementieren
-        QtWidgets.QMessageBox.information(self, "Noch nicht verfügbar", "Funktion nur über Konsolenanwendung verfügbar")
+        try:
+            kontaktdaten = self.__get_kontaktdaten(Modus.CODE_GENERIEREN)
+            
+            #return if no data was returned
+            if not kontaktdaten:
+                return
 
+        except FileNotFoundError as error:
+            QtWidgets.QMessageBox.critical(self, "Datei nicht gefunden!", f"Datei zum Laden konnte nicht gefunden werden\n\nBitte erstellen")
+            return
+        except ValidationError as error:
+            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei sind Fehler:\n\n{error}")
+            return
+        except MissingValuesError as error:
+            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei Fehlen Daten:\n\n{error}")
+            return
+            
+        strProcName = "Codegen"
+
+        # allow only 1 Code Gen at a time
+        for subProvess in self.such_prozesse:
+            if subProvess.name == strProcName:
+                QtWidgets.QMessageBox.information(self, "STOP", "Es läuft bereits eine Codegenerierung!")
+                return False
+
+        #start codegen process
+        code_prozess = multiprocessing.Process(target=QtCodeGen.start_code_gen, 
+            name=strProcName, daemon=True, kwargs={
+                "kontaktdaten": kontaktdaten,
+                "ROOT_PATH": PATH
+            })
+
+        #add code search to list of prozesses
+        try:
+            code_prozess.start()
+            if not code_prozess.is_alive():
+                raise RuntimeError(
+                    f"Code suche wurde gestartet, lebt aber nicht mehr!"
+                )
+        except Exception as error:
+            QtWidgets.QMessageBox.critical(self, "Fehler - Codegenerierung nicht gestartet!", str(error))
+        else:
+            self.such_prozesse.append(code_prozess)
+            self.__add_prozess_in_gui(code_prozess)
+            self.prozesse_counter += 1
+
+
+        
     def __termin_suchen(self):
         """
         Startet den Prozess der terminsuche mit Impfterminservice.terminsuche in einem neuen Thread
@@ -165,6 +227,8 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         try:
             kontaktdaten = self.__get_kontaktdaten(Modus.TERMIN_SUCHEN)
+            if not kontaktdaten:
+                return
             zeitrahmen = kontaktdaten["zeitrahmen"]
 
         except FileNotFoundError as error:
@@ -189,8 +253,8 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
 
         check_delay = self.i_interval.value()
-        code = kontaktdaten["code"]
-        terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{code}-{self.prozesse_counter}", daemon=True, kwargs={
+        codes = kontaktdaten["codes"]
+        terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{codes[0]}-{self.prozesse_counter}", daemon=True, kwargs={
                                                       "kontaktdaten": kontaktdaten,
                                                       "zeitrahmen": zeitrahmen,
                                                       "ROOT_PATH": PATH,
@@ -228,7 +292,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             try:
                 pfad = oeffne_file_dialog_select(self, "Kontakdaten", self.pfad_kontaktdaten)
             except FileNotFoundError:
-                pass
+                return
 
         self.pfad_kontaktdaten = pfad
         self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
@@ -342,10 +406,18 @@ class HauptGUI(QtWidgets.QMainWindow):
             self.kontaktdaten_erstellen(modus)
 
         kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
-        if not self.__check_old_kontakt_version(kontaktdaten):
-            raise ValidationError("\"zeitrahmen\" fehlt -> Alte Version")
+        kontak_tools.check_kontaktdaten(kontaktdaten, modus)
+        
+        if modus == Modus.TERMIN_SUCHEN:
+            if not self.__check_old_kontakt_version(kontaktdaten):
+                raise ValidationError("\"zeitrahmen\" fehlt -> Alte Version")
+           
+            if "codes" in kontaktdaten:
+                if "XXXX-XXXX-XXXX" in kontaktdaten["codes"]:
+                    raise ValidationError("Der Code is ungültig. Bitte trage einen korrekten Code ein!")
 
         return kontaktdaten
+
 
 
 def main():

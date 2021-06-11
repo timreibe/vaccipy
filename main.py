@@ -4,15 +4,15 @@ import argparse
 import copy
 import json
 import os
-import random
-import string
-import sys
 
+from tools.exceptions import ValidationError, PushoverNotificationError, TelegramNotificationError
 from tools.its import ImpfterminService
-from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, validate_kontaktdaten, validate_datum
-from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, get_current_version
-from tools.exceptions import ValidationError
-from pathlib import Path
+from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, \
+    validate_kontaktdaten, validate_datum
+from tools.utils import create_missing_dirs, get_current_version, \
+    get_latest_version, pushover_validation, remove_prefix, \
+    telegram_validation, unique, update_available
+from tools.chromium_downloader import check_chromium, download_chromium, check_webdriver, download_webdriver, current_platform
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -20,6 +20,7 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 def update_kontaktdaten_interactive(
         known_kontaktdaten,
         command,
+        configure_notifications,
         filepath=None):
     """
     Interaktive Eingabe und anschließendes Abspeichern der Kontaktdaten.
@@ -28,6 +29,8 @@ def update_kontaktdaten_interactive(
         abgefragt werden sollen.
     :param command: Entweder "code" oder "search". Bestimmt, welche
         Kontaktdaten überhaupt benötigt werden.
+    :param configure_notifications: Boolean - die Option zum einrichten von Pushover
+        und Telegram wird nur bei true angezeigt
     :param filepath: Pfad zur JSON-Datei zum Abspeichern der Kontaktdaten.
         Default: data/kontaktdaten.json im aktuellen Ordner
     :return: Dictionary mit Kontaktdaten
@@ -51,10 +54,20 @@ def update_kontaktdaten_interactive(
             input_kontaktdaten_key(kontaktdaten,
                                    ["plz_impfzentren"],
                                    "> PLZ's der Impfzentren: ",
-                                   lambda x: list(set([plz.strip() for plz in x.split(",")])))
+                                   lambda x: unique([plz.strip() for plz in x.split(",")]))
+            print()
 
-        if "code" not in kontaktdaten and command == "search":
-            input_kontaktdaten_key(kontaktdaten, ["code"], "> Code: ")
+        if "codes" not in kontaktdaten and command == "search":
+            print(
+                "Bitte gebe jetzt die Vermittlungscodes passend zu den ausgewählten Impfzentren ein.\n"
+                "Beachte dabei, dass nur ein Vermittlungscode je Gruppierung benötigt wird.\n"
+                "Weitere Infos: https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren\n\n"
+                "Mehrere Vermittlungscodes müssen durch Kommas getrennt werden.\n"
+                "Beispiel: ABCD-1234-EFGH, ABCD-4321-EFGH, 1234-56AB-CDEF\n")
+            input_kontaktdaten_key(
+                kontaktdaten, ["codes"], "> Vermittlungscodes: ",
+                lambda x: unique([code.strip() for code in x.split(",")]))
+            print()
 
         if "kontakt" not in kontaktdaten:
             kontaktdaten["kontakt"] = {}
@@ -101,6 +114,61 @@ def update_kontaktdaten_interactive(
             input_kontaktdaten_key(
                 kontaktdaten, ["kontakt", "notificationReceiver"], "> Mail: ")
 
+        if configure_notifications:
+            if "notifications" not in kontaktdaten:
+                kontaktdaten["notifications"] = {}
+            if "pushover" not in kontaktdaten["notifications"]:
+                while True:
+                    kontaktdaten["notifications"]["pushover"] = {}
+                    if input("> Benachtigung mit Pushover einrichten? (y/n): ").lower() != "n":
+                        print()
+                        input_kontaktdaten_key(
+                            kontaktdaten, ["notifications", "pushover", "app_token"],
+                            "> Geben Sie den Pushover APP Token ein: ")
+                        input_kontaktdaten_key(
+                            kontaktdaten, ["notifications", "pushover", "user_key"],
+                            "> Geben Sie den Pushover User Key ein: ")
+                        try:
+                            validation_code = str(pushover_validation(kontaktdaten["notifications"]["pushover"]))
+                        except PushoverNotificationError as exc:
+                            print(f"Fehler: {exc}\nBitte versuchen Sie es erneut.")
+                            continue
+                        validation_input = input("Geben Sie den Validierungscode ein:").strip()
+                        if validation_input == validation_code:
+                            break
+                        del kontaktdaten["notifications"]["pushover"]
+                        print("Validierung fehlgeschlagen.")
+                        print()
+                    else:
+                        print()
+                        break
+
+            if "telegram" not in kontaktdaten["notifications"]:
+                while True:
+                    kontaktdaten["notifications"]["telegram"] = {}
+                    if input("> Benachtigung mit Telegram einrichten? (y/n): ").lower() != "n":
+                        print()
+                        input_kontaktdaten_key(
+                            kontaktdaten, ["notifications", "telegram", "api_token"],
+                            "> Geben Sie den Telegram API Token ein: ")
+                        input_kontaktdaten_key(
+                            kontaktdaten, ["notifications", "telegram", "chat_id"],
+                            "> Geben Sie die Telegram Chat ID ein: ")
+                        try:
+                            validation_code = str(telegram_validation(kontaktdaten["notifications"]["telegram"]))
+                        except TelegramNotificationError as exc:
+                            print(f"Fehler: {exc}\nBitte versuchen Sie es erneut.")
+                            continue
+                        validation_input = input("Geben Sie den Validierungscode ein:").strip()
+                        if validation_input == validation_code:
+                            break
+                        del kontaktdaten["notifications"]["telegram"]
+                        print("Validierung fehlgeschlagen.")
+                        print()
+                    else:
+                        print()
+                        break
+
         if "zeitrahmen" not in kontaktdaten and command == "search":
             kontaktdaten["zeitrahmen"] = {}
             if input("> Zeitrahmen festlegen? (y/n): ").lower() != "n":
@@ -132,6 +200,7 @@ def update_kontaktdaten_interactive(
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "wochentage"],
                     "> Erlaubte Wochentage: ", parse_wochentage)
+            print()
 
         json.dump(kontaktdaten, file, ensure_ascii=False, indent=4)
 
@@ -171,7 +240,7 @@ def input_kontaktdaten_key(
             print(f"\n{str(exc)}\n")
 
 
-def run_search_interactive(kontaktdaten_path, check_delay):
+def run_search_interactive(kontaktdaten_path, configure_notifications, check_delay):
     """
     Interaktives Setup für die Terminsuche:
     1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen
@@ -182,6 +251,7 @@ def run_search_interactive(kontaktdaten_path, check_delay):
     4. Terminsuche
 
     :param kontaktdaten_path: Pfad zur JSON-Datei mit Kontaktdaten. Default: data/kontaktdaten.json im aktuellen Ordner
+    :param configure_notifications: Wird durchgereicht zu update_kontaktdaten_interactive()
     """
 
     print(
@@ -198,7 +268,7 @@ def run_search_interactive(kontaktdaten_path, check_delay):
 
     print()
     kontaktdaten = update_kontaktdaten_interactive(
-        kontaktdaten, "search", kontaktdaten_path)
+        kontaktdaten, "search", configure_notifications, kontaktdaten_path)
     return run_search(kontaktdaten, check_delay)
 
 
@@ -210,7 +280,7 @@ def run_search(kontaktdaten, check_delay):
     """
 
     try:
-        code = kontaktdaten["code"]
+        codes = kontaktdaten["codes"]
 
         # Hinweis, wenn noch alte Version der Kontaktdaten.json verwendet wird
         if kontaktdaten.get("plz"):
@@ -225,6 +295,8 @@ def run_search(kontaktdaten, check_delay):
         print(
             f"Kontaktdaten wurden geladen für: {kontakt['vorname']} {kontakt['nachname']}\n")
 
+        notifications = kontaktdaten.get("notifications", {})
+
         zeitrahmen = kontaktdaten["zeitrahmen"]
     except KeyError as exc:
         raise ValueError(
@@ -232,8 +304,14 @@ def run_search(kontaktdaten, check_delay):
             "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
             "deine Daten beim Programmstart erneut ein.\n") from exc
 
-    ImpfterminService.terminsuche(code=code, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                  zeitrahmen=zeitrahmen, check_delay=check_delay, PATH=PATH)
+    ImpfterminService.terminsuche(
+        codes=codes,
+        plz_impfzentren=plz_impfzentren,
+        kontakt=kontakt,
+        notifications=notifications,
+        zeitrahmen=zeitrahmen,
+        check_delay=check_delay,
+        PATH=PATH)
 
 
 def gen_code_interactive(kontaktdaten_path):
@@ -250,7 +328,7 @@ def gen_code_interactive(kontaktdaten_path):
     """
 
     print(
-        "Du kannst dir jetzt direkt einen Impf-Code erstellen.\n"
+        "Du kannst dir jetzt direkt einen Vermittlungscode erstellen.\n"
         "Dazu benötigst du eine Mailadresse, Telefonnummer und die PLZ deines Impfzentrums.\n"
         f"Die Daten werden anschließend lokal in der Datei '{os.path.basename(kontaktdaten_path)}' abgelegt.\n"
         "Du musst sie zukünftig nicht mehr eintragen.\n")
@@ -264,7 +342,7 @@ def gen_code_interactive(kontaktdaten_path):
 
     print()
     kontaktdaten = update_kontaktdaten_interactive(
-        kontaktdaten, "code", kontaktdaten_path)
+        kontaktdaten, "code", False, kontaktdaten_path)
     return gen_code(kontaktdaten)
 
 
@@ -287,18 +365,9 @@ def gen_code(kontaktdaten):
             "Bitte überprüfe, ob sie im korrekten JSON-Format sind oder gebe "
             "deine Daten beim Programmstart erneut ein.\n") from exc
 
-    # Erstelle Zufallscode nach Format XXXX-YYYY-ZZZZ
-    # für die Cookie-Generierung
-    code_chars = string.ascii_uppercase + string.digits
-    one = 'VACC'
-    two = 'IPY' + random.choice(code_chars)
-    three = ''.join(random.choices(code_chars, k=4))
-    random_code = f"{one}-{two}-{three}"
-    print(f"Für die Cookies-Generierung wird ein zufälliger Code verwendet ({random_code}).\n")
+    its = ImpfterminService([], {}, PATH)
 
-    its = ImpfterminService(random_code, [plz_impfzentrum], {}, PATH)
-
-    print("Bitte trage nachfolgend dein Geburtsdatum im Format DD.MM.YYYY ein.\n"
+    print("\nBitte trage nachfolgend dein Geburtsdatum im Format DD.MM.YYYY ein.\n"
           "Beispiel: 02.03.1982\n")
     while True:
         try:
@@ -310,35 +379,41 @@ def gen_code(kontaktdaten):
                   "Bitte erneut versuchen.")
 
     print()
-    # cookies erneuern und code anfordern
-    its.renew_cookies_code()
-    token = its.code_anfordern(mail, telefonnummer, plz_impfzentrum, geburtsdatum)
+    # code anfordern
+    try:
+        token, cookies = its.code_anfordern(
+            mail, telefonnummer, plz_impfzentrum, geburtsdatum)
+    except RuntimeError as exc:
+        print(
+            f"\nDie Code-Generierung war leider nicht erfolgreich:\n{str(exc)}")
+        return False
 
-    if token is not None:
-        # code bestätigen
-        print("\nDu erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
-              "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
-              "Beispiel: 123-456\n")
+    # code bestätigen
+    print("\nDu erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
+          "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
+          "Beispiel: 123-456")
 
-        # 3 Versuche für die SMS-Code-Eingabe
-        for _ in range(3):
-            sms_pin = input("> SMS-Code: ").replace("-", "")
-            if its.code_bestaetigen(token, sms_pin):
-                print("\nDu kannst jetzt mit der Terminsuche fortfahren.\n")
-                return True
+    # 3 Versuche für die SMS-Code-Eingabe
+    for _ in range(3):
+        sms_pin = input("\n> SMS-Code: ").replace("-", "")
+        print()
+        if its.code_bestaetigen(token, cookies, sms_pin, plz_impfzentrum):
+            print("\nDu kannst jetzt mit der Terminsuche fortfahren.")
+            return True
+        print("\nSMS-Code ungültig")
 
-    print("\nDie Code-Generierung war leider nicht erfolgreich.\n")
+    print("Die Code-Generierung war leider nicht erfolgreich.")
     return False
 
 
 def subcommand_search(args):
     if args.configure_only:
         update_kontaktdaten_interactive(
-            get_kontaktdaten(args.file), "search", args.file)
+            get_kontaktdaten(args.file), "search", args.configure_notifications, args.file)
     elif args.read_only:
         run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec)
     else:
-        run_search_interactive(args.file, check_delay=args.retry_sec)
+        run_search_interactive(args.file, args.configure_notifications, check_delay=args.retry_sec)
 
 
 def subcommand_code(args):
@@ -349,6 +424,19 @@ def subcommand_code(args):
         gen_code(get_kontaktdaten(args.file))
     else:
         gen_code_interactive(args.file)
+
+
+def subcommand_install_chromium():
+    # Mac_Arm currently not working
+    if current_platform() == 'mac-arm':
+        print('Zur Zeit kann keine eigene Chromium Instanz auf einem Mac M1 installiert werden.')
+    else:
+        if not check_chromium():
+            download_chromium()
+        else:
+            print('Eigene Chromium Instanz bereits installiert.')
+        if not check_webdriver():
+            download_webdriver()
 
 
 def validate_args(args):
@@ -382,6 +470,11 @@ def main():
         "--read-only",
         action='store_true',
         help="Es wird nicht nach fehlenden Kontaktdaten gefragt. Stattdessen wird ein Fehler angezeigt, falls benötigte Kontaktdaten in der JSON-Datei fehlen.")
+    base_subparser.add_argument(
+        "-n",
+        "--configure-notifications",
+        action='store_true',
+        help="Gibt bei der Erfassung der Kontaktdaten die Möglichkeit, Benachrichtungen über Pushover und Telegram zu konfigurieren.")
 
     parser_search = subparsers.add_parser(
         "search", parents=[base_subparser], help="Termin suchen")
@@ -395,7 +488,7 @@ def main():
     parser_code = subparsers.add_parser(
         "code",
         parents=[base_subparser],
-        help="Impf-Code generieren")
+        help="Vermittlungscode generieren")
 
     args = parser.parse_args()
 
@@ -407,6 +500,8 @@ def main():
         args.read_only = False
     if not hasattr(args, "retry_sec"):
         args.retry_sec = 60
+    if not hasattr(args, "configure_notifications"):
+        args.configure_notifications = False
 
     try:
         validate_args(args)
@@ -432,14 +527,16 @@ def main():
             print(
                 "Was möchtest du tun?\n"
                 "[1] Termin suchen\n"
-                "[2] Impf-Code generieren\n"
+                "[2] Vermittlungscode generieren\n"
+                "[3] Eigene Chromium Instanz im Vaccipy Ordner installieren\n"
                 f"[x] Erweiterte Einstellungen {'verbergen' if extended_settings else 'anzeigen'}\n")
 
             if extended_settings:
                 print(
                     f"[c] --configure-only {'de' if args.configure_only else ''}aktivieren\n"
                     f"[r] --read-only {'de' if args.read_only else ''}aktivieren\n"
-                    "[s] --retry-sec setzen\n")
+                    "[s] --retry-sec setzen\n"
+                    f"[n] --configure-notifications {'de' if args.configure_notifications else ''}aktivieren\n\n")
 
             option = input("> Option: ").lower()
             print()
@@ -449,6 +546,8 @@ def main():
                     subcommand_search(args)
                 elif option == "2":
                     subcommand_code(args)
+                elif option == "3":
+                    subcommand_install_chromium()
                 elif option == "x":
                     extended_settings = not extended_settings
                 elif extended_settings and option == "c":
@@ -467,6 +566,13 @@ def main():
                         f"--read-only {'de' if not args.read_only else ''}aktiviert.")
                 elif extended_settings and option == "s":
                     args.retry_sec = int(input("> --retry-sec="))
+                elif extended_settings and option == "n":
+                    new_args = copy.copy(args)
+                    new_args.configure_notifications = not new_args.configure_notifications
+                    validate_args(new_args)
+                    args = new_args
+                    print(
+                        f"--configure-notifications {'de' if not args.configure_notifications else ''}aktiviert.")
                 else:
                     print("Falscheingabe! Bitte erneut versuchen.")
                 print()
@@ -476,14 +582,14 @@ def main():
 
 if __name__ == "__main__":
     print("""
-                                _                 
-                               (_)                
- __   __   __ _    ___    ___   _   _ __    _   _ 
+                                _
+                               (_)
+ __   __   __ _    ___    ___   _   _ __    _   _
  \ \ / /  / _` |  / __|  / __| | | | '_ \  | | | |
   \ V /  | (_| | | (__  | (__  | | | |_) | | |_| |
    \_/    \__,_|  \___|  \___| |_| | .__/   \__, |
                                    | |       __/ |
-                                   |_|      |___/ 
+                                   |_|      |___/
 """)
 
     # Auf aktuelle Version prüfen

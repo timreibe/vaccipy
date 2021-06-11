@@ -35,7 +35,7 @@
       <item row="3" column="0">
        <widget class="QPushButton" name="b_neue_kontaktdaten">
         <property name="text">
-         <string>Kontaktdaten erstellen</string>
+         <string>Kontaktdaten bearbeiten</string>
         </property>
        </widget>
       </item>
@@ -180,7 +180,7 @@ für den Corona Impfterminservice </string>
       <item row="9" column="0">
        <widget class="QPushButton" name="b_code_generieren">
         <property name="text">
-         <string>Impf-Code generieren</string>
+         <string>Vermittlungscode generieren</string>
         </property>
        </widget>
       </item>
