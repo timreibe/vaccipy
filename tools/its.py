@@ -658,6 +658,7 @@ class ImpfterminService():
         if res.status_code == 201:
             msg = "Termin erfolgreich gebucht!"
             self.log.success(msg)
+            self.log.info("[SPENDE] Unterstütze hier unsere Spendenaktion für 'Ärzte ohne Grenzen': https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m")
             desktop_notification(operating_system=self.operating_system, title="Terminbuchung:", message=msg)
             return True
 
