@@ -78,6 +78,7 @@ mkShell {
       p.idna
       p.plyer
       p.selenium
+      p.tqdm
       p.urllib3
     ]))
   ];

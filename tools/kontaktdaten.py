@@ -2,9 +2,9 @@ import datetime
 import json
 import re
 from email.utils import parseaddr
-
-from tools import Modus
 from tools.exceptions import ValidationError, MissingValuesError
+from tools import Modus
+
 
 WOCHENTAG_ABBRS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 WOCHENTAG_NAMES = [
@@ -83,7 +83,7 @@ def check_kontaktdaten(kontaktdaten: dict, mode: Modus):
         kontaktdaten["kontakt"]["notificationReceiver"]
 
     except KeyError as exc:
-        raise MissingValuesError("Schlüsselwort fehlt!") from exc
+        raise MissingValuesError(f"Schlüsselwort fehlt!\n{str(exc)}") from exc
 
 
 def validate_kontaktdaten(kontaktdaten: dict):
@@ -402,6 +402,12 @@ def validate_telegram(telegram: dict):
 
 
 def validate_pushover_app_token(pushover_app_token: str):
+    """
+    Validiert den Pushover App Token.
+
+    :raise ValidationError: Typ ist nicht str
+    :raise ValidationError: Der Wert istz nicht genau 30 Zeichen lang
+    """
     if not isinstance(pushover_app_token, str):
         raise ValidationError("Muss eine Zeichenkette sein")
     if len(pushover_app_token) != 30:
@@ -409,6 +415,13 @@ def validate_pushover_app_token(pushover_app_token: str):
 
 
 def validate_pushover_user_key(pushover_user_key: str):
+    """
+    Validiert den Pushover User Key.
+
+    :raise ValidationError: Typ ist nicht str
+    :raise ValidationError: Der Wert istz nicht genau 30 Zeichen lang
+    """
+
     if not isinstance(pushover_user_key, str):
         raise ValidationError("Muss eine Zeichenkette sein")
     if len(pushover_user_key) != 30:
@@ -416,13 +429,31 @@ def validate_pushover_user_key(pushover_user_key: str):
 
 
 def validate_telegram_api_token(telegram_api_token: str):
+    """
+    Validiert den Telegram API Token.
+
+    :raise ValidationError: Typ ist nicht str
+    :raise ValidationError: Entspricht nicht dem Format \w+:\w+
+    """
+
     if not isinstance(telegram_api_token, str):
         raise ValidationError("Muss eine Zeichenkette sein")
+    if not re.search(r"\w+:\w+", telegram_api_token):
+        raise ValidationError("Der Telegram API-Token besteht aus zwei Teilen welche durch \":\" getrennt sind.")
 
 
 def validate_telegram_chat_id(telegram_chat_id: str):
+    """
+    Validiert die Telegram Chat ID.
+
+    :raise ValidationError: Typ ist nicht str
+    :raise ValidationError: Die ID ist zu kurz (Länge der IDs variiert)
+    """
+
     if not isinstance(telegram_chat_id, str):
         raise ValidationError("Muss eine Zeichenkette sein")
+    if len(telegram_chat_id) < 4:
+        raise ValidationError("Die Chat ID ist zu kurz.")
 
 
 def validate_datum(date: str):

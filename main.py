@@ -9,8 +9,10 @@ from tools.exceptions import ValidationError
 from tools.its import ImpfterminService
 from tools.kontaktdaten import decode_wochentag, encode_wochentag, get_kontaktdaten, \
     validate_kontaktdaten, validate_datum
-from tools.utils import create_missing_dirs, get_latest_version, remove_prefix, update_available, \
-    get_current_version
+from tools.utils import create_missing_dirs, get_current_version, \
+    get_latest_version, pushover_validation, remove_prefix, \
+    telegram_validation, unique, update_available
+from tools.chromium_downloader import check_chromium, download_chromium, check_webdriver, download_webdriver, current_platform
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -52,11 +54,20 @@ def update_kontaktdaten_interactive(
             input_kontaktdaten_key(kontaktdaten,
                                    ["plz_impfzentren"],
                                    "> PLZ's der Impfzentren: ",
-                                   lambda x: list(set([plz.strip() for plz in x.split(",")])))
+                                   lambda x: unique([plz.strip() for plz in x.split(",")]))
+            print()
 
         if "codes" not in kontaktdaten and command == "search":
+            print(
+                "Bitte gebe jetzt die Vermittlungscodes passend zu den ausgewählten Impfzentren ein.\n"
+                "Beachte dabei, dass nur ein Vermittlungscode je Gruppierung benötigt wird.\n"
+                "Weitere Infos: https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren\n\n"
+                "Mehrere Vermittlungscodes müssen durch Kommas getrennt werden.\n"
+                "Beispiel: ABCD-1234-EFGH, ABCD-4321-EFGH, 1234-56AB-CDEF\n")
             input_kontaktdaten_key(
-                kontaktdaten, ["codes"], "> Code: ", lambda c: [c])
+                kontaktdaten, ["codes"], "> Vermittlungscodes: ",
+                lambda x: unique([code.strip() for code in x.split(",")]))
+            print()
 
         if "kontakt" not in kontaktdaten:
             kontaktdaten["kontakt"] = {}
@@ -107,26 +118,48 @@ def update_kontaktdaten_interactive(
             if "notifications" not in kontaktdaten:
                 kontaktdaten["notifications"] = {}
             if "pushover" not in kontaktdaten["notifications"]:
-                kontaktdaten["notifications"]["pushover"] = {}
-                if input("> Benachtigung mit Pushover einrichten? (y/n): ").lower() != "n":
-                    print()
-                    input_kontaktdaten_key(
-                        kontaktdaten, ["notifications", "pushover", "app_token"],
-                        "> Geben Sie den Pushover APP Token ein: ")
-                    input_kontaktdaten_key(
-                        kontaktdaten, ["notifications", "pushover", "user_key"],
-                        "> Geben Sie den Pushover User Key ein: ")
+                while True:
+                    kontaktdaten["notifications"]["pushover"] = {}
+                    if input("> Benachtigung mit Pushover einrichten? (y/n): ").lower() != "n":
+                        print()
+                        input_kontaktdaten_key(
+                            kontaktdaten, ["notifications", "pushover", "app_token"],
+                            "> Geben Sie den Pushover APP Token ein: ")
+                        input_kontaktdaten_key(
+                            kontaktdaten, ["notifications", "pushover", "user_key"],
+                            "> Geben Sie den Pushover User Key ein: ")
+                        validation_code = str(pushover_validation(kontaktdaten["notifications"]["pushover"]))
+                        validation_input = input("Geben Sie den Validierungscode ein:").strip()
+                        if validation_input == validation_code:
+                            break
+                        del kontaktdaten["notifications"]["pushover"]
+                        print("Validierung fehlgeschlagen.")
+                        print()
+                    else:
+                        print()
+                        break
 
             if "telegram" not in kontaktdaten["notifications"]:
-                kontaktdaten["notifications"]["telegram"] = {}
-                if input("> Benachtigung mit Telegram einrichten? (y/n): ").lower() != "n":
-                    print()
-                    input_kontaktdaten_key(
-                        kontaktdaten, ["notifications", "telegram", "api_token"],
-                        "> Geben Sie den Telegram API Token ein: ")
-                    input_kontaktdaten_key(
-                        kontaktdaten, ["notifications", "telegram", "chat_id"],
-                        "> Geben Sie die Telegram Chat ID ein: ")
+                while True:
+                    kontaktdaten["notifications"]["telegram"] = {}
+                    if input("> Benachtigung mit Telegram einrichten? (y/n): ").lower() != "n":
+                        print()
+                        input_kontaktdaten_key(
+                            kontaktdaten, ["notifications", "telegram", "api_token"],
+                            "> Geben Sie den Telegram API Token ein: ")
+                        input_kontaktdaten_key(
+                            kontaktdaten, ["notifications", "telegram", "chat_id"],
+                            "> Geben Sie die Telegram Chat ID ein: ")
+                        validation_code = str(telegram_validation(kontaktdaten["notifications"]["telegram"]))
+                        validation_input = input("Geben Sie den Validierungscode ein:").strip()
+                        if validation_input == validation_code:
+                            break
+                        del kontaktdaten["notifications"]["telegram"]
+                        print("Validierung fehlgeschlagen.")
+                        print()
+                    else:
+                        print()
+                        break
 
         if "zeitrahmen" not in kontaktdaten and command == "search":
             kontaktdaten["zeitrahmen"] = {}
@@ -159,6 +192,7 @@ def update_kontaktdaten_interactive(
                 input_kontaktdaten_key(
                     kontaktdaten, ["zeitrahmen", "wochentage"],
                     "> Erlaubte Wochentage: ", parse_wochentage)
+            print()
 
         json.dump(kontaktdaten, file, ensure_ascii=False, indent=4)
 
@@ -384,6 +418,19 @@ def subcommand_code(args):
         gen_code_interactive(args.file)
 
 
+def subcommand_install_chromium():
+    # Mac_Arm currently not working
+    if current_platform() == 'mac-arm':
+        print('Zur Zeit kann keine eigene Chromium Instanz auf einem Mac M1 installiert werden.')
+    else:
+        if not check_chromium():
+            download_chromium()
+        else:
+            print('Eigene Chromium Instanz bereits installiert.')
+        if not check_webdriver():
+            download_webdriver()
+
+
 def validate_args(args):
     """
     Raises ValueError if args contain invalid settings.
@@ -473,6 +520,7 @@ def main():
                 "Was möchtest du tun?\n"
                 "[1] Termin suchen\n"
                 "[2] Vermittlungscode generieren\n"
+                "[3] Eigene Chromium Instanz im Vaccipy Ordner installieren\n"
                 f"[x] Erweiterte Einstellungen {'verbergen' if extended_settings else 'anzeigen'}\n")
 
             if extended_settings:
@@ -490,6 +538,8 @@ def main():
                     subcommand_search(args)
                 elif option == "2":
                     subcommand_code(args)
+                elif option == "3":
+                    subcommand_install_chromium()
                 elif option == "x":
                     extended_settings = not extended_settings
                 elif extended_settings and option == "c":
@@ -524,14 +574,14 @@ def main():
 
 if __name__ == "__main__":
     print("""
-                                _                 
-                               (_)                
- __   __   __ _    ___    ___   _   _ __    _   _ 
+                                _
+                               (_)
+ __   __   __ _    ___    ___   _   _ __    _   _
  \ \ / /  / _` |  / __|  / __| | | | '_ \  | | | |
   \ V /  | (_| | | (__  | (__  | | | |_) | | |_| |
    \_/    \__,_|  \___|  \___| |_| | .__/   \__, |
                                    | |       __/ |
-                                   |_|      |___/ 
+                                   |_|      |___/
 """)
 
     # Auf aktuelle Version prüfen
