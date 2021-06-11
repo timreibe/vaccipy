@@ -15,6 +15,10 @@ from tools.exceptions import ValidationError, MissingValuesError
 ### QLineEdit ####
 # i_plz_impfzentren
 # i_code_impfzentren
+# i_code_impfzentren_2
+# i_code_impfzentren_3
+# i_code_impfzentren_4
+# i_code_impfzentren_5
 # i_vorname
 # i_nachname
 # i_strasse
@@ -54,6 +58,7 @@ from tools.exceptions import ValidationError, MissingValuesError
 ### QWidget ###
 # kontaktdaten_tab
 # zeitrahmen_tab
+# vermittlungscodes_tab
 
 ### Buttons ###
 # b_impfzentren_waehlen
