@@ -10,7 +10,7 @@ from base64 import b64encode
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
 from json import JSONDecodeError
-from random import choice, choices, randint, random
+from random import choice, choices, randint
 
 import cloudscraper
 from requests.exceptions import RequestException
