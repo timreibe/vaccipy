@@ -10,7 +10,7 @@ from base64 import b64encode
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
 from json import JSONDecodeError
-from random import choice, choices, randint
+from random import choice, choices, randint, random
 
 import cloudscraper
 from requests.exceptions import RequestException
@@ -21,6 +21,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import MoveTargetOutOfBoundsException
+
+from random import randint
+import numpy as np
+from scipy import interpolate
 
 from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
@@ -28,6 +33,7 @@ from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontak
     validate_zeitrahmen
 from tools.utils import fire_notifications, unique
 from tools.chromium_downloader import chromium_executable, check_chromium, webdriver_executable, check_webdriver
+
 
 try:
     import beepy
@@ -289,6 +295,111 @@ class ImpfterminService():
 
         return Chrome(self.get_chromedriver_path(), options=chrome_options)
 
+    def generate_curve_2d_coordinates(self, amount: int, max_x: int, max_y: int) -> tuple:
+        """Generates a random curve with x and y integer coordinates.
+        Args:
+            amount (int): Number of generated coordinates.
+            max_x (int): Largest possible value for x. (< window_width)
+            max_y (int): Largest possible value for y. (< window_height)
+        Returns:
+            tuple: Array of coordinates format: (x_coordinates, y_coordinates)
+        """
+        
+        # Generate random points 
+        original_points = []
+        point_range = range(10)
+        
+        for _ in point_range:
+            original_points.append([randint(1, max_x),randint(1, max_y)])
+            
+        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.splrep.html    
+        b_spline_x = interpolate.splrep(point_range, np.array(original_points)[:,0], k=3)
+        b_spline_y = interpolate.splrep(point_range, np.array(original_points)[:,1], k=3)
+        
+        # Amount of evenly spaced numbers over len original_points
+        original_points_linspace = np.linspace(0, len(original_points) - 1, amount)
+        
+        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.splev.html
+        x_coordinates = interpolate.splev(original_points_linspace, list(b_spline_x))
+        y_coordinates = interpolate.splev(original_points_linspace, list(b_spline_y))
+        
+        return x_coordinates.astype(int), y_coordinates.astype(int)
+
+    def move_mouse_by_offsets(self, amount_of_movements: int, driver):
+        """Generate random curve, calculate offsets and perform mouse movements inside current window.
+        Args:
+            amount_of_movements (int): Number of random offsets. Tested with 100+.
+            driver ([type]): Selenium driver
+        """
+        
+        # Get current window size
+        window_width = driver.get_window_size()["width"]
+        window_height = driver.get_window_size()["height"]
+        
+        # Start on window center
+        start_x = int(window_width / 2)
+        start_y = int(window_height / 2)
+                # Add new ActionChain
+        ActionChains(driver).move_by_offset(start_x,start_y).perform()
+        
+        # Init current mouse position
+        current_mouse_x = start_x
+        current_mouse_y = start_y
+        
+        # Generate random curve. Values of x and y are not that big to prevent MoveTargetOutOfBoundsException
+        x_coordinates, y_coordinates = self.generate_curve_2d_coordinates(amount_of_movements, int(start_x / 2), int(start_y / 2))
+        
+        # Visualize current curve
+        #plt.scatter(x_coordinates, y_coordinates)
+        #plt.show()
+        #print(current_mouse_x)
+        #print(current_mouse_y)
+
+        self.log.info("Simulation der Mausbewegungen gestartet. Dies kann einige Sekunden dauern.")
+        # Append mouse movement for each x,y coordinate
+        for index, coordinate in enumerate(zip(x_coordinates, y_coordinates)):
+
+            # Get current window size
+            window_width = driver.get_window_size()["width"]
+            window_height = driver.get_window_size()["height"]
+
+            # If not first index calculate difference to last coordinate and update next offset
+            if index:
+                x_offset = coordinate[0] - x_coordinates[index - 1]
+                y_offset = coordinate[1] - y_coordinates[index - 1]
+            # First offset has no previous coordinate
+            else:
+                x_offset = coordinate[0]
+                y_offset = coordinate[1]
+            
+            # Update predicted mouse position
+            current_mouse_x = current_mouse_x + x_offset
+            current_mouse_y = current_mouse_y + y_offset
+            
+            # Check wether predicted mouse position is out of bounds
+            if current_mouse_x >= window_width or current_mouse_y >= window_height:
+                #print(f"OUT OF BOUNDS offset: x:{x_offset} , y:{y_offset} not added\n")
+                pass
+            else:
+                #print(f"Added offset: x:{x_offset} , y:{y_offset}")
+                #print(f"Predicted mouse position: x: {current_mouse_x} , y: {current_mouse_y}\n" \
+                #      f"is in window size width:{window_width} , height: {window_height}\n")
+                
+                # Append mouse movements
+                try:
+                    #print(f"Added offset: x:{x_offset} , y:{y_offset}")
+                    #print(f"Predicted mouse position: x: {current_mouse_x} , y: {current_mouse_y}\n" \
+                    #f"is in window size width:{window_width} , height: {window_height}\n")
+                    ActionChains(driver).move_by_offset(x_offset,y_offset).click_and_hold().perform()
+                    ActionChains(driver).pause(randint(1,100)/1000).perform()
+                    ActionChains(driver).release()
+
+                except MoveTargetOutOfBoundsException as e:
+                    #print(e)
+                    pass
+            
+        self.log.info("Simulation der Mausbewegungen abgeschlossen.")
+
     def driver_enter_code(self, driver, impfzentrum, code):
         """
         TODO xpath code auslagern
@@ -317,28 +428,18 @@ class ImpfterminService():
             driver.get(location)
             driver.refresh()
 
+        # Simulation der Mausbewegungen
+        # Erhöht die Chance nicht als Bot erkannt zu werden. 
+        self.move_mouse_by_offsets(amount_of_movements=randint(60,90), driver=driver)
+
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
         button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
-        time.sleep(.5)
-
-    # Zufälliges anklicken von 10-15 Elementen auf der Seite
-    # ggf. werden andere Seiten aufgerufen
-        # Zufälliges anklicken von 10-15 Elementen auf der Seite
-        # ggf. werden andere Seiten aufgerufen
-        for i in range(randint(10, 15)):
-            try:
-                action = ActionChains(driver)
-                elements = driver.find_elements_by_tag_name('div')
-                action.move_to_element(choice(elements)).click().perform()
-                time.sleep(.5)
-            except Exception as exc:
-                pass
-
-        driver.get(location)
+        
+        #driver.get(location)
 
         # Klick auf "Vermittlungscode bereits vorhanden"
         button_xpath = "//input[@name=\"vaccination-approval-checked\"]/.."
@@ -382,11 +483,12 @@ class ImpfterminService():
             time.sleep(30)
 
         required = ["bm_sz", "akavpau_User_allowed"]
+        optional = ["bm_sv", "bm_mi", "ak_bmsc", "_abck"]
 
         cookies = {
             c["name"]: c["value"]
             for c in driver.get_cookies()
-            if c["name"] in required
+            if c["name"] in required or c["name"] in optional
         }
 
         # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
