@@ -566,6 +566,9 @@ def main():
                         f"--read-only {'de' if not args.read_only else ''}aktiviert.")
                 elif extended_settings and option == "s":
                     args.retry_sec = int(input("> --retry-sec="))
+                    if args.retry_sec<30:
+                        print("[RETRY-SEC] Um die Server nicht übermäßig zu belasten, wurde der Wert auf 30 Sekunden gesetzt")
+                        args.retry_sec = 30
                 elif extended_settings and option == "n":
                     new_args = copy.copy(args)
                     new_args.configure_notifications = not new_args.configure_notifications
