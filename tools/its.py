@@ -10,7 +10,9 @@ from base64 import b64encode
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
 from json import JSONDecodeError
+import numpy as np
 from random import choice, choices, randint
+from scipy import interpolate
 
 import cloudscraper
 from requests.exceptions import RequestException
@@ -22,10 +24,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import MoveTargetOutOfBoundsException
-
-from random import randint
-import numpy as np
-from scipy import interpolate
 
 from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
