@@ -395,6 +395,28 @@ class ImpfterminService():
 
         return (current_mouse_x, current_mouse_y)
 
+    def move_mouse_to_coordinates(self, start_x: int, start_y: int, target_x: int, target_y: int, driver) -> tuple:
+        """Move mouse from x,y coordinates to x,y coordinates
+
+        Args:
+            start_x (int): x coordinate of start position
+            start_y (int): y coordinate of start position
+            target_x (int): x coordinate of target position
+            target_y (int): y x coordinate of target position
+            driver : Chromedriver
+
+        Returns:
+            tuple: Current mouse coordinates (mouse_x, mouse_y)
+        """
+        
+        # Generate waypoints
+        coordinates_to_element = self.generate_way_between_coordinates(start_x, start_y, target_x, target_y)
+
+        self.log.info(f"Simulation der Mausbewegungen gestartet. Von: ({start_x}, {start_y}) nach ({target_x}, {target_y})")
+
+        # Execute movements and return coordinates
+        return self.move_mouse_by_offsets(coordinates_to_element[0], coordinates_to_element[1], driver)
+
     def driver_enter_code(self, driver, impfzentrum, code):
         """
         TODO xpath code auslagern
