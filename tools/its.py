@@ -381,7 +381,6 @@ class ImpfterminService():
                     ActionChains(driver).move_by_offset(x_offset,y_offset).perform()
 
                 except MoveTargetOutOfBoundsException as e:
-                    #print(e)
                     pass
             
         time.sleep(randint(1,5))
