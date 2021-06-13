@@ -527,7 +527,6 @@ class ImpfterminService():
         try:
             time.sleep(0.5)
             element = driver.find_element_by_xpath(answer_xpath)
-            #print(element.text)
             if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
                 action.click(button).perform()
         except Exception as e:
