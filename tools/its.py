@@ -376,10 +376,6 @@ class ImpfterminService():
                 #print(f"OUT OF BOUNDS offset: x:{x_offset} , y:{y_offset} not added\n")
                 pass
             else:
-                #print(f"Added offset: x:{x_offset} , y:{y_offset}")
-                #print(f"Predicted mouse position: x: {current_mouse_x} , y: {current_mouse_y}\n" \
-                #      f"is in window size width:{window_width} , height: {window_height}\n")
-                
                 # Append mouse movements
                 try:
                     #print(f"Added offset: x:{x_offset} , y:{y_offset}")
