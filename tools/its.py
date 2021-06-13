@@ -435,9 +435,11 @@ class ImpfterminService():
 
 
         # random start position
-        current_mouse_positon = (randint(1,driver.get_window_size()["width"]-1), randint(1,driver.get_window_size()["height"]-1))
+        current_mouse_positon = (randint(1,driver.get_window_size()["width"]-1), 
+                                 randint(1,driver.get_window_size()["height"]-1))
         # Simulation der Mausbewegung
-        current_mouse_positon = self.move_mouse_to_coordinates(0, 0, current_mouse_positon[0], current_mouse_positon[1], driver)
+        current_mouse_positon = self.move_mouse_to_coordinates(0, 0, current_mouse_positon[0], 
+                                                               current_mouse_positon[1], driver)
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
         button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
