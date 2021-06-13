@@ -399,7 +399,7 @@ class ImpfterminService():
 
     def driver_termin_buchen(self, driver, reservierung):
         timestamp = time.strftime("%Y%m%d-%H%M%S")
-        filepath = os.path.join(self.PATH, "tools\\log\\")
+        filepath = os.path.join(self.PATH, "tools", "log")
 
         try:
             self.driver_enter_code(
@@ -418,7 +418,7 @@ class ImpfterminService():
         except:
             self.log.error("Termine können nicht gesucht werden")
             try:
-                driver.save_screenshot(filepath + "errorterminsuche" + timestamp + ".png")
+                driver.save_screenshot(os.path.join(filepath, "errorterminsuche" + timestamp + ".png"))
             except:
                 self.log.error("Screenshot konnte nicht gespeichert werden")
             pass
@@ -435,10 +435,10 @@ class ImpfterminService():
         except:
             self.log.error("Termine können nicht ausgewählt werden")
             try:
-                with open(filepath + "errorterminauswahl" + timestamp + ".html", 'w',
+                with open(os.path.join(filepath, "errorterminauswahl" + timestamp + ".html"), 'w',
                           encoding='utf-8') as file:
                     file.write(str(driver.page_source))
-                driver.save_screenshot(filepath + "errorterminauswahl" + timestamp + ".png")
+                driver.save_screenshot(os.path.join(filepath, "errorterminauswahl" + timestamp + ".png"))
             except:
                 self.log.error("HTML und Screenshot konnten nicht gespeichert werden")
             pass
@@ -524,7 +524,7 @@ class ImpfterminService():
         except:
             self.log.error("Kontaktdaten können nicht eingegeben werden")
             try:
-                driver.save_screenshot(filepath + "errordateneingeben" + timestamp + ".png")
+                driver.save_screenshot(os.path.join(filepath, "errordateneingeben" + timestamp + ".png"))
             except:
                 self.log.error("Screenshot konnte nicht gespeichert werden")
             pass
