@@ -445,34 +445,50 @@ class ImpfterminService():
             driver.get(location)
             driver.refresh()
 
-        # Simulation der Mausbewegungen
-        # Erhöht die Chance nicht als Bot erkannt zu werden. 
-        self.move_mouse_by_offsets(amount_of_movements=randint(60,90), driver=driver)
+
+        # random start position
+        current_mouse_positon = (randint(1,driver.get_window_size()["width"]-1), randint(1,driver.get_window_size()["height"]-1))
+        # Simulation der Mausbewegung
+        current_mouse_positon = self.move_mouse_to_coordinates(0, 0, current_mouse_positon[0], current_mouse_positon[1], driver)
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
         button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
-        action.move_to_element(button).click().perform()
-        
-        #driver.get(location)
 
+        # Simulation der Mausbewegung
+        element = driver.find_element_by_xpath(button_xpath)
+        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0], current_mouse_positon[1], element.location['x'], element.location['y'], driver)
+
+        action.click(button).perform()
+        
+        
         # Klick auf "Vermittlungscode bereits vorhanden"
         button_xpath = "//input[@name=\"vaccination-approval-checked\"]/.."
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
-        action.move_to_element(button).click().perform()
+
+        # Simulation der Mausbewegung
+        element = driver.find_element_by_xpath(button_xpath)
+        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0], current_mouse_positon[1], element.location['x'], element.location['y'], driver)
+
+        action.click(button).perform()
 
         # Auswahl des ersten Code-Input-Feldes
         input_xpath = "//input[@name=\"ets-input-code-0\"]"
         input_field = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, input_xpath)))
         action = ActionChains(driver)
-        action.move_to_element(input_field).click().perform()
 
-       # Code etwas realistischer eingeben
+        # Simulation der Mausbewegung
+        element = driver.find_element_by_xpath(input_xpath)
+        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0], current_mouse_positon[1], element.location['x'], element.location['y'], driver)
+
+        action.click(input_field).perform()
+
+        # Code etwas realistischer eingeben
         # Zu schnelle Eingabe erzeugt ebenfalls manchmal "Ein unerwarteter Fehler ist aufgetreten"        
         for index, subcode in enumerate(code.split("-")):        
         
@@ -501,7 +517,13 @@ class ImpfterminService():
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
-        action.move_to_element(button).click().perform()
+
+
+        element = driver.find_element_by_xpath(button_xpath)
+        # Simulation der Mausbewegung
+        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0], current_mouse_positon[1], element.location['x'], element.location['y'], driver)
+        
+        action.click(button).perform()
         time.sleep(1.5)
 
 
