@@ -99,6 +99,8 @@ class QtKontakt(QtWidgets.QDialog):
         # Erstelle Events für LineEdits
         for line_edit in self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit):
             line_edit.installEventFilter(self)
+        
+        self.i_plz_wohnort.installEventFilter(self)
 
     def eventFilter(self, source: QtWidgets, event: QEvent) -> bool:
         """
@@ -115,6 +117,11 @@ class QtKontakt(QtWidgets.QDialog):
 
         if source in self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit):
             if event.type() == QEvent.KeyPress and source.text() == '--':
+                source.setCursorPosition(0)
+                return False
+
+        if source == self.i_plz_wohnort:
+            if event.type() == QEvent.KeyPress and source.text() == '':
                 source.setCursorPosition(0)
                 return False
 
