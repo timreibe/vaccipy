@@ -9,6 +9,7 @@ import time
 from base64 import b64encode
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
+from itertools import cycle
 from json import JSONDecodeError
 from random import choice, choices, randint
 
@@ -809,58 +810,45 @@ class ImpfterminService():
                 "Login mit Code fehlgeschlagen: "
                 f"JSONDecodeError: {str(exc)}") from exc
 
-    def reservierung_finden(self, plz_impfzentren: list, zeitrahmen: dict):
-        for url in self.impfzentren:
-            ausgewaehlte_impfzentren = [
-                iz for iz in self.impfzentren[url]
-                if iz["PLZ"] in plz_impfzentren
-            ]
-            if not ausgewaehlte_impfzentren:
-                continue
+    def reservierung_finden(self, zeitrahmen: dict, plz: str):
+        url = self.impfzentrum_in_plz(plz)["URL"]
+        codepoints = self.codepoints[url]
+        if not codepoints:
+            self.log.warn(f"Kein gültiger Vermittlungscode vorhanden für PLZ {plz}")
+            return None
 
-            plz = choice(ausgewaehlte_impfzentren)["PLZ"]
-            codepoints = self.codepoints[url]
-            if not codepoints:
-                self.log.warn(f"Kein gültiger Vermittlungscode vorhanden für PLZ {plz}")
-                continue
+        now = datetime.now()
+        usable_codepoints = [
+            cp for cp in codepoints if cp["next_use"] <= now
+        ]
+        if not usable_codepoints:
+            return None
 
-            now = datetime.now()
-            usable_codepoints = [
-                cp for cp in codepoints if cp["next_use"] <= now
-            ]
-            if not usable_codepoints:
-                continue
+        codepoint = usable_codepoints[0]
+        code = codepoint["code"]
 
-            codepoint = usable_codepoints[0]
-            code = codepoint["code"]
-
-            try:
-                reservierung = self.reservierung_hier_finden(
-                    zeitrahmen, plz, code)
-                if reservierung is not None:
-                    return reservierung
-            except UnmatchingCodeError:
-                codepoints.remove(codepoint)
-                plz_ausgeschlossen = [
-                    iz["PLZ"] for iz in ausgewaehlte_impfzentren
-                ]
-                self.log.info(
-                    f"Überspringe Code {code[:4]}* "
-                    f"für {', '.join(plz_ausgeschlossen)}")
-            except TimeframeMissed:
-                # Es wurden Termine gefunden und alle gefundenen Termine
-                # abgelehnt.
-                # Der verwendete Code soll frühestens in 10 Minuten erneut
-                # verwendet werden, da sonst immer wieder die gleichen Termine
-                # gefunden und abgelehnt werden.
-                self.log.info(f"Pausiere Code {code[:4]}* für 10 Minuten")
-                codepoint["next_use"] = now + timedelta(minutes=10)
-            except RuntimeError as exc:
-                self.log.error(str(exc))
+        try:
+            reservierung = self.reservierung_finden_mit_code(
+                zeitrahmen, plz, code)
+            if reservierung is not None:
+                return reservierung
+        except UnmatchingCodeError:
+            codepoints.remove(codepoint)
+            self.log.info(f"Überspringe Code {code[:4]}* für {plz}")
+        except TimeframeMissed:
+            # Es wurden Termine gefunden und alle gefundenen Termine
+            # abgelehnt.
+            # Der verwendete Code soll frühestens in 10 Minuten erneut
+            # verwendet werden, da sonst immer wieder die gleichen Termine
+            # gefunden und abgelehnt werden.
+            self.log.info(f"Pausiere Code {code[:4]}* für 10 Minuten")
+            codepoint["next_use"] = now + timedelta(minutes=10)
+        except RuntimeError as exc:
+            self.log.error(str(exc))
 
         return None
 
-    def reservierung_hier_finden(
+    def reservierung_finden_mit_code(
             self, zeitrahmen: dict, plz: str, code: str):
         """
         Es wird überprüft, ob im Impfzentrum in der gegebenen PLZ ein oder
@@ -876,7 +864,7 @@ class ImpfterminService():
                 'von_datum': '29.03.2021'
             }
 
-            self.reservierung_hier_finden(
+            self.reservierung_finden_mit_code(
                 zeitrahmen, '68163', 'XXXX-XXXX-XXXX')
             {
                 'code': 'XXXX-XXXX-XXXX',
@@ -1242,14 +1230,14 @@ class ImpfterminService():
         its.log.info("Teste Chromedriver")
         its.get_chromedriver(headless=True).quit()
 
-        while True:
+        for plz_impfzentrum in cycle(plz_impfzentren):
             its.log.set_prefix(" ".join([
                 plz for plz in plz_impfzentren
                 if its.codepoints[izs_by_plz[plz]["URL"]]
             ]))
-            reservierung = its.reservierung_finden(plz_impfzentren, zeitrahmen)
+            url = its.impfzentrum_in_plz(plz_impfzentrum)["URL"]
+            reservierung = its.reservierung_finden(zeitrahmen, plz_impfzentrum)
             if reservierung is not None:
-                url = reservierung["impfzentrum"]["URL"]
                 try:
                     its.termin_buchen(reservierung)
                     msg = "Termin erfolgreich gebucht!"
@@ -1278,11 +1266,9 @@ class ImpfterminService():
 
             # Rotiere Codes, um in nächster Iteration andere Codes zu
             # verwenden.
-            for url in its.impfzentren:
-                its.rotiere_codepoints(url)
+            its.rotiere_codepoints(url)
 
             time.sleep(check_delay)
-
 
 
 def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
