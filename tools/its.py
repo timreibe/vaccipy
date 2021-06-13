@@ -329,7 +329,7 @@ class ImpfterminService():
             x_coordinates.append(source_x)
             y_coordinates.append(source_y)
                 
-        return (x_coordinates, y_coordinates)
+        return x_coordinates, y_coordinates
 
     def move_mouse_by_offsets(self, x_coordinates: list, y_coordinates: list, driver) -> tuple:
         """Move mouse by offeset to list of x and y coordinates
