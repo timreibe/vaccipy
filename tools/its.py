@@ -449,7 +449,10 @@ class ImpfterminService():
 
         # Simulation der Mausbewegung
         element = driver.find_element_by_xpath(button_xpath)
-        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0], current_mouse_positon[1], element.location['x'], element.location['y'], driver)
+        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0],
+                                                               current_mouse_positon[1], 
+                                                               element.location['x'], 
+                                                               element.location['y'], driver)
 
         action.click(button).perform()
         
