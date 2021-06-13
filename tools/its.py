@@ -21,6 +21,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import MoveTargetOutOfBoundsException
 
 from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
@@ -28,6 +29,7 @@ from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontak
     validate_zeitrahmen
 from tools.utils import fire_notifications, unique
 from tools.chromium_downloader import chromium_executable, check_chromium, webdriver_executable, check_webdriver
+
 
 try:
     import beepy
@@ -289,6 +291,117 @@ class ImpfterminService():
 
         return Chrome(self.get_chromedriver_path(), options=chrome_options)
 
+    def generate_way_between_coordinates(self, source_x: int, source_y: int, target_x: int, target_y: int) -> tuple:
+        """Generate random waypoints between two x,y coordinates without numpy
+
+        Args:
+            source_x (int): x coordnate of source
+            source_y (int): y coordinate of source
+            target_x (int): x coordinate of target
+            target_y (int): y coordinate of target
+
+        Returns:
+            tuple: List of waypoints (x_coordinates, y_coordinates)
+        """
+        
+        # Init and add source coordinates
+        x_coordinates = [source_x]
+        y_coordinates = [source_y]
+        
+        x_target_reached = False
+        y_target_reached = False
+        
+        while not x_target_reached or not y_target_reached:
+            
+            # Create new random waypoints
+            source_x = source_x + randint(3,50)
+            source_y = source_y + randint(3,50)
+            
+            # If targets reached, stay at target
+            if source_x >= target_x:
+                source_x = target_x
+                x_target_reached = True
+            if source_y >= target_y:
+                source_y = target_y
+                y_target_reached = True
+            
+            # Append new waypoint coordinates
+            x_coordinates.append(source_x)
+            y_coordinates.append(source_y)
+                
+        return x_coordinates, y_coordinates
+
+    def move_mouse_by_offsets(self, x_coordinates: list, y_coordinates: list, driver) -> tuple:
+        """Move mouse by offeset to list of x and y coordinates
+
+        Args:
+            x_coordinates (list): x waypoints
+            y_coordinates (list): y waypoints
+            driver : Chromedriver
+
+        Returns:
+            tuple: Current mouse coordinates (mouse_x, mouse_y)
+        """
+        
+        # Init current mouse position
+        current_mouse_x = 0
+        current_mouse_y = 0
+
+        # Append mouse movement for each x,y coordinate
+        for index, coordinate in enumerate(zip(x_coordinates, y_coordinates)):
+
+            # Get current window size
+            window_width = driver.get_window_size()["width"]
+            window_height = driver.get_window_size()["height"]
+
+            # If not first index calculate difference to last coordinate and update next offset
+            if index:
+                x_offset = coordinate[0] - x_coordinates[index - 1]
+                y_offset = coordinate[1] - y_coordinates[index - 1]
+            # First offset has no previous coordinate
+            else:
+                x_offset = coordinate[0]
+                y_offset = coordinate[1]
+            
+            # Update predicted mouse position
+            current_mouse_x = current_mouse_x + x_offset
+            current_mouse_y = current_mouse_y + y_offset
+            
+            # Check wether predicted mouse position is out of bounds
+            if not current_mouse_x >= window_width and not current_mouse_y >= window_height:
+                # Append mouse movements
+                try:
+                    ActionChains(driver).move_by_offset(x_offset,y_offset).perform()
+
+                except MoveTargetOutOfBoundsException as e:
+                    pass
+            
+        time.sleep(randint(1,5))
+
+        return current_mouse_x, current_mouse_y
+
+    def move_mouse_to_coordinates(self, start_x: int, start_y: int, target_x: int, target_y: int, driver) -> tuple:
+        """Move mouse from x,y coordinates to x,y coordinates
+
+        Args:
+            start_x (int): x coordinate of start position
+            start_y (int): y coordinate of start position
+            target_x (int): x coordinate of target position
+            target_y (int): y x coordinate of target position
+            driver : Chromedriver
+
+        Returns:
+            tuple: Current mouse coordinates (mouse_x, mouse_y)
+        """
+        
+        # Generate waypoints
+        coordinates_to_element = self.generate_way_between_coordinates(start_x, start_y, target_x, target_y)
+
+        self.log.info(f"Simulation der Mausbewegungen gestartet. Von: ({start_x}, {start_y}) nach ({target_x}, {target_y})")
+
+        # Execute movements and return coordinates
+        return self.move_mouse_by_offsets(coordinates_to_element[0], coordinates_to_element[1], driver)
+
     def driver_enter_code(self, driver, impfzentrum, code):
         """
         TODO xpath code auslagern
@@ -317,55 +430,108 @@ class ImpfterminService():
             driver.get(location)
             driver.refresh()
 
+
+        # random start position
+        current_mouse_positon = (randint(1,driver.get_window_size()["width"]-1), 
+                                 randint(1,driver.get_window_size()["height"]-1))
+        # Simulation der Mausbewegung
+        current_mouse_positon = self.move_mouse_to_coordinates(0, 0, current_mouse_positon[0], 
+                                                               current_mouse_positon[1], driver)
+
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
         button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
-        action.move_to_element(button).click().perform()
-        time.sleep(.5)
 
-    # Zufälliges anklicken von 10-15 Elementen auf der Seite
-    # ggf. werden andere Seiten aufgerufen
-        # Zufälliges anklicken von 10-15 Elementen auf der Seite
-        # ggf. werden andere Seiten aufgerufen
-        for i in range(randint(10, 15)):
-            try:
-                action = ActionChains(driver)
-                elements = driver.find_elements_by_tag_name('div')
-                action.move_to_element(choice(elements)).click().perform()
-                time.sleep(.5)
-            except Exception as exc:
-                pass
+        # Simulation der Mausbewegung
+        element = driver.find_element_by_xpath(button_xpath)
+        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0],
+                                                               current_mouse_positon[1], 
+                                                               element.location['x'], 
+                                                               element.location['y'], driver)
 
-        driver.get(location)
-
+        action.click(button).perform()
+        
+        
         # Klick auf "Vermittlungscode bereits vorhanden"
         button_xpath = "//input[@name=\"vaccination-approval-checked\"]/.."
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
-        action.move_to_element(button).click().perform()
+
+        # Simulation der Mausbewegung
+        element = driver.find_element_by_xpath(button_xpath)
+        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0], 
+                                                               current_mouse_positon[1], 
+                                                               element.location['x'], 
+                                                               element.location['y'], driver)
+
+        action.click(button).perform()
 
         # Auswahl des ersten Code-Input-Feldes
         input_xpath = "//input[@name=\"ets-input-code-0\"]"
         input_field = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, input_xpath)))
         action = ActionChains(driver)
-        action.move_to_element(input_field).click().perform()
 
-        # Code eintragen
-        input_field.send_keys(code)
-        time.sleep(.1)
+        # Simulation der Mausbewegung
+        element = driver.find_element_by_xpath(input_xpath)
+        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0], 
+                                                               current_mouse_positon[1], 
+                                                               element.location['x'], 
+                                                               element.location['y'], driver)
+
+        action.click(input_field).perform()
+
+        # Code etwas realistischer eingeben
+        # Zu schnelle Eingabe erzeugt ebenfalls manchmal "Ein unerwarteter Fehler ist aufgetreten"        
+        for index, subcode in enumerate(code.split("-")):        
+        
+            if index == 0:
+                # Auswahl des ersten Code-Input-Feldes
+                input_xpath = "//input[@name=\"ets-input-code-0\"]"
+            elif index == 1:
+                # Auswahl des zweiten Code-Input-Feldes
+                input_xpath = "//input[@name=\"ets-input-code-1\"]"
+            elif index == 2:
+                # Auswahl des dritten Code-Input-Feldes
+                input_xpath = "//input[@name=\"ets-input-code-2\"]"
+
+            # Input Feld auswählen
+            input_field = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, input_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(input_field).click().perform()                
+        
+            # Chars einzeln eingeben mit kleiner Pause
+            for char in subcode:                      
+                input_field.send_keys(char)
+                time.sleep(randint(500,1000)/1000)
 
         # Klick auf "Termin suchen"
         button_xpath = "//app-corona-vaccination-yes//button[@type=\"submit\"]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
-        action.move_to_element(button).click().perform()
-        time.sleep(1.5)
 
+        element = driver.find_element_by_xpath(button_xpath)
+        # Simulation der Mausbewegung
+        _ = self.move_mouse_to_coordinates(current_mouse_positon[0], current_mouse_positon[1], 
+                                           element.location['x'], element.location['y'], driver)
+        action.click(button).perform()
+
+        # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
+        answer_xpath = "//app-corona-vaccination-yes//span[@class=\"text-pre-wrap\"]"
+        try:
+            time.sleep(0.5)
+            element = driver.find_element_by_xpath(answer_xpath)
+            if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
+                action.click(button).perform()
+        except Exception as e:
+            pass
+
+        time.sleep(1.5)
+        
 
     def driver_get_cookies(self, driver, url, manual):
         # Erstelle zufälligen Vermittlungscode für die Cookie-Generierung
@@ -382,11 +548,12 @@ class ImpfterminService():
             time.sleep(30)
 
         required = ["bm_sz", "akavpau_User_allowed"]
+        optional = ["bm_sv", "bm_mi", "ak_bmsc", "_abck"]
 
         cookies = {
             c["name"]: c["value"]
             for c in driver.get_cookies()
-            if c["name"] in required
+            if c["name"] in required or c["name"] in optional
         }
 
         # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
