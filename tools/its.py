@@ -381,7 +381,7 @@ class ImpfterminService():
             
         time.sleep(randint(1,5))
 
-        return (current_mouse_x, current_mouse_y)
+        return current_mouse_x, current_mouse_y
 
     def move_mouse_to_coordinates(self, start_x: int, start_y: int, target_x: int, target_y: int, driver) -> tuple:
         """Move mouse from x,y coordinates to x,y coordinates
