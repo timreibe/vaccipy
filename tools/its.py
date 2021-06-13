@@ -519,7 +519,8 @@ class ImpfterminService():
 
         element = driver.find_element_by_xpath(button_xpath)
         # Simulation der Mausbewegung
-        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0], current_mouse_positon[1], element.location['x'], element.location['y'], driver)
+        _ = self.move_mouse_to_coordinates(current_mouse_positon[0], current_mouse_positon[1], 
+                                           element.location['x'], element.location['y'], driver)
         action.click(button).perform()
 
         # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
