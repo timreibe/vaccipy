@@ -518,14 +518,25 @@ class ImpfterminService():
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
 
-
         element = driver.find_element_by_xpath(button_xpath)
         # Simulation der Mausbewegung
         current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0], current_mouse_positon[1], element.location['x'], element.location['y'], driver)
-        
         action.click(button).perform()
-        time.sleep(1.5)
 
+        # Zweiter klick versuch falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
+        answer_xpath = "//app-corona-vaccination-yes//span[@class=\"text-pre-wrap\"]"
+        try:
+            time.sleep(0.5)
+            element = driver.find_element_by_xpath(answer_xpath)
+            #print(element.text)
+            if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
+                action.click(button).perform()
+        except Exception as e:
+            #print(e)
+            pass
+
+        time.sleep(1.5)
+        
 
     def driver_get_cookies(self, driver, url, manual):
         # Erstelle zufälligen Vermittlungscode für die Cookie-Generierung
