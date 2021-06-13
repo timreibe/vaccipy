@@ -358,6 +358,10 @@ class ImpfterminService():
         input_xpath = "//input[@name=\"ets-input-code-0\"]"
         input_field = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, input_xpath)))
+
+        # Kurz warten, auch wenn schon verfügbar
+        random_sleep(.5, percent_max_deviation=20)
+
         action = ActionChains(driver)
         action.move_to_element(input_field).click().perform()
 
