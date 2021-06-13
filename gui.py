@@ -59,7 +59,6 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         # Laden der .ui Datei und Anpassungen
         self.setup(pfad_fenster_layout)
-        
 
         # GUI anzeigen
         self.show()
@@ -82,6 +81,14 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         app = QtWidgets.QApplication(list())
         app.setAttribute(QtCore.Qt.AA_X11InitThreads)
+
+        # Lade Systemsprache und passende Übersetzungen
+        sys_lang = QtCore.QLocale.system()
+        translator = QtCore.QTranslator()
+        if translator.load(sys_lang, "qtbase", "_", QtCore.QLibraryInfo.location(QtCore.QLibraryInfo.TranslationsPath)):
+            app.installTranslator(translator)
+
+
         window = HauptGUI()
         app.exec_()
 
@@ -293,6 +300,9 @@ class HauptGUI(QtWidgets.QMainWindow):
                 pfad = oeffne_file_dialog_select(self, "Kontakdaten", self.pfad_kontaktdaten)
             except FileNotFoundError:
                 return
+
+        if pfad is None:
+            return
 
         self.pfad_kontaktdaten = pfad
         self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)

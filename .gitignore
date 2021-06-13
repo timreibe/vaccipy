@@ -1,6 +1,7 @@
 .idea/
 .vscode/
 __pycache__/
+venv/
 
 *.DS_Store
 
@@ -8,8 +9,7 @@ __pycache__/
 log/
 
 # data
-kontaktdaten.json
-zeitspanne.json
+data/*.json
 
 #building: 
 installer/
