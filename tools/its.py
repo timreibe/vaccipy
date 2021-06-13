@@ -331,37 +331,26 @@ class ImpfterminService():
                 
         return (x_coordinates, y_coordinates)
 
-    def move_mouse_by_offsets(self, amount_of_movements: int, driver):
-        """Generate random curve, calculate offsets and perform mouse movements inside current window.
+    def move_mouse_by_offsets(self, x_coordinates: list, y_coordinates: list, driver) -> tuple:
+        """Move mouse by offeset to list of x and y coordinates
+
         Args:
-            amount_of_movements (int): Number of random offsets. Tested with 100+.
-            driver ([type]): Selenium driver
+            x_coordinates (list): x waypoints
+            y_coordinates (list): y waypoints
+            driver : Chromedriver
+
+        Returns:
+            tuple: Current mouse coordinates (mouse_x, mouse_y)
         """
         
         # Get current window size
         window_width = driver.get_window_size()["width"]
         window_height = driver.get_window_size()["height"]
         
-        # Start on window center
-        start_x = int(window_width / 2)
-        start_y = int(window_height / 2)
-                # Add new ActionChain
-        ActionChains(driver).move_by_offset(start_x,start_y).perform()
-        
         # Init current mouse position
-        current_mouse_x = start_x
-        current_mouse_y = start_y
-        
-        # Generate random curve. Values of x and y are not that big to prevent MoveTargetOutOfBoundsException
-        x_coordinates, y_coordinates = self.generate_curve_2d_coordinates(amount_of_movements, int(start_x / 2), int(start_y / 2))
-        
-        # Visualize current curve
-        #plt.scatter(x_coordinates, y_coordinates)
-        #plt.show()
-        #print(current_mouse_x)
-        #print(current_mouse_y)
+        current_mouse_x = 0
+        current_mouse_y = 0
 
-        self.log.info("Simulation der Mausbewegungen gestartet. Dies kann einige Sekunden dauern.")
         # Append mouse movement for each x,y coordinate
         for index, coordinate in enumerate(zip(x_coordinates, y_coordinates)):
 
@@ -396,15 +385,15 @@ class ImpfterminService():
                     #print(f"Added offset: x:{x_offset} , y:{y_offset}")
                     #print(f"Predicted mouse position: x: {current_mouse_x} , y: {current_mouse_y}\n" \
                     #f"is in window size width:{window_width} , height: {window_height}\n")
-                    ActionChains(driver).move_by_offset(x_offset,y_offset).click_and_hold().perform()
-                    ActionChains(driver).pause(randint(1,100)/1000).perform()
-                    ActionChains(driver).release()
+                    ActionChains(driver).move_by_offset(x_offset,y_offset).perform()
 
                 except MoveTargetOutOfBoundsException as e:
                     #print(e)
                     pass
             
-        self.log.info("Simulation der Mausbewegungen abgeschlossen.")
+        time.sleep(randint(1,5))
+
+        return (current_mouse_x, current_mouse_y)
 
     def driver_enter_code(self, driver, impfzentrum, code):
         """
