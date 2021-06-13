@@ -352,8 +352,8 @@ save da world. my final message. goodbye.
 
 - [tex.fm: Impftermine-Bot](https://www.tex.fm/blog/2021/06/impftermine-bot)
 - [DASDING: HOW TO IMPFTERMIN - DIESE TOOLS HELFEN DIR](https://www.dasding.de/update/wie-impftermin-einfacher-bekommen-100.html) - Danke an Dani Rapp!
-- [Deutschlandfunk: Portale und Tools sollen bei Suche nach Impfterminen helfen](https://www.deutschlandfunk.de/corona-pandemie-portale-und-tools-sollen-bei-suche-nach.1939.de.html?drn:news_id=1261638)
-- [WDR: Per Klick zum Impftermin](https://www1.wdr.de/nachrichten/themen/coronavirus/impftermine-online-buchen-100.html)
+- [Deutschlandfunk: Portale und Tools sollen bei Suche nach Impfterminen helfen](https://www.deutschlandfunk.de/corona-pandemie-portale-und-tools-sollen-bei-suche-nach.1939.de.html?drn:news_id=1269109)
+- [WDR: Per Klick zum Impftermin](https://www1.wdr.de/nachrichten/themen/coronavirus/impftermine-online-buchen-100.html) - es war einmal... (*sad reacts only*)
 
 <a href="https://www.tex.fm/blog/2021/06/impftermine-bot">
 <img width=100 src=https://i1.wp.com/www.tex.fm/wp-content/uploads/2017/11/cropped-Bildschirmfoto-2017-11-25-um-13.34.34-e1511613325745.png?fit=240%2C91&ssl=1>
@@ -361,7 +361,7 @@ save da world. my final message. goodbye.
 <a href="https://www.dasding.de/update/wie-impftermin-einfacher-bekommen-100.html">
 <img width=100 src=https://github.com/iamnotturner/vaccipy/blob/master/images/2000px-Das_Ding_(2008).svg.png>
 </a>
-<a href="https://www.deutschlandfunk.de/corona-pandemie-portale-und-tools-sollen-bei-suche-nach.1939.de.html?drn:news_id=1261638">
+<a href="https://www.deutschlandfunk.de/corona-pandemie-portale-und-tools-sollen-bei-suche-nach.1939.de.html?drn:news_id=1269109">
 <img width=100 src=https://www.deutschlandradio.de/themes/dradio/dlr2018/icons/dlf_logo.svg>
 </a>
 <a href="https://www1.wdr.de/nachrichten/themen/coronavirus/impftermine-online-buchen-100.html">
