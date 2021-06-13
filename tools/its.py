@@ -10,9 +10,7 @@ from base64 import b64encode
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
 from json import JSONDecodeError
-import numpy as np
 from random import choice, choices, randint
-from scipy import interpolate
 
 import cloudscraper
 from requests.exceptions import RequestException
@@ -293,35 +291,45 @@ class ImpfterminService():
 
         return Chrome(self.get_chromedriver_path(), options=chrome_options)
 
-    def generate_curve_2d_coordinates(self, amount: int, max_x: int, max_y: int) -> tuple:
-        """Generates a random curve with x and y integer coordinates.
+    def generate_way_between_coordinates(self, source_x: int, source_y: int, target_x: int, target_y: int) -> tuple:
+        """Generate random waypoints between two x,y coordinates without numpy
+
         Args:
-            amount (int): Number of generated coordinates.
-            max_x (int): Largest possible value for x. (< window_width)
-            max_y (int): Largest possible value for y. (< window_height)
+            source_x (int): x coordnate of source
+            source_y (int): y coordinate of source
+            target_x (int): x coordinate of target
+            target_y (int): y coordinate of target
+
         Returns:
-            tuple: Array of coordinates format: (x_coordinates, y_coordinates)
+            tuple: List of waypoints (x_coordinates, y_coordinates)
         """
         
-        # Generate random points 
-        original_points = []
-        point_range = range(10)
+        # Init and add source coordinates
+        x_coordinates = [source_x]
+        y_coordinates = [source_y]
         
-        for _ in point_range:
-            original_points.append([randint(1, max_x),randint(1, max_y)])
+        x_target_reached = False
+        y_target_reached = False
+        
+        while not x_target_reached or not y_target_reached:
             
-        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.splrep.html    
-        b_spline_x = interpolate.splrep(point_range, np.array(original_points)[:,0], k=3)
-        b_spline_y = interpolate.splrep(point_range, np.array(original_points)[:,1], k=3)
-        
-        # Amount of evenly spaced numbers over len original_points
-        original_points_linspace = np.linspace(0, len(original_points) - 1, amount)
-        
-        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.splev.html
-        x_coordinates = interpolate.splev(original_points_linspace, list(b_spline_x))
-        y_coordinates = interpolate.splev(original_points_linspace, list(b_spline_y))
-        
-        return x_coordinates.astype(int), y_coordinates.astype(int)
+            # Create new random waypoints
+            source_x = source_x + randint(3,50)
+            source_y = source_y + randint(3,50)
+            
+            # If targets reached, stay at target
+            if source_x >= target_x:
+                source_x = target_x
+                x_target_reached = True
+            if source_y >= target_y:
+                source_y = target_y
+                y_target_reached = True
+            
+            # Append new waypoint coordinates
+            x_coordinates.append(source_x)
+            y_coordinates.append(source_y)
+                
+        return (x_coordinates, y_coordinates)
 
     def move_mouse_by_offsets(self, amount_of_movements: int, driver):
         """Generate random curve, calculate offsets and perform mouse movements inside current window.
