@@ -368,12 +368,12 @@ class ImpfterminService():
             current_mouse_y = current_mouse_y + y_offset
             
             # Check wether predicted mouse position is out of bounds
-            if current_mouse_x >= window_width or current_mouse_y >= window_height:
-                #print(f"OUT OF BOUNDS offset: x:{x_offset} , y:{y_offset} not added\n")
-                pass
-            else:
+            if not current_mouse_x >= window_width and not current_mouse_y >= window_height:
                 # Append mouse movements
                 try:
+                    #print(f"Added offset: x:{x_offset} , y:{y_offset}")
+                    #print(f"Predicted mouse position: x: {current_mouse_x} , y: {current_mouse_y}\n" \
+                    #f"is in window size width:{window_width} , height: {window_height}\n")
                     ActionChains(driver).move_by_offset(x_offset,y_offset).perform()
 
                 except MoveTargetOutOfBoundsException as e:
