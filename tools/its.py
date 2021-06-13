@@ -343,10 +343,6 @@ class ImpfterminService():
             tuple: Current mouse coordinates (mouse_x, mouse_y)
         """
         
-        # Get current window size
-        window_width = driver.get_window_size()["width"]
-        window_height = driver.get_window_size()["height"]
-        
         # Init current mouse position
         current_mouse_x = 0
         current_mouse_y = 0
