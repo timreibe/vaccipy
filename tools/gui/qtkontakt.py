@@ -102,7 +102,7 @@ class QtKontakt(QtWidgets.QDialog):
 
     def eventFilter(self, source: QtWidgets, event: QEvent) -> bool:
         """
-        Filtert Events (z.B. Eingabe in QEdirLIne) um auf diese zu reagiere
+        Filtert Events (z.B. Eingabe in QLineEdit) um auf diese zu reagieren
 
         Args:
             source: Quelle des Events
