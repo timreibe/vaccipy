@@ -109,8 +109,7 @@ class QtKontakt(QtWidgets.QDialog):
             event: Art des Events
 
         Returns:
-
-            bool
+            bool: Eventverarbeitung stopen
 
         """
 
