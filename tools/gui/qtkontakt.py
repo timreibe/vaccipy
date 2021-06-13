@@ -1,7 +1,7 @@
 import os
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QTime, QDate, QDateTime, pyqtSignal
+from PyQt5.QtCore import QEvent, QTime, QDate, QDateTime, pyqtSignal
 from PyQt5.QtGui import QIcon
 
 from tools.gui import *
@@ -95,6 +95,31 @@ class QtKontakt(QtWidgets.QDialog):
 
         # Wähle ersten Reiter aus
         self.tabWidget.setCurrentIndex(0)
+
+        # Erstelle Events für LineEdits
+        for line_edit in self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit):
+            line_edit.installEventFilter(self)
+
+    def eventFilter(self, source: QtWidgets, event: QEvent) -> bool:
+        """
+        Filtert Events (z.B. Eingabe in QEdirLIne) um auf diese zu reagiere
+
+        Args:
+            source: Quelle des Events
+            event: Art des Events
+
+        Returns:
+
+            bool
+
+        """
+
+        if source in self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit):
+            if event.type() == QEvent.KeyPress and source.text() == '--':
+                source.setCursorPosition(0)
+                return False
+
+        return False
 
     def setup(self):
         """
