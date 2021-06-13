@@ -10,6 +10,7 @@ import time
 from base64 import b64encode
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
+from fake_useragent import UserAgent
 from json import JSONDecodeError
 from random import choice, choices, randint
 from typing import Optional
@@ -281,13 +282,9 @@ class ImpfterminService():
         # User-Agent is required for headless, because otherwise the server lets us hang.
 
         # Echte useragents benutzen, zufaelligen waehlen
-        useragents = [
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.101 Safari/537.36 Edg/91.0.864.48",
-            "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko"
-        ]
-        useragent_used = random.choice(useragents)
-        chrome_options.add_argument("user-agent="+useragent_used)
+        ua = UserAgent(fallback="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36")
+        useragent = ua.random
+        chrome_options.add_argument("user-agent="+useragent)
 
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
