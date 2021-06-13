@@ -179,6 +179,9 @@ class QtKontakt(QtWidgets.QDialog):
                                 info="Die von Ihnen gewählte Datei konne nicht geöffnet werden.")
             return
 
+        if speicherpfad is None:
+            return
+
         self.standard_speicherpfad = speicherpfad
         self.update_path.emit(speicherpfad)
 

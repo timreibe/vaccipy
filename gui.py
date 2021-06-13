@@ -294,6 +294,9 @@ class HauptGUI(QtWidgets.QMainWindow):
             except FileNotFoundError:
                 return
 
+        if pfad is None:
+            return
+
         self.pfad_kontaktdaten = pfad
         self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
 
