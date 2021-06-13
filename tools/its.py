@@ -522,7 +522,7 @@ class ImpfterminService():
         current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0], current_mouse_positon[1], element.location['x'], element.location['y'], driver)
         action.click(button).perform()
 
-        # Zweiter klick versuch falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
+        # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
         answer_xpath = "//app-corona-vaccination-yes//span[@class=\"text-pre-wrap\"]"
         try:
             time.sleep(0.5)
