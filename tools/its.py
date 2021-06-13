@@ -1,5 +1,6 @@
 # Alphabetisch sortiert:
 import copy
+import math
 import os
 import platform
 import string
@@ -311,19 +312,39 @@ class ImpfterminService():
         
         x_target_reached = False
         y_target_reached = False
-        
+
+        x_min_stepwidth = 3
+        y_min_stepwidth = 3
+        x_max_stepwidth = 50
+        y_max_stepwidth = 50
+
         while not x_target_reached or not y_target_reached:
             
             # Create new random waypoints
-            source_x = source_x + randint(3,50)
-            source_y = source_y + randint(3,50)
+
+            dist_x = target_x - source_x
+            step_x = 0
+            if dist_x != 0:
+                if abs(dist_x) <= x_max_stepwidth:
+                    step_x = dist_x
+                else:
+                    step_x = math.copysign(randint(x_min_stepwidth, x_max_stepwidth), dist_x)
+
+            dist_y = target_y - source_y
+            step_y = 0
+            if dist_y != 0:
+                if abs(dist_y) <= y_max_stepwidth:
+                    step_y = dist_y
+                else:
+                    step_y = math.copysign(randint(y_min_stepwidth, y_max_stepwidth), dist_y)
+
+            source_x = source_x + step_x
+            source_y = source_y + step_y
             
             # If targets reached, stay at target
-            if source_x >= target_x:
-                source_x = target_x
+            if source_x == target_x:
                 x_target_reached = True
-            if source_y >= target_y:
-                source_y = target_y
+            if source_y == target_y:
                 y_target_reached = True
             
             # Append new waypoint coordinates
