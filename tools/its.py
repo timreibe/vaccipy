@@ -1176,7 +1176,9 @@ def random_sleep(avg_sleeptime: float, percent_max_deviation: Optional[int] = No
     if percent_max_deviation is None:
         percent_max_deviation = 10
     percent_deviation = random.randrange(-percent_max_deviation, percent_max_deviation)
-    sleeptime = avg_sleeptime * (1.0 + (percent_deviation / 100.0))
+    random_sleeptime = avg_sleeptime * (1.0 + (percent_deviation / 100.0))
+    min_sleeptime = 0 if avg_sleeptime <= 0.1 else 0.1
+    sleeptime = max(min_sleeptime, random_sleeptime)
     time.sleep(sleeptime)
 
 
