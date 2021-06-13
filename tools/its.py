@@ -472,9 +472,29 @@ class ImpfterminService():
         action = ActionChains(driver)
         action.move_to_element(input_field).click().perform()
 
-        # Code eintragen
-        input_field.send_keys(code)
-        time.sleep(.1)
+       # Code etwas realistischer eingeben
+        # Zu schnelle Eingabe erzeugt ebenfalls manchmal "Ein unerwarteter Fehler ist aufgetreten"        
+        for index, subcode in enumerate(code.split("-")):        
+        
+            if index == 0:
+                # Auswahl des ersten Code-Input-Feldes
+                input_xpath = "//input[@name=\"ets-input-code-0\"]"
+            elif index == 1:
+                # Auswahl des zweiten Code-Input-Feldes
+                input_xpath = "//input[@name=\"ets-input-code-1\"]"
+            elif index == 2:
+                # Auswahl des dritten Code-Input-Feldes
+                input_xpath = "//input[@name=\"ets-input-code-2\"]"
+
+            # Input Feld auswählen
+            input_field = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, input_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(input_field).click().perform()                
+        
+            # Chars einzeln eingeben mit kleiner Pause
+            for char in subcode:                      
+                input_field.send_keys(char)
+                time.sleep(randint(500,1000)/1000)
 
         # Klick auf "Termin suchen"
         button_xpath = "//app-corona-vaccination-yes//button[@type=\"submit\"]"
