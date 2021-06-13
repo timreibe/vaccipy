@@ -520,7 +520,6 @@ class ImpfterminService():
             if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
                 action.click(button).perform()
         except Exception as e:
-            #print(e)
             pass
 
         time.sleep(1.5)
