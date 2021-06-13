@@ -2,6 +2,7 @@
 import copy
 import os
 import platform
+import random
 import string
 import sys
 import time
@@ -11,6 +12,7 @@ from datetime import datetime, date, timedelta
 from datetime import time as dtime
 from json import JSONDecodeError
 from random import choice, choices, randint
+from typing import Optional
 
 import cloudscraper
 from requests.exceptions import RequestException
@@ -62,7 +64,7 @@ class ImpfterminService():
             except RuntimeError as exc:
                 self.log.error(str(exc))
                 self.log.info("Erneuter Versuch in 30 Sekunden")
-                time.sleep(30)
+                random_sleep(30)
 
         # Ein "Codepoint" ist ein dict, das einen Vermittlungscode ("code")
         # und den Zeitpunkt ("next_use") enthält, zu dem der Code frühestens
@@ -313,7 +315,7 @@ class ImpfterminService():
             driver.add_cookie(queue_cookie)
 
             # Seite neu laden
-            time.sleep(5)
+            random_sleep(5)
             driver.get(location)
             driver.refresh()
 
@@ -323,7 +325,7 @@ class ImpfterminService():
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
-        time.sleep(.5)
+        random_sleep(.5, percent_max_deviation=20)
 
     # Zufälliges anklicken von 10-15 Elementen auf der Seite
     # ggf. werden andere Seiten aufgerufen
@@ -334,7 +336,7 @@ class ImpfterminService():
                 action = ActionChains(driver)
                 elements = driver.find_elements_by_tag_name('div')
                 action.move_to_element(choice(elements)).click().perform()
-                time.sleep(.5)
+                random_sleep(.5, percent_max_deviation=20)
             except Exception as exc:
                 pass
 
@@ -356,7 +358,7 @@ class ImpfterminService():
 
         # Code eintragen
         input_field.send_keys(code)
-        time.sleep(.1)
+        random_sleep(.1, percent_max_deviation=20)
 
         # Klick auf "Termin suchen"
         button_xpath = "//app-corona-vaccination-yes//button[@type=\"submit\"]"
@@ -364,8 +366,7 @@ class ImpfterminService():
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
         action.move_to_element(button).click().perform()
-        time.sleep(1.5)
-
+        random_sleep(1.5)
 
     def driver_get_cookies(self, driver, url, manual):
         # Erstelle zufälligen Vermittlungscode für die Cookie-Generierung
@@ -379,7 +380,7 @@ class ImpfterminService():
         if manual:
             self.log.warn(
                 "Du hast jetzt 30 Sekunden Zeit möglichst viele Elemente im Chrome Fenster anzuklicken. Das Fenster schließt sich automatisch.")
-            time.sleep(30)
+            random_sleep(30)
 
         required = ["bm_sz", "akavpau_User_allowed"]
 
@@ -425,13 +426,13 @@ class ImpfterminService():
 
         # Termin auswählen
         try:
-            time.sleep(3)
+            random_sleep(3)
             button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[1]/div[2]/label/div[2]/div'
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
             action.move_to_element(button).click().perform()
-            time.sleep(.5)
+            random_sleep(.5)
         except:
             self.log.error("Termine können nicht ausgewählt werden")
             try:
@@ -450,7 +451,7 @@ class ImpfterminService():
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
             action.move_to_element(button).click().perform()
-            time.sleep(.5)
+            random_sleep(.5)
         except:
             self.log.error("Termine können nicht ausgewählt werden (Button)")
             pass
@@ -462,7 +463,7 @@ class ImpfterminService():
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
             action.move_to_element(button).click().perform()
-            time.sleep(.5)
+            random_sleep(.5)
         except:
             self.log.error("1. Daten können nicht erfasst werden")
             pass
@@ -536,7 +537,7 @@ class ImpfterminService():
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
             action.move_to_element(button).click().perform()
-            time.sleep(.7)
+            random_sleep(.7)
         except:
             self.log.error("Button ÜBERNEHMEN kann nicht gedrückt werden")
             pass
@@ -914,7 +915,7 @@ class ImpfterminService():
             except RequestException as exc:
                 self.log.error(f"Vermittlungscode kann nicht angefragt werden: {str(exc)}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
-                time.sleep(30)
+                random_sleep(30)
                 continue  # Neuer Versuch in nächster Iteration
 
             if res.status_code == 429:
@@ -933,7 +934,7 @@ class ImpfterminService():
                     "Code kann nicht angefragt werden: "
                     f"{res.status_code} {res.text}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
-                time.sleep(30)
+                random_sleep(30)
                 continue  # Neuer Versuch in nächster Iteration
 
             try:
@@ -957,7 +958,6 @@ class ImpfterminService():
         data = {
             "token": token,
             "smspin": sms_pin
-
         }
 
         manual = False
@@ -979,7 +979,7 @@ class ImpfterminService():
             except RequestException as exc:
                 self.log.error(f"Code-Verifikation fehlgeschlagen: {str(exc)}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
-                time.sleep(30)
+                random_sleep(30)
                 continue  # Neuer Versuch in nächster Iteration
 
             if res.status_code == 429:
@@ -998,7 +998,7 @@ class ImpfterminService():
                     "Code-Verifikation fehlgeschlagen: "
                     f"{res.status_code} {res.text}")
                 self.log.info("Erneuter Versuch in 30 Sekunden")
-                time.sleep(30)
+                random_sleep(30)
                 continue  # Neuer Versuch in nächster Iteration
 
             self.log.success(
@@ -1114,7 +1114,7 @@ class ImpfterminService():
             for url in its.impfzentren:
                 its.rotiere_codepoints(url)
 
-            time.sleep(check_delay)
+            random_sleep(check_delay)
 
 
 
@@ -1161,6 +1161,14 @@ def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):
             if not termin_zeit.weekday() in wochentage:
                 return False
     return True
+
+
+def random_sleep(avg_sleeptime: float, percent_max_deviation: Optional[int] = None):
+    if percent_max_deviation is None:
+        percent_max_deviation = 10
+    percent_deviation = random.randrange(-percent_max_deviation, percent_max_deviation)
+    sleeptime = avg_sleeptime * (1.0 + (percent_deviation / 100.0))
+    time.sleep(sleeptime)
 
 
 def get_headers(code: str):
