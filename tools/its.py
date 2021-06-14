@@ -11,7 +11,6 @@ from datetime import datetime, date, timedelta
 from datetime import time as dtime
 from itertools import cycle
 from json import JSONDecodeError
-import json
 from random import choice, choices, randint
 
 import cloudscraper
@@ -24,7 +23,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import MoveTargetOutOfBoundsException
-from seleniumwire import webdriver as selenium_wire
 
 from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
@@ -1051,111 +1049,50 @@ class ImpfterminService():
             "einzeltermin": False
         }
 
-        # Wire Selenium driver um request im webdriver auszulesen
-        driver = selenium_wire.Chrome(self.get_chromedriver_path())
-
+        cookies = None
+        manual = False
         while True:
+            if cookies is None:
+                try:
+                    cookies = self.get_cookies(url, manual=manual)
+                except RuntimeError as exc:
+                    self.log.error(str(exc))
+                    continue  # Neuer Versuch in nächster Iteration
 
-            driver.get(f"{url}impftermine/service?plz={plz_impfzentrum}")
-            # Queue Bypass
-            while True:
-                queue_cookie = driver.get_cookie("akavpwr_User_allowed")
-
-                if not queue_cookie \
-                        or "Virtueller Warteraum" not in driver.page_source:
-                    break
-
-                self.log.info("Im Warteraum, Seite neu laden")
-                queue_cookie["name"] = "akavpau_User_allowed"
-                driver.add_cookie(queue_cookie)
-
-            # Seite neu laden
-            time.sleep(5)
-            # Seite des Impzentrums laden
-            driver.get(f"{url}impftermine/service?plz={plz_impfzentrum}")
-            driver.refresh()
-
-            
-
-            # ets-session-its-cv-quick-check im SessionStorage setzen um verfügbare Termine zu simulieren
-            ets_session_its_cv_quick_check = '{"birthdate":"'+ data["birthday"] +'","slotsAvailable":{"pair":true,"single":false}}'
-            driver.execute_script('window.sessionStorage.setItem("ets-session-its-cv-quick-check",\''+ ets_session_its_cv_quick_check +'\');')
-
-            # Durch ets-session-its-cv-quick-check im SessionStorage kann direkt der Check aufgerufen werden 
-            driver.get(f"{url}impftermine/check")
-
-            # Klick auf "Auswahl bestätigen" im Cookies-Banner
-            button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
-            button = WebDriverWait(driver, 1).until(
-                EC.element_to_be_clickable((By.XPATH, button_xpath)))
-            action = ActionChains(driver)
-            action.click(button).perform()
-            time.sleep(0.5)
-
-            # Eingabe Mail
-            input_xpath = "//input[@formcontrolname=\"email\"]"
-            # Input Feld auswählen
-            input_field = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, input_xpath)))
-            action = ActionChains(driver)
-            action.move_to_element(input_field).click().perform()  
-            input_field.send_keys(data['email'])
-            time.sleep(0.5)
-
-            # Eingabe Phone
-            input_xpath = "//input[@formcontrolname=\"phone\"]"
-            # Input Feld auswählen
-            input_field = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, input_xpath)))
-            action = ActionChains(driver)
-            action.move_to_element(input_field).click().perform()  
-            input_field.send_keys(data['phone'][3:])
-            time.sleep(0.5)
-
-            # Anfrage absenden
-            button_xpath = "//app-its-check-success//button[@type=\"submit\"]"
-            button = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, button_xpath)))
-            action = ActionChains(driver)
-            action.click(button).perform()
-
-            # Cookies auslesen
-            cookies = driver.get_cookies()
-            required = ["bm_sz", "akavpau_User_allowed"]
-            optional = ["bm_sv", "bm_mi", "ak_bmsc", "_abck"]
-            cookies = {
-                    c["name"]: c["value"]
-                    for c in cookies
-                    if c["name"] in required or c["name"] in optional
-             }
-
-            res = None
-            max_retry = 5
-            retry_counter = 0
-            while not res:
-                # Get response von rest/smspin/anforderung
-                for request in driver.requests:
-                    if request.url == location:
-                        res = request.response
-                        break
-                if retry_counter >= max_retry:
-                    raise RuntimeError("Keine Antwort vom Server erhalten.")
-                else:
-                    retry_counter += 1
-                    self.log.info(f"Warten auf Antwort des Servers. Kann einige Sekunden dauern. Versuch {retry_counter} von {max_retry}")
-                    time.sleep(5)
-
-            driver.close()
+            try:
+                self.s.cookies.clear()
+                res = self.s.post(
+                    location,
+                    json=data,
+                    cookies=cookies,
+                    timeout=15)
+            except RequestException as exc:
+                self.log.error(f"Vermittlungscode kann nicht angefragt werden: {str(exc)}")
+                self.log.info("Erneuter Versuch in 30 Sekunden")
+                time.sleep(30)
+                continue  # Neuer Versuch in nächster Iteration
 
             if res.status_code == 429:
                 self.log.error("Anfrage wurde von der Botprotection geblockt")
-                self.log.error("Erneuter versuch in 30 Sekunden")
-                time.sleep(30)
-                continue
+                self.log.error(
+                    "Die Cookies müssen manuell im Browser generiert werden")
+                cookies = None
+                manual = True
+                continue  # Neuer Versuch in nächster Iteration
 
-            if res.status_code == 400:
+            if res.status_code == 400 and res.text == '{"error":"Anfragelimit erreicht."}':
                 raise RuntimeError("Anfragelimit erreicht")
 
+            if not res.ok:
+                self.log.error(
+                    "Code kann nicht angefragt werden: "
+                    f"{res.status_code} {res.text}")
+                self.log.info("Erneuter Versuch in 30 Sekunden")
+                time.sleep(30)
+                continue  # Neuer Versuch in nächster Iteration
+
             try:
-                # Token laden
-                token = json.loads(res.body.decode('utf-8'))['token']
+                token = res.json().get("token")
             except JSONDecodeError as exc:
                 raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
 
