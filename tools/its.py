@@ -1127,14 +1127,20 @@ class ImpfterminService():
              }
 
             res = None
+            max_retry = 5
+            retry_counter = 0
             while not res:
                 # Get response von rest/smspin/anforderung
                 for request in driver.requests:
                     if request.url == location:
                         res = request.response
                         break
-                self.log.info("Warten auf Antwort des Servers. Kann einige Sekunden dauern.")
-                time.sleep(5)
+                if retry_counter >= max_retry:
+                    raise RuntimeError("Keine Antwort vom Server erhalten.")
+                else:
+                    retry_counter += 1
+                    self.log.info(f"Warten auf Antwort des Servers. Kann einige Sekunden dauern. Versuch {retry_counter} von {max_retry}")
+                    time.sleep(5)
 
             driver.close()
 
