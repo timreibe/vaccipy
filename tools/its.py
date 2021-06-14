@@ -1229,7 +1229,19 @@ class ImpfterminService():
                 continue
 
             if res.status_code == 400:
-                raise RuntimeError("Anfragelimit erreicht")
+                try:
+                    # error Laden
+                    error = json.loads(res.body.decode('utf-8'))['error']
+                except JSONDecodeError as exc:
+                    raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
+                print(error)
+                # Spezifischen Fehlermeldung ausgeben
+                if error == 'Geburtsdatum ungueltig oder in der Zukunft':
+                    raise RuntimeError("Geburtsdatum ungueltig oder in der Zukunft")
+                elif error == 'Anfragelimit erreicht.':
+                    raise RuntimeError("Anfragelimit erreicht")
+                else:
+                    raise RuntimeError("Unbekannter Fehler beim Anfordern des SMS-Codes aufgetreten.")
 
             try:
                 # Token laden
