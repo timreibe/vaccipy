@@ -9,8 +9,7 @@ venv/
 log/
 
 # data
-kontaktdaten.json
-zeitspanne.json
+data/*.json
 
 #building: 
 installer/

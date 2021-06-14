@@ -1,7 +1,7 @@
 import os
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QTime, QDate, QDateTime, pyqtSignal
+from PyQt5.QtCore import QEvent, QTime, QDate, QDateTime, pyqtSignal
 from PyQt5.QtGui import QIcon
 
 from tools.gui import *
@@ -15,6 +15,10 @@ from tools.exceptions import ValidationError, MissingValuesError
 ### QLineEdit ####
 # i_plz_impfzentren
 # i_code_impfzentren
+# i_code_impfzentren_2
+# i_code_impfzentren_3
+# i_code_impfzentren_4
+# i_code_impfzentren_5
 # i_vorname
 # i_nachname
 # i_strasse
@@ -54,6 +58,7 @@ from tools.exceptions import ValidationError, MissingValuesError
 ### QWidget ###
 # kontaktdaten_tab
 # zeitrahmen_tab
+# vermittlungscodes_tab
 
 ### Buttons ###
 # b_impfzentren_waehlen
@@ -90,6 +95,37 @@ class QtKontakt(QtWidgets.QDialog):
 
         # Wähle ersten Reiter aus
         self.tabWidget.setCurrentIndex(0)
+
+        # Erstelle Events für LineEdits
+        for line_edit in self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit):
+            line_edit.installEventFilter(self)
+        
+        self.i_plz_wohnort.installEventFilter(self)
+
+    def eventFilter(self, source: QtWidgets, event: QEvent) -> bool:
+        """
+        Filtert Events (z.B. Eingabe in QLineEdit) um auf diese zu reagieren
+
+        Args:
+            source: Quelle des Events
+            event: Art des Events
+
+        Returns:
+            bool: Eventverarbeitung stopen
+
+        """
+
+        if source in self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit):
+            if event.type() == QEvent.KeyPress and source.text() == '--':
+                source.setCursorPosition(0)
+                return False
+
+        if source == self.i_plz_wohnort:
+            if event.type() == QEvent.KeyPress and source.text() == '':
+                source.setCursorPosition(0)
+                return False
+
+        return False
 
     def setup(self):
         """
@@ -135,7 +171,7 @@ class QtKontakt(QtWidgets.QDialog):
             self.update_path.emit(speicherpfad)
 
             # Fenster schließen
-            self.close()
+            self.accept()
 
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
@@ -179,6 +215,9 @@ class QtKontakt(QtWidgets.QDialog):
                                 info="Die von Ihnen gewählte Datei konne nicht geöffnet werden.")
             return
 
+        if speicherpfad is None:
+            return
+
         self.standard_speicherpfad = speicherpfad
         self.update_path.emit(speicherpfad)
 
@@ -206,7 +245,7 @@ class QtKontakt(QtWidgets.QDialog):
             self.__reset_zeitrahmen()
             self.__lade_einstellungen()
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
-            self.close()
+            self.reject()
 
     def __get_alle_werte(self) -> dict:
         """
