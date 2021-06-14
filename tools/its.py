@@ -1130,6 +1130,7 @@ class ImpfterminService():
         while True:
 
             driver.get(f"{url}impftermine/service?plz={plz_impfzentrum}")
+            self.log.info("Generierung eines Vermittlungscodes via Selenium gestartet.")
 
             # Queue Bypass
             while True:
@@ -1151,9 +1152,11 @@ class ImpfterminService():
             # ets-session-its-cv-quick-check im SessionStorage setzen um verfügbare Termine zu simulieren
             ets_session_its_cv_quick_check = '{"birthdate":"'+ data["birthday"] +'","slotsAvailable":{"pair":true,"single":false}}'
             driver.execute_script('window.sessionStorage.setItem("ets-session-its-cv-quick-check",\''+ ets_session_its_cv_quick_check +'\');')
+            self.log.info("\"ets-session-its-cv-quick-check\" Key:Value zum sessionStorage hinzugefügt.")
 
             # Durch ets-session-its-cv-quick-check im SessionStorage kann direkt der Check aufgerufen werden 
             driver.get(f"{url}impftermine/check")
+            self.log.info("Überprüfung der Impfberechtigung übersprungen / Vorhandene Termine simuliert und impftermine/check geladen.")
 
             # Klick auf "Auswahl bestätigen" im Cookies-Banner
             button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
@@ -1170,6 +1173,7 @@ class ImpfterminService():
             action = ActionChains(driver)
             action.move_to_element(input_field).click().perform()  
             input_field.send_keys(data['email'])
+            self.log.info("E-Mail Adresse eingegeben.")
             time.sleep(0.5)
 
             # Eingabe Phone
@@ -1179,6 +1183,7 @@ class ImpfterminService():
             action = ActionChains(driver)
             action.move_to_element(input_field).click().perform()  
             input_field.send_keys(data['phone'][3:])
+            self.log.info("Telefonnummer eingegeben.")
             time.sleep(0.5)
 
             # Anfrage absenden
@@ -1186,6 +1191,7 @@ class ImpfterminService():
             button = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
             action.click(button).perform()
+            self.log.info("SMS-Anfrage an Server versandt.")
 
             # Cookies auslesen / Muss nicht über den langen river_enter_code() weg gemacht werden
             cookies = driver.get_cookies()
