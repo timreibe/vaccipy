@@ -539,8 +539,10 @@ class ImpfterminService():
     def driver_get_cookies(self, driver, url, manual):
         # Erstelle zufälligen Vermittlungscode für die Cookie-Generierung
         legal_chars = string.ascii_uppercase + string.digits
-        random_chars = "".join(choices(legal_chars, k=5))
-        random_code = f"VACC-IPY{random_chars[0]}-{random_chars[1:]}"
+        subcode1 = f"{choices(legal_chars)[0]}{choices(legal_chars)[0]}{choices(legal_chars)[0]}{choices(legal_chars)[0]}"
+        subcode2 = f"{choices(legal_chars)[0]}{choices(legal_chars)[0]}{choices(legal_chars)[0]}{choices(legal_chars)[0]}"
+        subcode3 = f"{choices(legal_chars)[0]}{choices(legal_chars)[0]}{choices(legal_chars)[0]}{choices(legal_chars)[0]}"
+        random_code = f"{subcode1}-{subcode2}-{subcode3}"
 
         # Kann WebDriverException nach außen werfen:
         self.driver_enter_code(
