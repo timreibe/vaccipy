@@ -1099,14 +1099,17 @@ class ImpfterminService():
                     for c in cookies
                     if c["name"] in required or c["name"] in optional
              }
-            time.sleep(5)
-            
-            # Get response von rest/smspin/anforderung
+
             res = None
-            for request in driver.requests:
-                if request.url == location:
-                    res = request.response
-                    break
+            while not res:
+                # Get response von rest/smspin/anforderung
+                for request in driver.requests:
+                    if request.url == location:
+                        res = request.response
+                        break
+                self.log.info("Warten auf Antwort des Servers. Kann einige Sekunden dauern.")
+                time.sleep(5)
+
             driver.close()
 
             if res.status_code == 429:
