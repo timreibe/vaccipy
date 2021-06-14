@@ -1051,6 +1051,10 @@
   <tabstop>i_start_datum_qdate</tabstop>
   <tabstop>i_start_time_qtime</tabstop>
   <tabstop>i_end_time_qtime</tabstop>
+  <tabstop>i_app_token</tabstop>
+  <tabstop>i_user_key</tabstop>
+  <tabstop>i_api_token</tabstop>
+  <tabstop>i_chat_id</tabstop>
  </tabstops>
  <resources/>
  <connections/>
