@@ -1158,11 +1158,27 @@ class ImpfterminService():
             driver.get(f"{url}impftermine/check")
             self.log.info("Überprüfung der Impfberechtigung übersprungen / Vorhandene Termine simuliert und impftermine/check geladen.")
 
+            # random start position
+            current_mouse_positon = (randint(1,driver.get_window_size()["width"]-1), 
+                                 randint(1,driver.get_window_size()["height"]-1))
+
+            # Simulation der Mausbewegung
+            current_mouse_positon = self.move_mouse_to_coordinates(0, 0, current_mouse_positon[0], 
+                                                                current_mouse_positon[1], driver)
+
             # Klick auf "Auswahl bestätigen" im Cookies-Banner
             button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
+
+            # Simulation der Mausbewegung
+            element = driver.find_element_by_xpath(button_xpath)
+            current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0],
+                                                                current_mouse_positon[1], 
+                                                                element.location['x'], 
+                                                                element.location['y'], driver)
+
             action.click(button).perform()
             time.sleep(0.5)
 
@@ -1171,6 +1187,14 @@ class ImpfterminService():
             # Input Feld auswählen
             input_field = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, input_xpath)))
             action = ActionChains(driver)
+
+            # Simulation der Mausbewegung
+            element = driver.find_element_by_xpath(input_xpath)
+            current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0],
+                                                                current_mouse_positon[1], 
+                                                                element.location['x'], 
+                                                                element.location['y'], driver)
+
             action.move_to_element(input_field).click().perform()  
             input_field.send_keys(data['email'])
             self.log.info("E-Mail Adresse eingegeben.")
@@ -1181,6 +1205,14 @@ class ImpfterminService():
             # Input Feld auswählen
             input_field = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, input_xpath)))
             action = ActionChains(driver)
+
+            # Simulation der Mausbewegung
+            element = driver.find_element_by_xpath(input_xpath)
+            current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0],
+                                                                current_mouse_positon[1], 
+                                                                element.location['x'], 
+                                                                element.location['y'], driver)
+
             action.move_to_element(input_field).click().perform()  
             input_field.send_keys(data['phone'][3:])
             self.log.info("Telefonnummer eingegeben.")
@@ -1190,6 +1222,14 @@ class ImpfterminService():
             button_xpath = "//app-its-check-success//button[@type=\"submit\"]"
             button = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
+
+            # Simulation der Mausbewegung
+            element = driver.find_element_by_xpath(button_xpath)
+            current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0],
+                                                                current_mouse_positon[1], 
+                                                                element.location['x'], 
+                                                                element.location['y'], driver)
+
             action.click(button).perform()
             self.log.info("SMS-Anfrage an Server versandt.")
 
