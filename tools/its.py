@@ -1196,7 +1196,12 @@ class ImpfterminService():
                                                                 element.location['y'], driver)
 
             action.move_to_element(input_field).click().perform()  
-            input_field.send_keys(data['email'])
+
+            # Chars einzeln eingeben mit kleiner Pause
+            for char in data['email']:                      
+                input_field.send_keys(char)
+                time.sleep(randint(500,1000)/1000)
+
             self.log.info("E-Mail Adresse eingegeben.")
             time.sleep(0.5)
 
@@ -1214,7 +1219,12 @@ class ImpfterminService():
                                                                 element.location['y'], driver)
 
             action.move_to_element(input_field).click().perform()  
-            input_field.send_keys(data['phone'][3:])
+
+            # Chars einzeln eingeben mit kleiner Pause
+            for char in data['phone'][3:]:                      
+                input_field.send_keys(char)
+                time.sleep(randint(500,1000)/1000)
+
             self.log.info("Telefonnummer eingegeben.")
             time.sleep(0.5)
 
