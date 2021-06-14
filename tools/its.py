@@ -384,7 +384,7 @@ class ImpfterminService():
                 except MoveTargetOutOfBoundsException as e:
                     pass
 
-        time.sleep(randint(1,5))
+        random_sleep(3, percent_max_deviation=50)
 
         return current_mouse_x, current_mouse_y
 
@@ -514,7 +514,7 @@ class ImpfterminService():
             # Chars einzeln eingeben mit kleiner Pause
             for char in subcode:
                 input_field.send_keys(char)
-                time.sleep(randint(500,1000)/1000)
+                random_sleep(0.5, percent_max_deviation=50)
 
         # Klick auf "Termin suchen"
         button_xpath = "//app-corona-vaccination-yes//button[@type=\"submit\"]"
@@ -531,7 +531,7 @@ class ImpfterminService():
         # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
         answer_xpath = "//app-corona-vaccination-yes//span[@class=\"text-pre-wrap\"]"
         try:
-            time.sleep(0.5)
+            random_sleep(0.5)
             element = driver.find_element_by_xpath(answer_xpath)
             if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
                 action.click(button).perform()
@@ -544,8 +544,9 @@ class ImpfterminService():
     def driver_get_cookies(self, driver, url, manual):
         # Erstelle zufälligen Vermittlungscode für die Cookie-Generierung
         legal_chars = string.ascii_uppercase + string.digits
-        random_chars = "".join(choices(legal_chars, k=5))
-        random_code = f"VACC-IPY{random_chars[0]}-{random_chars[1:]}"
+        random_chars = "".join(choices(legal_chars, k=12))
+        random_code = f"{random_chars[0:4]}-{random_chars[4:8]}-{random_chars[8:]}"
+        self.log.info(f"Nutze zufällig generierten Code \"{random_code}\" um einen validen Cookie zu bekommen. Dies ist kein gültiger Vermittlungscode!")
 
         # Kann WebDriverException nach außen werfen:
         self.driver_enter_code(
