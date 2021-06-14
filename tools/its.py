@@ -1056,8 +1056,26 @@ class ImpfterminService():
 
         while True:
 
+            driver.get(f"{url}impftermine/service?plz={plz_impfzentrum}")
+            # Queue Bypass
+            while True:
+                queue_cookie = driver.get_cookie("akavpwr_User_allowed")
+
+                if not queue_cookie \
+                        or "Virtueller Warteraum" not in driver.page_source:
+                    break
+
+                self.log.info("Im Warteraum, Seite neu laden")
+                queue_cookie["name"] = "akavpau_User_allowed"
+                driver.add_cookie(queue_cookie)
+
+            # Seite neu laden
+            time.sleep(5)
             # Seite des Impzentrums laden
             driver.get(f"{url}impftermine/service?plz={plz_impfzentrum}")
+            driver.refresh()
+
+            
 
             # ets-session-its-cv-quick-check im SessionStorage setzen um verfügbare Termine zu simulieren
             ets_session_its_cv_quick_check = '{"birthdate":"'+ data["birthday"] +'","slotsAvailable":{"pair":true,"single":false}}'
