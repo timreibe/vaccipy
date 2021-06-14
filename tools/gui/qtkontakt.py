@@ -797,9 +797,8 @@ class QtKontakt(QtWidgets.QDialog):
         Setzt alle Werte für die Benachrichtigungen (notifications) in der GUI zurück
         """
 
-        for widget in self.notifications_tab.children():
-            if isinstance(widget, QtWidgets.QLineEdit):
-                widget.setText("")
+        for line_edit in self.notifications_tab.findChildren(QtWidgets.QLineEdit):
+                line_edit.setText("")
 
     def __test_pushover(self):
         """
