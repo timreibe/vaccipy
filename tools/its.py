@@ -1066,6 +1066,14 @@ class ImpfterminService():
             # Durch ets-session-its-cv-quick-check im SessionStorage kann direkt der Check aufgerufen werden 
             driver.get(f"{url}impftermine/check")
 
+            # Klick auf "Auswahl bestätigen" im Cookies-Banner
+            button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+            action.click(button).perform()
+            time.sleep(0.5)
+
             # Eingabe Mail
             input_xpath = "//input[@formcontrolname=\"email\"]"
             # Input Feld auswählen
