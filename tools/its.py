@@ -278,7 +278,8 @@ class ImpfterminService():
 
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
         # chrome_options.add_argument("-no-sandbox");
-        chrome_options.add_argument("-disable-dev-shm-usage");
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--remote-debugging-port=9222")
 
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
@@ -917,7 +918,7 @@ class ImpfterminService():
                 f"Vermittlungscode nicht gültig für diese PLZ")
         if not res.ok:
             raise RuntimeError(
-                "Termine in {plz} können nicht geladen werden: "
+                f"Termine in {plz} können nicht geladen werden: "
                 f"{res.status_code} {res.text}")
 
         if 'Virtueller Warteraum des Impfterminservice' in res.text:
