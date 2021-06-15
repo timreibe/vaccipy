@@ -1162,17 +1162,18 @@ class ImpfterminService():
                 time.sleep(0.5)
                 element = driver.find_element_by_xpath(answer_xpath)
             except Exception as e:
-                element = ""
+                element = None
 
-            if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
-                driver.execute_script(f"arguments[0].innerText='Status: Zweiter Versuch Anfrage abzuschicken'", check_p)
-                action.move_to_element(button).click().perform()
-            elif element.text == "Anfragelimit erreicht.":
-                driver.close()
-                raise RuntimeError("Anfragelimit erreicht")
-            elif element.text == "Geburtsdatum ungueltig oder in der Zukunft":
-                driver.close()
-                raise RuntimeError("Geburtsdatum ungueltig oder in der Zukunft")
+            if element:
+                if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
+                    driver.execute_script(f"arguments[0].innerText='Status: Zweiter Versuch Anfrage abzuschicken'", check_p)
+                    action.move_to_element(button).click().perform()
+                elif element.text == "Anfragelimit erreicht.":
+                    driver.close()
+                    raise RuntimeError("Anfragelimit erreicht")
+                elif element.text == "Geburtsdatum ungueltig oder in der Zukunft":
+                    driver.close()
+                    raise RuntimeError("Geburtsdatum ungueltig oder in der Zukunft")
 
             time.sleep(2)
 
