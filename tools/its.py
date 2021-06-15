@@ -1217,7 +1217,7 @@ class ImpfterminService():
                             raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
 
                         if error == "Pin ungültig":
-                            self.log.warning("Der eingegebene SMS-Code ist ungültig.")
+                            self.log.info("Der eingegebene SMS-Code ist ungültig.")
 
                     elif latest_reponse.status_code == 200:
                         driver.close() 
