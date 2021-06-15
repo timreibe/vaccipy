@@ -155,11 +155,22 @@ class QtKontakt(QtWidgets.QDialog):
             # Benötigt wird: PLZ's der Impfzentren, Telefonnummer, Mail
             # Alles andere wird daher deaktiviert
             # !!!! wir erlauben aktuell alle eingaben, da diese später für die terminsuche benötigt werden. !!!
-            # self.readonly_alle_line_edits(("i_plz_impfzentren", "i_telefon", "i_mail"))
+            # 
             # self.i_code_impfzentren.setInputMask("")
 
             self.i_code_impfzentren.setText("XXXXXXXXXXXX")
             self.i_code_impfzentren.setReadOnly(True)
+
+            self.readonly_alle_line_edits(("i_plz_impfzentren", "i_telefon", "i_mail"))
+
+            self.disable_all_dateEdits(list())
+            self.disable_all_timeEdits(list())
+            self.disable_all_checkBoxes(list())
+            self.disable_all_comboBoxes(list())
+            # '' sind alle Standard-Buttons e.g. Save, Reset
+            self.disable_all_buttons(['', 'b_impfzentren_waehlen'])
+            self.tabWidget.setCurrentIndex(1)
+
         else:
             raise RuntimeError("Modus ungueltig!")
 
@@ -266,16 +277,7 @@ class QtKontakt(QtWidgets.QDialog):
         Returns:
             dict: User eingaben
         """
-
         plz_zentrum_raw = self.i_plz_impfzentren.text()
-        codes = self.__get_vermittlungscodes()
-        anrede = self.i_anrede_combo_box.currentText().strip()
-        vorname = self.i_vorname.text().strip()
-        nachname = self.i_nachname.text().strip()
-        strasse = self.i_strasse.text().strip()
-        hausnummer = self.i_hausnummer.text().strip()
-        wohnort = self.i_wohnort.text().strip()
-        plz_wohnort = self.i_plz_wohnort.text().strip()
         telefon = self.i_telefon.text().strip()
         mail = self.i_mail.text().strip()
         notifications = self.__get_notifications()
@@ -284,25 +286,47 @@ class QtKontakt(QtWidgets.QDialog):
         plz_zentren = plz_zentrum_raw.split(",")
         plz_zentren = [plz.strip() for plz in plz_zentren]
 
+
+        if self.modus == Modus.TERMIN_SUCHEN:
+            codes = self.__get_vermittlungscodes()
+            anrede = self.i_anrede_combo_box.currentText().strip()
+            vorname = self.i_vorname.text().strip()
+            nachname = self.i_nachname.text().strip()
+            strasse = self.i_strasse.text().strip()
+            hausnummer = self.i_hausnummer.text().strip()
+            wohnort = self.i_wohnort.text().strip()
+            plz_wohnort = self.i_plz_wohnort.text().strip()
+
+            kontaktdaten = {
+                "plz_impfzentren": plz_zentren,
+                "codes": codes,
+                "kontakt": {
+                    "anrede": anrede,
+                    "vorname": vorname,
+                    "nachname": nachname,
+                    "strasse": strasse,
+                    "hausnummer": hausnummer,
+                    "plz": plz_wohnort,
+                    "ort": wohnort,
+                    "phone": telefon,
+                    "notificationChannel": "email",
+                    "notificationReceiver": mail
+                },
+                "notifications": notifications,
+                "zeitrahmen": self.__get_zeitrahmen()
+            }
+
+            return kontaktdaten
+
         kontaktdaten = {
             "plz_impfzentren": plz_zentren,
-            "codes": codes,
             "kontakt": {
-                "anrede": anrede,
-                "vorname": vorname,
-                "nachname": nachname,
-                "strasse": strasse,
-                "hausnummer": hausnummer,
-                "plz": plz_wohnort,
-                "ort": wohnort,
                 "phone": telefon,
                 "notificationChannel": "email",
                 "notificationReceiver": mail
             },
             "notifications": notifications,
-            "zeitrahmen": self.__get_zeitrahmen()
         }
-
         return kontaktdaten
 
     def __check_werte(self, kontaktdaten: dict):
@@ -311,7 +335,8 @@ class QtKontakt(QtWidgets.QDialog):
 
         Args:
             kontaktdaten (dict): Kontaktdaten
-
+            modus: Modus der geprüft werden soll
+            
         Raises:
             ValidationError: Daten Fehlerhaft
             MissingValuesError: Daten Fehlen
@@ -333,21 +358,21 @@ class QtKontakt(QtWidgets.QDialog):
                 # ToDo: Evtl. Meldung anzeigen
                 return
             
-            self.__check_werte(kontaktdaten)
+            kontakt_tools.check_kontaktdaten(kontaktdaten, Modus.CODE_GENERIEREN)
+            kontakt_tools.validate_kontaktdaten(kontaktdaten)
 
             self.i_plz_impfzentren.setText(self.__get_impfzentren_plz(kontaktdaten["plz_impfzentren"]))
             self.i_telefon.setText(kontaktdaten["kontakt"]["phone"])
             self.i_mail.setText(kontaktdaten["kontakt"]["notificationReceiver"])
             
-            if self.modus == Modus.CODE_GENERIEREN:
-                # Versuche alle Werte zu laden, wenn möglich
-                try:
-                    kontakt_tools.check_kontaktdaten(kontaktdaten, Modus.TERMIN_SUCHEN)
-                    kontakt_tools.validate_kontaktdaten(kontaktdaten)
-                except MissingValuesError as exc:
-                    return
-                except ValidationError as exc:
-                    return
+            # Versuche alle Werte zu laden, wenn möglich
+            try:
+                kontakt_tools.check_kontaktdaten(kontaktdaten, Modus.TERMIN_SUCHEN)
+                kontakt_tools.validate_kontaktdaten(kontaktdaten)
+            except MissingValuesError as exc:
+                return
+            except ValidationError as exc:
+                return
             
             # Wird nur bei Terminsuche benötigt
             self.__set_vermittlungscodes(kontaktdaten["codes"])
@@ -443,6 +468,81 @@ class QtKontakt(QtWidgets.QDialog):
             if line_edit.objectName() not in ausgeschlossen:
                 line_edit.setReadOnly(True)
                 line_edit.setPlaceholderText("Daten werden nicht benötigt")
+                line_edit.setEnabled(False)
+
+
+    def disable_all_checkBoxes(self, ausgeschlossen: list):
+        """
+        Setzt alle QCheckBox auf "disabled", ausgeschlossen der Widgets in ausgeschlossen.
+
+        Args:
+            ausgeschlossen (list): Liste mit den ObjectNamen der Widgets die ausgeschlossen werden sollen
+        """
+
+        checkBoxes = self.findChildren(QtWidgets.QCheckBox)
+
+        for checkBox in checkBoxes:
+            if checkBox.objectName() not in ausgeschlossen:
+                checkBox.setEnabled(False)
+
+    def disable_all_dateEdits(self, ausgeschlossen: list):
+        """
+        Setzt alle QDateEdit auf "disabled", ausgeschlossen der Widgets in ausgeschlossen.
+
+        Args:
+            ausgeschlossen (list): Liste mit den ObjectNamen der Widgets die ausgeschlossen werden sollen
+        """
+
+        dateEdits = self.findChildren(QtWidgets.QDateEdit)
+
+        for dateEdit in dateEdits:
+            if dateEdit.objectName() not in ausgeschlossen:
+                dateEdit.setEnabled(False)
+
+
+    def disable_all_timeEdits(self, ausgeschlossen: list):
+        """
+        Setzt alle QTimeEdit auf "disabled", ausgeschlossen der Widgets in ausgeschlossen.
+
+        Args:
+            ausgeschlossen (list): Liste mit den ObjectNamen der Widgets die ausgeschlossen werden sollen
+        """
+
+        timeEdits = self.findChildren(QtWidgets.QTimeEdit)
+
+        for timeEdit in timeEdits:
+            if timeEdit.objectName() not in ausgeschlossen:
+                timeEdit.setEnabled(False)           
+
+    def disable_all_comboBoxes(self, ausgeschlossen: list):
+        """
+        Setzt alle QComboBox auf "disabled", ausgeschlossen der Widgets in ausgeschlossen.
+
+        Args:
+            ausgeschlossen (list): Liste mit den ObjectNamen der Widgets die ausgeschlossen werden sollen
+        """
+
+        comboBoxes = self.findChildren(QtWidgets.QComboBox)
+
+        for comboBox in comboBoxes:
+            if comboBox.objectName() not in ausgeschlossen:
+                comboBox.setEnabled(False)
+
+    def disable_all_buttons(self, ausgeschlossen: list):
+        """
+        Setzt alle QPushButtons auf "disabled", ausgeschlossen der Widgets in ausgeschlossen.
+
+        Args:
+            ausgeschlossen (list): Liste mit den ObjectNamen der Widgets die ausgeschlossen werden sollen
+        """
+
+        pushButtons = self.findChildren(QtWidgets.QPushButton)
+
+        for pushButton in pushButtons:
+            a = pushButton.objectName()
+            if pushButton.objectName() not in ausgeschlossen:
+                pushButton.setEnabled(False)
+
 
     def __reset_kontakdaten(self):
         """
