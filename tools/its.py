@@ -1157,9 +1157,12 @@ class ImpfterminService():
 
             # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
             # Falls eine andere Meldung aufgetrteten ist -> Abbruch
-            answer_xpath = "//app-its-check-success//span[@class=\"text-pre-wrap\"]"
-            time.sleep(0.5)
-            element = driver.find_element_by_xpath(answer_xpath)
+            try:
+                answer_xpath = "//app-its-check-success//span[@class=\"text-pre-wrap\"]"
+                time.sleep(0.5)
+                element = driver.find_element_by_xpath(answer_xpath)
+            except Exception as e:
+                element = ""
 
             if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
                 driver.execute_script(f"arguments[0].innerText='Status: Zweiter Versuch Anfrage abzuschicken'", check_p)
