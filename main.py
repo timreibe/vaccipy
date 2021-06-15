@@ -74,7 +74,7 @@ def update_kontaktdaten_interactive(
 
         if "anrede" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
-                kontaktdaten, ["kontakt", "anrede"], "> Anrede (Frau/Herr/...): ")
+                kontaktdaten, ["kontakt", "anrede"], "> Anrede (Frau/Herr/Kind/Divers): ")
 
         if "vorname" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
@@ -381,7 +381,7 @@ def gen_code(kontaktdaten):
     print()
     # code anfordern
     try:
-        token, cookies = its.code_anfordern(
+        token, cookies = its.selenium_code_anfordern(
             mail, telefonnummer, plz_impfzentrum, geburtsdatum)
     except RuntimeError as exc:
         print(
@@ -566,6 +566,9 @@ def main():
                         f"--read-only {'de' if not args.read_only else ''}aktiviert.")
                 elif extended_settings and option == "s":
                     args.retry_sec = int(input("> --retry-sec="))
+                    if args.retry_sec<30:
+                        print("[RETRY-SEC] Um die Server nicht übermäßig zu belasten, wurde der Wert auf 30 Sekunden gesetzt")
+                        args.retry_sec = 30
                 elif extended_settings and option == "n":
                     new_args = copy.copy(args)
                     new_args.configure_notifications = not new_args.configure_notifications

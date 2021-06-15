@@ -59,7 +59,6 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         # Laden der .ui Datei und Anpassungen
         self.setup(pfad_fenster_layout)
-        
 
         # GUI anzeigen
         self.show()
@@ -82,6 +81,14 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         app = QtWidgets.QApplication(list())
         app.setAttribute(QtCore.Qt.AA_X11InitThreads)
+
+        # Lade Systemsprache und passende Übersetzungen
+        sys_lang = QtCore.QLocale.system()
+        translator = QtCore.QTranslator()
+        if translator.load(sys_lang, "qtbase", "_", QtCore.QLibraryInfo.location(QtCore.QLibraryInfo.TranslationsPath)):
+            app.installTranslator(translator)
+
+
         window = HauptGUI()
         app.exec_()
 
@@ -294,6 +301,9 @@ class HauptGUI(QtWidgets.QMainWindow):
             except FileNotFoundError:
                 return
 
+        if pfad is None:
+            return
+
         self.pfad_kontaktdaten = pfad
         self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
 
@@ -378,18 +388,24 @@ class HauptGUI(QtWidgets.QMainWindow):
     #        Kontaktdaten        #
     ##############################
 
-    def kontaktdaten_erstellen(self, modus: Modus = Modus.TERMIN_SUCHEN):
+    def kontaktdaten_erstellen(self, modus: Modus = Modus.TERMIN_SUCHEN) -> bool:
         """
         Ruft den Dialog für die Kontaktdaten auf
 
         Args:
             modus (Modus): Abhängig vom Modus werden nicht alle Daten benötigt. Defalut TERMIN_SUCHEN
+
+        Returns:
+            bool: True bei Erfolg, False bei Abbruch
         """
 
         dialog = QtKontakt(self, modus, self.pfad_kontaktdaten, PATH)
         dialog.update_path.connect(self.__update_kontaktdaten_pfad)
         dialog.show()
-        dialog.exec_()
+        if dialog.exec_() == QtWidgets.QDialog.Rejected:
+            return False
+        else:
+            return True
 
     def __get_kontaktdaten(self, modus: Modus) -> dict:
         """
@@ -401,9 +417,9 @@ class HauptGUI(QtWidgets.QMainWindow):
         Returns:
             dict: Kontakdaten
         """
-
         if not os.path.isfile(self.pfad_kontaktdaten):
-            self.kontaktdaten_erstellen(modus)
+            if not self.kontaktdaten_erstellen(modus):
+                return {}
 
         kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
         kontak_tools.check_kontaktdaten(kontaktdaten, modus)

@@ -1,6 +1,7 @@
 import os
 import json
 import platform
+from typing import Optional
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QMessageBox
@@ -41,7 +42,7 @@ def oeffne_file_dialog_save(parent_widged: QtWidgets.QWidget, titel: str, standa
     return dateipfad
 
 
-def oeffne_file_dialog_select(parent_widged: QtWidgets.QWidget, titel: str, standard_oeffnungspfad: str, dateityp="JSON Files (*.json)") -> str:
+def oeffne_file_dialog_select(parent_widged: QtWidgets.QWidget, titel: str, standard_oeffnungspfad: str, dateityp="JSON Files (*.json)") -> Optional[str]:
     """
     Öffnet einen File Dialog um eine existierende Datei auszuwählen
 
@@ -65,6 +66,9 @@ def oeffne_file_dialog_select(parent_widged: QtWidgets.QWidget, titel: str, stan
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
 
     datei_data = QtWidgets.QFileDialog.getOpenFileName(parent=parent_widged, caption=titel, directory=standard_oeffnungspfad, filter=dateityp, options=options)
+    # Open dialog wurde abgebrochen
+    if datei_data == ('', ''):
+        return None
     dateipfad = datei_data[0]  # (pfad, typ)
 
     dateipfad = dateipfad.replace("/", os.path.sep)

@@ -1,20 +1,25 @@
 import os
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QTime, QDate, QDateTime, pyqtSignal
+from PyQt5.QtCore import QEvent, QTime, QDate, QDateTime, pyqtSignal
 from PyQt5.QtGui import QIcon
 
 from tools.gui import *
 from tools.gui.qtimpfzentren import QtImpfzentren
 from tools import kontaktdaten as kontakt_tools
 from tools import Modus
-from tools.exceptions import ValidationError, MissingValuesError
+from tools.exceptions import ValidationError, MissingValuesError, PushoverNotificationError, TelegramNotificationError
+from tools.utils import pushover_notification, telegram_notification
 
 # Folgende Widgets stehen zur Verfügung:
 
 ### QLineEdit ####
 # i_plz_impfzentren
 # i_code_impfzentren
+# i_code_impfzentren_2
+# i_code_impfzentren_3
+# i_code_impfzentren_4
+# i_code_impfzentren_5
 # i_vorname
 # i_nachname
 # i_strasse
@@ -23,6 +28,10 @@ from tools.exceptions import ValidationError, MissingValuesError
 # i_plz_wohnort
 # i_telefon
 # i_mail
+# i_app_token
+# i_user_key
+# i_api_token
+# i_chat_id
 
 ### Checkboxes ###
 # i_mo_check_box
@@ -54,9 +63,13 @@ from tools.exceptions import ValidationError, MissingValuesError
 ### QWidget ###
 # kontaktdaten_tab
 # zeitrahmen_tab
+# vermittlungscodes_tab
+# notifications_tab
 
 ### Buttons ###
 # b_impfzentren_waehlen
+# b_test_pushover
+# b_test_telegram
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -84,12 +97,45 @@ class QtKontakt(QtWidgets.QDialog):
 
         # Funktion vom Button zuordnen
         self.b_impfzentren_waehlen.clicked.connect(self.__open_impfzentren)
+        self.b_test_pushover.clicked.connect(self.__test_pushover)
+        self.b_test_telegram.clicked.connect(self.__test_telegram)
 
         # Versuche Kontakdaten zu laden 
         self.__lade_alle_werte()
 
         # Wähle ersten Reiter aus
         self.tabWidget.setCurrentIndex(0)
+
+        # Erstelle Events für LineEdits
+        for line_edit in self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit):
+            line_edit.installEventFilter(self)
+        
+        self.i_plz_wohnort.installEventFilter(self)
+
+    def eventFilter(self, source: QtWidgets, event: QEvent) -> bool:
+        """
+        Filtert Events (z.B. Eingabe in QLineEdit) um auf diese zu reagieren
+
+        Args:
+            source: Quelle des Events
+            event: Art des Events
+
+        Returns:
+            bool: Eventverarbeitung stopen
+
+        """
+
+        if source in self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit):
+            if event.type() == QEvent.KeyPress and source.text() == '--':
+                source.setCursorPosition(0)
+                return False
+
+        if source == self.i_plz_wohnort:
+            if event.type() == QEvent.KeyPress and source.text() == '':
+                source.setCursorPosition(0)
+                return False
+
+        return False
 
     def setup(self):
         """
@@ -129,13 +175,13 @@ class QtKontakt(QtWidgets.QDialog):
 
             # Daten speichern
             speicherpfad = self.speicher_einstellungen(data)
-            QtWidgets.QMessageBox.information(self, "Gepseichert", "Daten erfolgreich gespeichert")
+            QtWidgets.QMessageBox.information(self, "Gespeichert", "Daten erfolgreich gespeichert")
 
             # Neuer Pfad in der Main GUI übernehmen
             self.update_path.emit(speicherpfad)
 
             # Fenster schließen
-            self.close()
+            self.accept()
 
         except (TypeError, IOError, FileNotFoundError) as error:
             QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern!", "Bitte erneut versuchen!")
@@ -179,6 +225,9 @@ class QtKontakt(QtWidgets.QDialog):
                                 info="Die von Ihnen gewählte Datei konne nicht geöffnet werden.")
             return
 
+        if speicherpfad is None:
+            return
+
         self.standard_speicherpfad = speicherpfad
         self.update_path.emit(speicherpfad)
 
@@ -200,13 +249,15 @@ class QtKontakt(QtWidgets.QDialog):
             self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
+            self.__reset_notifications()
         elif clicked_button == QtWidgets.QDialogButtonBox.Open:
             self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
+            self.__reset_notifications()
             self.__lade_einstellungen()
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
-            self.close()
+            self.reject()
 
     def __get_alle_werte(self) -> dict:
         """
@@ -227,6 +278,7 @@ class QtKontakt(QtWidgets.QDialog):
         plz_wohnort = self.i_plz_wohnort.text().strip()
         telefon = self.i_telefon.text().strip()
         mail = self.i_mail.text().strip()
+        notifications = self.__get_notifications()
 
         # PLZ der Zentren in Liste und "strippen"
         plz_zentren = plz_zentrum_raw.split(",")
@@ -247,6 +299,7 @@ class QtKontakt(QtWidgets.QDialog):
                 "notificationChannel": "email",
                 "notificationReceiver": mail
             },
+            "notifications": notifications,
             "zeitrahmen": self.__get_zeitrahmen()
         }
 
@@ -306,6 +359,8 @@ class QtKontakt(QtWidgets.QDialog):
             self.i_plz_wohnort.setText(kontaktdaten["kontakt"]["plz"])
             self.i_wohnort.setText(kontaktdaten["kontakt"]["ort"])
 
+            self.__set_notifications(kontaktdaten['notifications'])
+
             try:
                 self.__set_zeitrahmen(kontaktdaten["zeitrahmen"])
                 # Subkeys von "zeitrahmen" brauchen nicht gecheckt werden, da
@@ -323,6 +378,7 @@ class QtKontakt(QtWidgets.QDialog):
             self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
+            self.__reset_notifications()
             self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
                 info= "Die von Ihnen gewählte Datei hat ein falsches Format. "
                        "Laden Sie eine andere Datei oder überschreiben Sie die "
@@ -332,6 +388,7 @@ class QtKontakt(QtWidgets.QDialog):
             self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
+            self.__reset_notifications()
             self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
                 info= "Die von Ihnen gewählte Datei hat ein falsches Format. "
                        "Laden Sie eine andere Datei oder überschreiben Sie die "
@@ -668,8 +725,6 @@ class QtKontakt(QtWidgets.QDialog):
         assert(QDate.isValid(datum))
         self.i_start_datum_qdate.setDate(datum)
 
-
-        
     def __set_uhrzeit_datum(self, uhrzeit: str, widget: QtWidgets.QTimeEdit):
         """
         Setzt die Uhrzeit in einem QTimeEdit in der GUI.
@@ -686,6 +741,90 @@ class QtKontakt(QtWidgets.QDialog):
         assert(QTime.isValid(time))
         widget.setTime(time)
 
+    ##############################
+    #        Notifications       #
+    ##############################
+
+    def __get_notifications(self) -> dict:
+        """
+        Ruft Werte für die Benachrichtigungen aus der GUI ab
+        und gibt diese als Dict zurück.
+
+        Returns:
+            Dict mit den notifications Werten
+        """
+
+        # Pushover
+        app_token = self.i_app_token.text().strip()
+        user_key = self.i_user_key.text().strip()
+
+        # Telegram
+        api_token = self.i_api_token.text().strip()
+        chat_id = self.i_chat_id.text().strip()
+
+        notifications = {}
+
+        if app_token != "" and user_key != "":
+            notifications['pushover'] = {}
+            notifications['pushover']['app_token'] = app_token
+            notifications['pushover']['user_key'] = user_key
+
+        if api_token != "" and chat_id != "":
+            notifications['telegram'] = {}
+            notifications['telegram']['api_token'] = api_token
+            notifications['telegram']['chat_id'] = chat_id
+
+        return notifications
+
+    def __set_notifications(self, notifications: dict):
+        """
+        Werte aus übergebenem Dict werden in die passenden QLineEdits geschrieben
+
+        Args:
+            notifications (dict): Enthält pushover und telegram spezifische Werte
+        """
+
+        if 'pushover' in notifications:
+            self.i_app_token.setText(notifications['pushover']['app_token'])
+            self.i_user_key.setText(notifications['pushover']['user_key'])
+
+        if 'telegram' in notifications:
+            self.i_api_token.setText(notifications['telegram']['api_token'])
+            self.i_chat_id.setText(notifications['telegram']['chat_id'])
+
+    def __reset_notifications(self):
+        """
+        Setzt alle Werte für die Benachrichtigungen (notifications) in der GUI zurück
+        """
+
+        for line_edit in self.notifications_tab.findChildren(QtWidgets.QLineEdit):
+                line_edit.setText("")
+
+    def __test_pushover(self):
+        """
+        Benutzt die Werte aus der GUI um eine Test-Benachrichtigung mit Pushover zu senden
+        """
+
+        notifications = {'app_token': self.i_app_token.text().strip(), 'user_key': self.i_user_key.text().strip()}
+        try:
+            pushover_notification(notifications, "Vaccipy", "Die Benachrichtigungsfunktion funktioniert!")
+        except PushoverNotificationError as error:
+            self.__oeffne_error("Pushover Fehler",
+                                "Vermutlich sind die Daten nicht korrekt, versuchen Sie es erneut.",
+                                str(error))
+
+    def __test_telegram(self):
+        """
+        Benutzt die Werte aus der GUI um eine Test-Benachrichtigung mit Telegram zu senden
+        """
+
+        notifications = {'api_token': self.i_api_token.text().strip(), 'chat_id': self.i_chat_id.text().strip()}
+        try:
+            telegram_notification(notifications, "Vaccipy - Die Benachrichtigungsfunktion funktioniert!")
+        except TelegramNotificationError as error:
+            self.__oeffne_error("Telegram Fehler",
+                                "Vermutlich sind die Daten nicht korrekt, versuchen Sie es erneut.",
+                                str(error))
 
     def __oeffne_error(self, title: str, text: str, info: str):
         """
