@@ -359,7 +359,9 @@ class QtKontakt(QtWidgets.QDialog):
             self.i_plz_wohnort.setText(kontaktdaten["kontakt"]["plz"])
             self.i_wohnort.setText(kontaktdaten["kontakt"]["ort"])
 
-            self.__set_notifications(kontaktdaten['notifications'])
+            # Prüfen ob neuer key in kontaktdaten exisitiert
+            if "notifications" in kontaktdaten:
+                self.__set_notifications(kontaktdaten['notifications'])
 
             try:
                 self.__set_zeitrahmen(kontaktdaten["zeitrahmen"])
