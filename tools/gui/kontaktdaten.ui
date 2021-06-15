@@ -153,7 +153,7 @@
              <item row="0" column="1">
               <widget class="QLineEdit" name="i_code_impfzentren">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gib hier deinen ersten Vermittlungscode ein.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gib hier deinen ersten Vermittlungscode ein. Solltest du keinen Code haben, kannst du hier eifach XXXX-XXXX-XXXX eintragen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="inputMask">
                 <string>NNNN-NNNN-NNNN</string>
@@ -935,11 +935,11 @@
         </widget>
        </item>
        <item row="3" column="0">
-          <widget class="QPushButton" name="b_test_pushover">
-           <property name="text">
-            <string>Pushover Testen</string>
-           </property>
-          </widget>
+        <widget class="QPushButton" name="b_test_pushover">
+         <property name="text">
+          <string>Pushover Testen</string>
+         </property>
+        </widget>
        </item>
        <item row="4" column="0">
         <widget class="QLabel" name="spacer_label">
@@ -949,7 +949,7 @@
           </font>
          </property>
          <property name="text">
-          <string></string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -994,11 +994,11 @@
         </widget>
        </item>
        <item row="8" column="0">
-          <widget class="QPushButton" name="b_test_telegram">
-           <property name="text">
-            <string>Telegram Testen</string>
-           </property>
-          </widget>
+        <widget class="QPushButton" name="b_test_telegram">
+         <property name="text">
+          <string>Telegram Testen</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
