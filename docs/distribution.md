@@ -56,21 +56,21 @@ Schritte zum Erstellen einer Distribution:
 
 .spec Datei erstellen und anschließend Distribution erstellen:  
 ```shell
-pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/" --icon "..images\spritze.ico"
+pyi-makespec main.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --name windows-terminservice --hidden-import plyer.platforms.win.notification --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/" --icon "..\images\spritze.ico" --add-data "../version.txt;."
 
 pyinstaller --clean specs/windows-terminservice.spec
 ```
 #### Windows GUI
 
 ```shell
-pyi-makespec gui.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --add-binary "..\tools\gui\kontaktdaten.ui;tools\gui\" --add-binary "..\tools\gui\main.ui;tools\gui\" --add-binary "..\tools\gui\terminsuche.ui;tools\gui\" --add-binary "..\tools\gui\uhrzeiten.ui;tools\gui\" --add-binary "..\tools\gui\ui_qtcodegen.ui;tools\gui\" --add-binary "..\images\spritze.ico;images\" --name windows-terminservice-gui --hidden-import plyer.platforms.win.notification --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/" --icon "..\images\spritze.ico" --windowed
+pyi-makespec gui.py --specpath "specs//" --add-binary "..\tools\chromedriver\chromedriver-windows.exe;tools\chromedriver\" --add-binary "..\tools\gui\kontaktdaten.ui;tools\gui\" --add-binary "..\tools\gui\main.ui;tools\gui\" --add-binary "..\tools\gui\terminsuche.ui;tools\gui\" --add-binary "..\tools\gui\uhrzeiten.ui;tools\gui\" --add-binary "..\tools\gui\ui_qtcodegen.ui;tools\gui\" --add-binary "..\images\spritze.ico;images\" --name windows-terminservice-gui --hidden-import plyer.platforms.win.notification --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/" --icon "..\images\spritze.ico" --windowed --add-data "../version.txt;."
 
 pyinstaller --clean specs/windows-terminservice-gui.spec
 ```
 
 #### Linux
 ```shell 
-pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64:tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/" --icon "..images\spritze.ico"
+pyi-makespec main.py --specpath "specs//" --add-binary "../tools/chromedriver/chromedriver-linux-64:tools/chromedriver/" --name linux-64-terminservice --hidden-import cloudscraper --add-data "../tools/cloudscraper;./cloudscraper/" --icon "..images\spritze.ico" --add-data "../version.txt:."
 
 pyinstaller --clean specs/linux-64-terminservice.spec
 
