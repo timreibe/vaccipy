@@ -1,5 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
-
+"""
+IMPORTANT: 
+PLEASE UPDATE docs/distribution.md too! 
+"""
 
 block_cipher = None
 
@@ -9,7 +12,7 @@ a = Analysis(['..\\main.py'],
              binaries=[('..\\tools\\chromedriver\\chromedriver-windows.exe', 'tools\\chromedriver\\')],
              datas=[('../tools/cloudscraper', './cloudscraper/'), ('../version.txt', '.')],
              hiddenimports=['plyer.platforms.win.notification', 'cloudscraper'],
-             hookspath=[],
+             hookspath=['../tools/additional_hooks'],
              runtime_hooks=[],
              excludes=[],
              win_no_prefer_redirects=False,
