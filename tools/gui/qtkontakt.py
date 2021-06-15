@@ -157,22 +157,15 @@ class QtKontakt(QtWidgets.QDialog):
         elif self.modus == Modus.CODE_GENERIEREN:
             # Benötigt wird: PLZ's der Impfzentren, Telefonnummer, Mail
             # Alles andere wird daher deaktiviert
-            # !!!! wir erlauben aktuell alle eingaben, da diese später für die terminsuche benötigt werden. !!!
-            # 
-            # self.i_code_impfzentren.setInputMask("")
-
-            self.i_code_impfzentren.setText("XXXXXXXXXXXX")
-            self.i_code_impfzentren.setReadOnly(True)
 
             self.readonly_alle_line_edits(("i_plz_impfzentren", "i_telefon", "i_mail"))
 
-            self.disable_all_dateEdits(list())
-            self.disable_all_timeEdits(list())
-            self.disable_all_checkBoxes(list())
-            self.disable_all_comboBoxes(list())
+            self.disable_all_dateEdits()
+            self.disable_all_timeEdits()
+            self.disable_all_checkBoxes()
+            self.disable_all_comboBoxes()
             # '' sind alle Standard-Buttons e.g. Save, Reset
             self.disable_all_buttons(['', 'b_impfzentren_waehlen'])
-
 
         else:
             raise RuntimeError("Modus ungueltig!")
@@ -456,7 +449,7 @@ class QtKontakt(QtWidgets.QDialog):
 
         self.i_plz_impfzentren.setText(plz)
 
-    def readonly_alle_line_edits(self, ausgeschlossen: list):
+    def readonly_alle_line_edits(self, ausgeschlossen: list=list()):
         """
         Setzt alle QLineEdit auf "read only", ausgeschlossen der Widgets in ausgeschlossen.
         Setzt zudem den PlacholderText auf "Daten werden nicht benötigt"
@@ -474,7 +467,7 @@ class QtKontakt(QtWidgets.QDialog):
                 line_edit.setEnabled(False)
 
 
-    def disable_all_checkBoxes(self, ausgeschlossen: list):
+    def disable_all_checkBoxes(self, ausgeschlossen: list=list()):
         """
         Setzt alle QCheckBox auf "disabled", ausgeschlossen der Widgets in ausgeschlossen.
 
@@ -488,7 +481,7 @@ class QtKontakt(QtWidgets.QDialog):
             if checkBox.objectName() not in ausgeschlossen:
                 checkBox.setEnabled(False)
 
-    def disable_all_dateEdits(self, ausgeschlossen: list):
+    def disable_all_dateEdits(self, ausgeschlossen: list=list()):
         """
         Setzt alle QDateEdit auf "disabled", ausgeschlossen der Widgets in ausgeschlossen.
 
@@ -503,7 +496,7 @@ class QtKontakt(QtWidgets.QDialog):
                 dateEdit.setEnabled(False)
 
 
-    def disable_all_timeEdits(self, ausgeschlossen: list):
+    def disable_all_timeEdits(self, ausgeschlossen: list=list()):
         """
         Setzt alle QTimeEdit auf "disabled", ausgeschlossen der Widgets in ausgeschlossen.
 
@@ -517,7 +510,7 @@ class QtKontakt(QtWidgets.QDialog):
             if timeEdit.objectName() not in ausgeschlossen:
                 timeEdit.setEnabled(False)           
 
-    def disable_all_comboBoxes(self, ausgeschlossen: list):
+    def disable_all_comboBoxes(self, ausgeschlossen: list=list()):
         """
         Setzt alle QComboBox auf "disabled", ausgeschlossen der Widgets in ausgeschlossen.
 
@@ -531,7 +524,7 @@ class QtKontakt(QtWidgets.QDialog):
             if comboBox.objectName() not in ausgeschlossen:
                 comboBox.setEnabled(False)
 
-    def disable_all_buttons(self, ausgeschlossen: list):
+    def disable_all_buttons(self, ausgeschlossen: list=list()):
         """
         Setzt alle QPushButtons auf "disabled", ausgeschlossen der Widgets in ausgeschlossen.
 
@@ -542,10 +535,8 @@ class QtKontakt(QtWidgets.QDialog):
         pushButtons = self.findChildren(QtWidgets.QPushButton)
 
         for pushButton in pushButtons:
-            a = pushButton.objectName()
             if pushButton.objectName() not in ausgeschlossen:
                 pushButton.setEnabled(False)
-
 
     def __reset_kontakdaten(self):
         """
