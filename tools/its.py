@@ -1212,30 +1212,32 @@ class ImpfterminService():
                     # User kann z.B 2 mal den Pin falsch eingeben uns interessiert nur die neuste Antwort vom Server
                     latest_reponse = sms_verification_responses[-1]
 
-                    if latest_reponse.status_code == 400:
-                        try:
-                            # error Laden
-                            error = json.loads(latest_reponse.body.decode('utf-8'))['error']
-                        except JSONDecodeError as exc:
-                            raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
+                    if latest_reponse is not None:
+                        if latest_reponse.status_code == 400:
+                            try:
+                                # error Laden
+                                error = json.loads(latest_reponse.body.decode('utf-8'))['error']
+                            except JSONDecodeError as exc:
+                                raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
 
-                        if error == "Pin ungültig":
-                            self.log.info("Der eingegebene SMS-Code ist ungültig.")
+                            if error == "Pin ungültig":
+                                self.log.info("Der eingegebene SMS-Code ist ungültig.")
 
-                    elif latest_reponse.status_code == 200:
-                        driver.close() 
-                        raise RuntimeError("SMS-Code erfolgreich übermittelt. Bitte Prüfen Sie Ihre E-Mails.")
-                    elif latest_reponse.status_code == 429:
-                        driver.close() 
-                        raise RuntimeError("SMS-Code konnte nicht übermittelt werden. Blockiert durch Botprotection.")
+                        elif latest_reponse.status_code == 200:
+                                self.log.info(f"SMS-Code erfolgreich übermittelt. Bitte Prüfen Sie Ihre E-Mails.")
+                                driver.close()
+                                return True
+                        elif latest_reponse.status_code == 429:
+                            driver.close() 
+                            raise RuntimeError("SMS-Code konnte nicht übermittelt werden. Blockiert durch Botprotection.")
 
                 time.sleep(1)
                 max_sms_code_eingabe_sekunden -= 1
                 
-            # Temporäre Lösung einen Error zu werfen
-            # TODO main.py -> gen_code() weiteren ablauf anpassen, da code_bestaetigen() in dem Fall nicht mehr ausgeführt wird
-            driver.close()    
-            raise RuntimeError("SMS-Verifikation nicht innerhalb von 60 Sekunden abgeschlossen. Versuchen Sie es später erneut.")
+
+            driver.close() 
+            self.log.info(f"SMS-Verifikation nicht innerhalb von 90 Sekunden abgeschlossen. Versuchen Sie es später erneut.")   
+            return False
 
 
     def code_bestaetigen(self, token, cookies, sms_pin, plz_impfzentrum):
