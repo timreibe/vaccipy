@@ -1195,7 +1195,10 @@ class ImpfterminService():
             while max_sms_code_eingabe_sekunden:
 
                 # Verbleibende Zeit anzeigen
-                driver.execute_script(f"arguments[0].innerText='Vaccipy! - Bitte SMS-Code im Browser eingeben. Noch {max_sms_code_eingabe_sekunden} Sekunden verbleibend.'", sms_verifizierung_h1)
+                try:
+                    driver.execute_script(f"arguments[0].innerText='Vaccipy! - Bitte SMS-Code im Browser eingeben. Noch {max_sms_code_eingabe_sekunden} Sekunden verbleibend.'", sms_verifizierung_h1)
+                except Exception as e:
+                    pass
 
                 # Alle bisherigen Requests laden
                 sms_verification_responses= []
