@@ -381,7 +381,7 @@ def gen_code(kontaktdaten):
     print()
     # code anfordern
     try:
-        token, cookies = its.code_anfordern(
+        token, cookies = its.selenium_code_anfordern(
             mail, telefonnummer, plz_impfzentrum, geburtsdatum)
     except RuntimeError as exc:
         print(
