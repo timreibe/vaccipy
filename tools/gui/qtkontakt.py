@@ -103,8 +103,11 @@ class QtKontakt(QtWidgets.QDialog):
         # Versuche Kontakdaten zu laden 
         self.__lade_alle_werte()
 
-        # Wähle ersten Reiter aus
-        self.tabWidget.setCurrentIndex(0)
+        # Wähle passenden Reiter ausÖ
+        if self.modus == modus.CODE_GENERIEREN:
+            self.tabWidget.setCurrentIndex(1)
+        else:
+            self.tabWidget.setCurrentIndex(0)
 
         # Erstelle Events für LineEdits
         for line_edit in self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit):
@@ -169,7 +172,7 @@ class QtKontakt(QtWidgets.QDialog):
             self.disable_all_comboBoxes(list())
             # '' sind alle Standard-Buttons e.g. Save, Reset
             self.disable_all_buttons(['', 'b_impfzentren_waehlen'])
-            self.tabWidget.setCurrentIndex(1)
+
 
         else:
             raise RuntimeError("Modus ungueltig!")
