@@ -103,7 +103,7 @@ class QtKontakt(QtWidgets.QDialog):
         # Versuche Kontakdaten zu laden 
         self.__lade_alle_werte()
 
-        # Wähle passenden Reiter ausÖ
+        # Wähle passenden Reiter aus
         if self.modus == modus.CODE_GENERIEREN:
             self.tabWidget.setCurrentIndex(1)
         else:
