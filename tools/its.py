@@ -970,11 +970,15 @@ class ImpfterminService():
         tp_angenommen = choice(terminpaare_angenommen)
         self.log.success(f"Termin gefunden!")
         self.log.success(f"'{zentrumsname}' in {plz} {ort}")
+        msg = f"'{zentrumsname}' in {plz} {ort}\n"
         for num, termin in enumerate(tp_angenommen, 1):
             ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                 '%d.%m.%Y um %H:%M Uhr')
             self.log.success(f"{num}. Termin: {ts}")
+            msg += f"{num}. Termin: {ts}\n"
         self.log.success(f"Link: {url}impftermine/suche/{code}/{plz}")
+        msg += f"Link: {url}impftermine/suche/{code}/{plz}"
+        self.notify(title="Termin gefunden:", msg=msg)
 
         # Reservierungs-Objekt besteht aus Terminpaar und Impfzentrum
         return {
