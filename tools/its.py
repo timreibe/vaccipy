@@ -1136,6 +1136,18 @@ class ImpfterminService():
                                                                 element.location['y'], driver)
 
             action.click(button).perform()
+
+            # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
+            answer_xpath = "//app-its-check-success//span[@class=\"text-pre-wrap\"]"
+            try:
+                
+                time.sleep(0.5)
+                element = driver.find_element_by_xpath(answer_xpath)
+                if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
+                    action.click(button).perform()
+            except Exception as e:
+                pass
+
             self.log.info("SMS-Anfrage an Server versandt.")
 
             # Cookies auslesen / Muss nicht über den langen river_enter_code() weg gemacht werden
