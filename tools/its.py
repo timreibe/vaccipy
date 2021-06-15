@@ -1044,6 +1044,7 @@ class ImpfterminService():
             driver.get(f"{url}impftermine/service?plz={plz_impfzentrum}")
             driver.refresh()
 
+
             # ets-session-its-cv-quick-check im SessionStorage setzen um verfügbare Termine zu simulieren
             ets_session_its_cv_quick_check = '{"birthdate":"'+ data["birthday"] +'","slotsAvailable":{"pair":true,"single":false}}'
             driver.execute_script('window.sessionStorage.setItem("ets-session-its-cv-quick-check",\''+ ets_session_its_cv_quick_check +'\');')
@@ -1157,23 +1158,18 @@ class ImpfterminService():
             # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
             # Falls eine andere Meldung aufgetrteten ist -> Abbruch
             answer_xpath = "//app-its-check-success//span[@class=\"text-pre-wrap\"]"
-            try:
-                
-                time.sleep(0.5)
-                element = driver.find_element_by_xpath(answer_xpath)
+            time.sleep(0.5)
+            element = driver.find_element_by_xpath(answer_xpath)
 
-                if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
-                    driver.execute_script(f"arguments[0].innerText='Status: Zweiter Versuch Anfrage abzuschicken'", check_p)
-                    action.move_to_element(button).click().perform()
-
-                elif element.text == "Anfragelimit erreicht.":
-                    raise RuntimeError("Anfragelimit erreicht")
-
-                elif element.text == "Geburtsdatum ungueltig oder in der Zukunft":
-                    raise RuntimeError("Geburtsdatum ungueltig oder in der Zukunft")
-
-            except Exception as e:
-                pass
+            if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
+                driver.execute_script(f"arguments[0].innerText='Status: Zweiter Versuch Anfrage abzuschicken'", check_p)
+                action.move_to_element(button).click().perform()
+            elif element.text == "Anfragelimit erreicht.":
+                driver.close()
+                raise RuntimeError("Anfragelimit erreicht")
+            elif element.text == "Geburtsdatum ungueltig oder in der Zukunft":
+                driver.close()
+                raise RuntimeError("Geburtsdatum ungueltig oder in der Zukunft")
 
             time.sleep(2)
 
@@ -1181,6 +1177,7 @@ class ImpfterminService():
             sms_verifizierung_h1_xpath = "//app-page-its-check-result//h1"
             sms_verifizierung_h1 = driver.find_element_by_xpath(sms_verifizierung_h1_xpath)
             if sms_verifizierung_h1.text != "SMS Verifizierung":
+                driver.close()
                 raise RuntimeError("Vermittlungscode kann derzeit nicht angefragt werden. Versuchen Sie es später erneut.")
 
             # Ab jetzt befinden wir uns auf der SMS Verifizierung Seite
@@ -1188,8 +1185,8 @@ class ImpfterminService():
             self.log.info("SMS-Anfrage an Server versandt.")
             self.log.info("Bitte SMS-Code innerhalb der nächsten 60 Sekunden im Browser-Fenster eingeben.")
             
-            # 90 Sekunden lang auf Antorten vom Server warten
-            # Eventuell gibt User seinen Pin falschein etc.
+            # 90 Sekunden lang auf Antwort vom Server warten
+            # Eventuell gibt User seinen Pin falsch ein etc.
             max_sms_code_eingabe_sekunden = 90
             while max_sms_code_eingabe_sekunden:
 
