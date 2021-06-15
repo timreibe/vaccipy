@@ -1,5 +1,6 @@
 # Alphabetisch sortiert:
 import copy
+import json
 import os
 import platform
 import string
@@ -11,7 +12,6 @@ from datetime import datetime, date, timedelta
 from datetime import time as dtime
 from itertools import cycle
 from json import JSONDecodeError
-import json
 from random import choice, choices, randint
 
 import cloudscraper
@@ -23,17 +23,15 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import MoveTargetOutOfBoundsException
 from seleniumwire import webdriver as selenium_wire
 
+from tools.chromium_downloader import chromium_executable, check_chromium, webdriver_executable, check_webdriver
 from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
 from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
     validate_zeitrahmen
 from tools.mousemover import move_mouse_to_coordinates
 from tools.utils import fire_notifications, unique
-from tools.chromium_downloader import chromium_executable, check_chromium, webdriver_executable, check_webdriver
-
 
 try:
     import beepy
