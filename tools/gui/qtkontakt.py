@@ -97,17 +97,14 @@ class QtKontakt(QtWidgets.QDialog):
 
         # Funktion vom Button zuordnen
         self.b_impfzentren_waehlen.clicked.connect(self.__open_impfzentren)
-        self.b_test_pushover.clicked.connect(self.__test_pushover)
-        self.b_test_telegram.clicked.connect(self.__test_telegram)
+        #self.b_test_pushover.clicked.connect(self.__test_pushover)
+        #self.b_test_telegram.clicked.connect(self.__test_telegram)
 
         # Versuche Kontakdaten zu laden 
         self.__lade_alle_werte()
 
         # Wähle passenden Reiter aus
-        if self.modus == modus.CODE_GENERIEREN:
-            self.tabWidget.setCurrentIndex(1)
-        else:
-            self.tabWidget.setCurrentIndex(0)
+        self.toolBox.setCurrentIndex(0)
 
         # Erstelle Events für LineEdits
         for line_edit in self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit):
@@ -256,12 +253,12 @@ class QtKontakt(QtWidgets.QDialog):
             self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
-            self.__reset_notifications()
+            #self.__reset_notifications()
         elif clicked_button == QtWidgets.QDialogButtonBox.Open:
             self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
-            self.__reset_notifications()
+            #self.__reset_notifications()
             self.__lade_einstellungen()
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
             self.reject()
@@ -276,7 +273,7 @@ class QtKontakt(QtWidgets.QDialog):
         plz_zentrum_raw = self.i_plz_impfzentren.text()
         telefon = self.i_telefon.text().strip()
         mail = self.i_mail.text().strip()
-        notifications = self.__get_notifications()
+        notifications = {} #self.__get_notifications()
 
         # PLZ der Zentren in Liste und "strippen"
         plz_zentren = plz_zentrum_raw.split(",")
@@ -381,8 +378,8 @@ class QtKontakt(QtWidgets.QDialog):
             self.i_wohnort.setText(kontaktdaten["kontakt"]["ort"])
 
             # Prüfen ob neuer key in kontaktdaten exisitiert
-            if "notifications" in kontaktdaten:
-                self.__set_notifications(kontaktdaten['notifications'])
+            #if "notifications" in kontaktdaten:
+            #    self.__set_notifications(kontaktdaten['notifications'])
 
             try:
                 self.__set_zeitrahmen(kontaktdaten["zeitrahmen"])
@@ -401,7 +398,7 @@ class QtKontakt(QtWidgets.QDialog):
             self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
-            self.__reset_notifications()
+            #self.__reset_notifications()
             self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
                 info= "Die von Ihnen gewählte Datei hat ein falsches Format. "
                        "Laden Sie eine andere Datei oder überschreiben Sie die "
@@ -411,14 +408,14 @@ class QtKontakt(QtWidgets.QDialog):
             self.__reset_vermittlungscodes()
             self.__reset_kontakdaten()
             self.__reset_zeitrahmen()
-            self.__reset_notifications()
+            #self.__reset_notifications()
             self.__oeffne_error(title="Kontaktdaten", text="Falsches Format",
                 info= "Die von Ihnen gewählte Datei hat ein falsches Format. "
                        "Laden Sie eine andere Datei oder überschreiben Sie die "
                        "Datei, indem Sie auf Speichern klicken.")
 
         # Wechsel auf den ersten Reiter
-        self.tabWidget.setCurrentIndex(0)
+        self.toolBox.setCurrentIndex(0)
 
 
 

@@ -52,251 +52,27 @@
     </widget>
    </item>
    <item>
-    <widget class="QTabWidget" name="tabWidget">
+    <widget class="QToolBox" name="toolBox">
      <property name="toolTip">
       <string/>
      </property>
-     <property name="tabPosition">
-      <enum>QTabWidget::North</enum>
-     </property>
-     <property name="tabShape">
-      <enum>QTabWidget::Rounded</enum>
-     </property>
-     <property name="usesScrollButtons">
-      <bool>true</bool>
-     </property>
-     <property name="documentMode">
-      <bool>false</bool>
-     </property>
-     <property name="tabsClosable">
-      <bool>false</bool>
-     </property>
-     <widget class="QWidget" name="vermittlungscodes_tab">
-      <property name="toolTip">
-       <string/>
-      </property>
-      <attribute name="title">
-       <string>Vermittlungscodes</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_vmc" stretch="1,2">
-         <property name="sizeConstraint">
-          <enum>QLayout::SetDefaultConstraint</enum>
-         </property>
-         <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-          <widget class="QLabel" name="lable_vmc_instruction">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>470</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="baseSize">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>12</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Die Gruppen findest du &lt;a href=&quot;https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;hier&lt;/span&gt;&lt;/a&gt; oder im Reiter Kontaktdaten unter &amp;quot;Impfzentren auswählen&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Gib bis zu fünf Vermittlungscodes aus verschiedenen Gruppen ein. Die Reihenfolge spielt hierbei keine Rolle</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-           <property name="openExternalLinks">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_vmc">
-           <item>
-            <layout class="QFormLayout" name="form_layout_codes">
-             <property name="fieldGrowthPolicy">
-              <enum>QFormLayout::ExpandingFieldsGrow</enum>
-             </property>
-             <property name="formAlignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-             <property name="verticalSpacing">
-              <number>10</number>
-             </property>
-             <property name="leftMargin">
-              <number>5</number>
-             </property>
-             <property name="rightMargin">
-              <number>5</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="i_code_impfzentren">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gib hier deinen ersten Vermittlungscode ein. Solltest du keinen Code haben, kannst du hier eifach XXXX-XXXX-XXXX eintragen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="inputMask">
-                <string>NNNN-NNNN-NNNN</string>
-               </property>
-               <property name="text">
-                <string>--</string>
-               </property>
-               <property name="placeholderText">
-                <string>A1C3-D2FG-4IJK</string>
-               </property>
-               <property name="clearButtonEnabled">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="i_code_impfzentren_2">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gib hier deinen zweiten Vermittlungscode ein.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="inputMask">
-                <string>NNNN-NNNN-NNNN</string>
-               </property>
-               <property name="text">
-                <string>--</string>
-               </property>
-               <property name="placeholderText">
-                <string>A1C3-D2FG-4IJK</string>
-               </property>
-               <property name="clearButtonEnabled">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_vmc_1">
-               <property name="text">
-                <string>1. Vermittlungscode</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QLineEdit" name="i_code_impfzentren_3">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gib hier deinen dritten Vermittlungscode ein.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="inputMask">
-                <string>NNNN-NNNN-NNNN</string>
-               </property>
-               <property name="text">
-                <string>--</string>
-               </property>
-               <property name="placeholderText">
-                <string>A1C3-D2FG-4IJK</string>
-               </property>
-               <property name="clearButtonEnabled">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QLineEdit" name="i_code_impfzentren_4">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gib hier deinen vierten Vermittlungscode ein.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="inputMask">
-                <string>NNNN-NNNN-NNNN</string>
-               </property>
-               <property name="text">
-                <string>--</string>
-               </property>
-               <property name="placeholderText">
-                <string>A1C3-D2FG-4IJK</string>
-               </property>
-               <property name="clearButtonEnabled">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="1">
-              <widget class="QLineEdit" name="i_code_impfzentren_5">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gib hier deinen fünften Vermittlungscode ein.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="inputMask">
-                <string>NNNN-NNNN-NNNN</string>
-               </property>
-               <property name="text">
-                <string>--</string>
-               </property>
-               <property name="placeholderText">
-                <string>A1C3-D2FG-4IJK</string>
-               </property>
-               <property name="clearButtonEnabled">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_vmc_2">
-               <property name="text">
-                <string>2. Vermittlungscode</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_vmc_3">
-               <property name="text">
-                <string>3. Vermittlungscode</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="label_vmc_4">
-               <property name="text">
-                <string>4. Vermittlungscode</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="label_vmc_5">
-               <property name="text">
-                <string>5. Vermittlungscode</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
      <widget class="QWidget" name="kontaktdaten_tab">
-      <attribute name="title">
-       <string>Kontaktdaten</string>
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>748</width>
+        <height>229</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>1. Kontaktdaten eingeben</string>
       </attribute>
       <layout class="QFormLayout" name="formLayout">
        <item row="0" column="0">
         <widget class="QLabel" name="plz_impfzent_label">
          <property name="text">
-          <string>PLZ's der Impfzentren:</string>
+          <string>PLZs der Impfzentren:</string>
          </property>
         </widget>
        </item>
@@ -552,7 +328,7 @@
        <item row="7" column="0">
         <widget class="QLabel" name="mail_label">
          <property name="text">
-          <string>Mail:</string>
+          <string>E-Mail:</string>
          </property>
         </widget>
        </item>
@@ -565,11 +341,241 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="zeitrahmen_tab">
-      <attribute name="title">
-       <string>Zeitrahmen</string>
+     <widget class="QWidget" name="vermittlungscodes_tab">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>748</width>
+        <height>208</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>2. Vermittlungscodes eingeben</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_3">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_vmc" stretch="1,2">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetDefaultConstraint</enum>
+         </property>
+         <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+          <widget class="QLabel" name="lable_vmc_instruction">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>470</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Die Gruppen findest du &lt;a href=&quot;https://github.com/iamnotturner/vaccipy/wiki/Ein-Code-fuer-mehrere-Impfzentren&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;hier&lt;/span&gt;&lt;/a&gt; oder im Reiter Kontaktdaten unter &amp;quot;Impfzentren auswählen&amp;quot;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Gib bis zu fünf Vermittlungscodes aus verschiedenen Gruppen ein. Die Reihenfolge spielt hierbei keine Rolle</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+           <property name="openExternalLinks">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_vmc">
+           <item>
+            <layout class="QFormLayout" name="form_layout_codes">
+             <property name="fieldGrowthPolicy">
+              <enum>QFormLayout::ExpandingFieldsGrow</enum>
+             </property>
+             <property name="formAlignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="verticalSpacing">
+              <number>10</number>
+             </property>
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
+             <property name="rightMargin">
+              <number>5</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="i_code_impfzentren">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gib hier deinen ersten Vermittlungscode ein. Solltest du keinen Code haben, kannst du hier eifach XXXX-XXXX-XXXX eintragen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="inputMask">
+                <string>NNNN-NNNN-NNNN</string>
+               </property>
+               <property name="text">
+                <string>--</string>
+               </property>
+               <property name="placeholderText">
+                <string>A1C3-D2FG-4IJK</string>
+               </property>
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="i_code_impfzentren_2">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gib hier deinen zweiten Vermittlungscode ein.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="inputMask">
+                <string>NNNN-NNNN-NNNN</string>
+               </property>
+               <property name="text">
+                <string>--</string>
+               </property>
+               <property name="placeholderText">
+                <string>A1C3-D2FG-4IJK</string>
+               </property>
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_vmc_1">
+               <property name="text">
+                <string>1. Vermittlungscode</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="i_code_impfzentren_3">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gib hier deinen dritten Vermittlungscode ein.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="inputMask">
+                <string>NNNN-NNNN-NNNN</string>
+               </property>
+               <property name="text">
+                <string>--</string>
+               </property>
+               <property name="placeholderText">
+                <string>A1C3-D2FG-4IJK</string>
+               </property>
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QLineEdit" name="i_code_impfzentren_4">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gib hier deinen vierten Vermittlungscode ein.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="inputMask">
+                <string>NNNN-NNNN-NNNN</string>
+               </property>
+               <property name="text">
+                <string>--</string>
+               </property>
+               <property name="placeholderText">
+                <string>A1C3-D2FG-4IJK</string>
+               </property>
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QLineEdit" name="i_code_impfzentren_5">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gib hier deinen fünften Vermittlungscode ein.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="inputMask">
+                <string>NNNN-NNNN-NNNN</string>
+               </property>
+               <property name="text">
+                <string>--</string>
+               </property>
+               <property name="placeholderText">
+                <string>A1C3-D2FG-4IJK</string>
+               </property>
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_vmc_2">
+               <property name="text">
+                <string>2. Vermittlungscode</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_vmc_3">
+               <property name="text">
+                <string>3. Vermittlungscode</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_vmc_4">
+               <property name="text">
+                <string>4. Vermittlungscode</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_vmc_5">
+               <property name="text">
+                <string>5. Vermittlungscode</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="zeitrahmen_tab">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>748</width>
+        <height>207</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>3. Suchzeitraum eingrenzen (Optional)</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3" columnstretch="1,1">
        <item row="6" column="1">
         <widget class="QFrame" name="uhr_termin_datum_frame">
          <property name="frameShape">
@@ -714,16 +720,6 @@
          </layout>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="termine_anwenden_label">
-         <property name="text">
-          <string>Bei welchen Terminen sollen die Bedingungen gelten?</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="1">
         <widget class="QCheckBox" name="i_zweiter_termin_check_box">
          <property name="text">
@@ -746,7 +742,7 @@
        </item>
        <item row="6" column="0">
         <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="1">
+         <item row="0" column="0">
           <widget class="QFrame" name="tage_frame">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -760,70 +756,27 @@
            <property name="frameShadow">
             <enum>QFrame::Plain</enum>
            </property>
-           <layout class="QGridLayout" name="tage_grig">
+           <property name="lineWidth">
+            <number>0</number>
+           </property>
+           <layout class="QGridLayout" name="tage_grig" columnstretch="1,1" columnminimumwidth="1,1">
             <property name="rightMargin">
-             <number>9</number>
+             <number>6</number>
             </property>
-            <item row="9" column="0" colspan="2">
-             <widget class="QCheckBox" name="i_fr_check_box">
+            <item row="10" column="0">
+             <widget class="QCheckBox" name="i_do_check_box">
               <property name="text">
-               <string>Freitags</string>
+               <string>Donnerstags</string>
               </property>
               <property name="checked">
                <bool>true</bool>
               </property>
               <property name="weekday" stdset="0">
-               <string>Fr</string>
+               <string>Do</string>
               </property>
              </widget>
             </item>
-            <item row="7" column="0" colspan="2">
-             <widget class="QCheckBox" name="i_mi_check_box">
-              <property name="text">
-               <string>Mittwochs</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-              <property name="weekday" stdset="0">
-               <string>Mi</string>
-              </property>
-             </widget>
-            </item>
-            <item row="11" column="0" colspan="2">
-             <widget class="QCheckBox" name="i_so_check_box">
-              <property name="text">
-               <string>Sonntags</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-              <property name="weekday" stdset="0">
-               <string>So</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="0" colspan="2">
-             <widget class="QCheckBox" name="i_di_check_box">
-              <property name="text">
-               <string>Dienstags</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-              <property name="weekday" stdset="0">
-               <string>Di</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0" colspan="2">
-             <widget class="Line" name="line_4">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0" colspan="2">
+            <item row="7" column="0">
              <widget class="QCheckBox" name="i_mo_check_box">
               <property name="text">
                <string>Montags</string>
@@ -837,28 +790,35 @@
              </widget>
             </item>
             <item row="8" column="0">
-             <widget class="QCheckBox" name="i_do_check_box">
+             <widget class="QCheckBox" name="i_di_check_box">
               <property name="text">
-               <string>Donnerstags</string>
+               <string>Dienstags</string>
               </property>
               <property name="checked">
                <bool>true</bool>
               </property>
               <property name="weekday" stdset="0">
-               <string>Do</string>
+               <string>Di</string>
               </property>
              </widget>
             </item>
-            <item row="10" column="0" colspan="2">
-             <widget class="QCheckBox" name="i_sa_check_box">
+            <item row="9" column="0">
+             <widget class="QCheckBox" name="i_mi_check_box">
               <property name="text">
-               <string>Samstags</string>
+               <string>Mittwochs</string>
               </property>
               <property name="checked">
                <bool>true</bool>
               </property>
               <property name="weekday" stdset="0">
-               <string>Sa</string>
+               <string>Mi</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
+             <widget class="Line" name="line_4">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
               </property>
              </widget>
             </item>
@@ -875,6 +835,45 @@
               </property>
              </widget>
             </item>
+            <item row="8" column="1">
+             <widget class="QCheckBox" name="i_sa_check_box">
+              <property name="text">
+               <string>Samstags</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <string>Sa</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="1">
+             <widget class="QCheckBox" name="i_so_check_box">
+              <property name="text">
+               <string>Sonntags</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <string>So</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QCheckBox" name="i_fr_check_box">
+              <property name="text">
+               <string>Freitags</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <property name="weekday" stdset="0">
+               <string>Fr</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>
@@ -887,116 +886,13 @@
          </property>
         </widget>
        </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="notifications_tab">
-      <attribute name="title">
-       <string>Benachrichtigungen</string>
-      </attribute>
-      <layout class="QFormLayout" name="formLayout">
        <item row="0" column="0">
-        <widget class="QLabel" name="pushover_label">
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
+        <widget class="QLabel" name="termine_anwenden_label">
          <property name="text">
-          <string>PushOver</string>
+          <string>Bei welchen Terminen sollen die Bedingungen gelten?</string>
          </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="app_token_label">
-         <property name="text">
-          <string>App-Token:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="i_app_token">
-         <property name="clearButtonEnabled">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="user_key_label">
-         <property name="text">
-          <string>User-Key:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="i_user_key">
-         <property name="clearButtonEnabled">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QPushButton" name="b_test_pushover">
-         <property name="text">
-          <string>Pushover Testen</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="spacer_label">
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="telegram_label">
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Telegram</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="api_token_label">
-         <property name="text">
-          <string>Api-Token:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QLineEdit" name="i_api_token">
-         <property name="clearButtonEnabled">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0">
-        <widget class="QLabel" name="chat_id_label">
-         <property name="text">
-          <string>Chat-ID:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1">
-        <widget class="QLineEdit" name="i_chat_id">
-         <property name="clearButtonEnabled">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0">
-        <widget class="QPushButton" name="b_test_telegram">
-         <property name="text">
-          <string>Telegram Testen</string>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -1029,7 +925,7 @@
  <tabstops>
   <tabstop>i_plz_impfzentren</tabstop>
   <tabstop>b_impfzentren_waehlen</tabstop>
-  <tabstop>tabWidget</tabstop>
+  <tabstop>toolBox</tabstop>
   <tabstop>i_anrede_combo_box</tabstop>
   <tabstop>i_vorname</tabstop>
   <tabstop>i_nachname</tabstop>
@@ -1041,20 +937,9 @@
   <tabstop>i_mail</tabstop>
   <tabstop>i_erster_termin_check_box</tabstop>
   <tabstop>i_zweiter_termin_check_box</tabstop>
-  <tabstop>i_mo_check_box</tabstop>
-  <tabstop>i_di_check_box</tabstop>
-  <tabstop>i_mi_check_box</tabstop>
-  <tabstop>i_do_check_box</tabstop>
-  <tabstop>i_fr_check_box</tabstop>
-  <tabstop>i_sa_check_box</tabstop>
-  <tabstop>i_so_check_box</tabstop>
   <tabstop>i_start_datum_qdate</tabstop>
   <tabstop>i_start_time_qtime</tabstop>
   <tabstop>i_end_time_qtime</tabstop>
-  <tabstop>i_app_token</tabstop>
-  <tabstop>i_user_key</tabstop>
-  <tabstop>i_api_token</tabstop>
-  <tabstop>i_chat_id</tabstop>
  </tabstops>
  <resources/>
  <connections/>
