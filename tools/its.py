@@ -33,7 +33,7 @@ from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
 from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
     validate_zeitrahmen
-from tools.mousemover import move_mouse_to_coordinates
+from tools.mousemover import move_mouse_to_coordinates, move_mouse_to_element
 from tools.utils import fire_notifications, unique
 
 try:
@@ -55,10 +55,13 @@ class ImpfterminService():
         # Logging einstellen
         self.log = CLogger("impfterminservice")
 
+        # User agent festlegen
+        self.useragent = prepare_useragent()
+
         # Session erstellen
         self.s = cloudscraper.create_scraper()
         self.s.headers.update({
-            'User-Agent': 'Mozilla/5.0',
+            'User-Agent': self.useragent,
         })
 
         # Ausgewähltes Impfzentrum prüfen
@@ -287,9 +290,8 @@ class ImpfterminService():
         # User-Agent is required for headless, because otherwise the server lets us hang.
 
         # Echte useragents benutzen, zufaelligen waehlen
-        ua = UserAgent(fallback="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36")
-        useragent = ua.random
-        chrome_options.add_argument("user-agent="+useragent)
+
+        chrome_options.add_argument("user-agent="+self.useragent)
 
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
@@ -329,7 +331,6 @@ class ImpfterminService():
             driver.get(location)
             driver.refresh()
 
-
         # random start position
         current_mouse_positon = (randint(1, driver.get_window_size()["width"]-1),
                                  randint(1, driver.get_window_size()["height"]-1))
@@ -339,49 +340,15 @@ class ImpfterminService():
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
         button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
-        button = WebDriverWait(driver, 1).until(
-            EC.element_to_be_clickable((By.XPATH, button_xpath)))
-        action = ActionChains(driver)
-
-        # Simulation der Mausbewegung
-        element = driver.find_element_by_xpath(button_xpath)
-        current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
-                                                          current_mouse_positon[1],
-                                                          element.location['x'],
-                                                          element.location['y'], driver)
-
-        action.click(button).perform()
-
+        current_mouse_positon = self.move_and_click_xpath(button_xpath, current_mouse_positon, driver)
 
         # Klick auf "Vermittlungscode bereits vorhanden"
         button_xpath = "//input[@name=\"vaccination-approval-checked\"]/.."
-        button = WebDriverWait(driver, 1).until(
-            EC.element_to_be_clickable((By.XPATH, button_xpath)))
-        action = ActionChains(driver)
-
-        # Simulation der Mausbewegung
-        element = driver.find_element_by_xpath(button_xpath)
-        current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
-                                                          current_mouse_positon[1],
-                                                          element.location['x'],
-                                                          element.location['y'], driver)
-
-        action.click(button).perform()
+        current_mouse_positon = self.move_and_click_xpath(button_xpath, current_mouse_positon, driver)
 
         # Auswahl des ersten Code-Input-Feldes
         input_xpath = "//input[@name=\"ets-input-code-0\"]"
-        input_field = WebDriverWait(driver, 1).until(
-            EC.element_to_be_clickable((By.XPATH, input_xpath)))
-        action = ActionChains(driver)
-
-        # Simulation der Mausbewegung
-        element = driver.find_element_by_xpath(input_xpath)
-        current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
-                                                          current_mouse_positon[1],
-                                                          element.location['x'],
-                                                          element.location['y'], driver)
-
-        action.click(input_field).perform()
+        current_mouse_positon = self.move_and_click_xpath(input_xpath, current_mouse_positon, driver)
 
         # Code etwas realistischer eingeben
         # Zu schnelle Eingabe erzeugt ebenfalls manchmal "Ein unerwarteter Fehler ist aufgetreten"
@@ -398,9 +365,9 @@ class ImpfterminService():
                 input_xpath = "//input[@name=\"ets-input-code-2\"]"
 
             # Input Feld auswählen
+
             input_field = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, input_xpath)))
-            action = ActionChains(driver)
-            action.move_to_element(input_field).click().perform()
+            current_mouse_positon = self.move_and_click_xpath(input_xpath, current_mouse_positon, driver)
 
             # Chars einzeln eingeben mit kleiner Pause
             for char in subcode:
@@ -409,14 +376,12 @@ class ImpfterminService():
 
         # Klick auf "Termin suchen"
         button_xpath = "//app-corona-vaccination-yes//button[@type=\"submit\"]"
-        button = WebDriverWait(driver, 1).until(
-            EC.element_to_be_clickable((By.XPATH, button_xpath)))
+        button = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
 
         element = driver.find_element_by_xpath(button_xpath)
         # Simulation der Mausbewegung
-        _ = move_mouse_to_coordinates(self.log, current_mouse_positon[0], current_mouse_positon[1],
-                                      element.location['x'], element.location['y'], driver)
+        current_mouse_positon = move_mouse_to_element(self.log, current_mouse_positon, element, driver)
         action.click(button).perform()
 
         # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
@@ -429,8 +394,15 @@ class ImpfterminService():
         except Exception as e:
             pass
 
-        time.sleep(1.5)
+        random_sleep(1.5)
 
+    def move_and_click_xpath(self, button_xpath, current_mouse_positon, driver):
+        button = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, button_xpath)))
+        element = driver.find_element_by_xpath(button_xpath)
+        current_mouse_positon = move_mouse_to_element(self.log, current_mouse_positon, element, driver)
+        action = ActionChains(driver)
+        action.click(button).perform()
+        return current_mouse_positon
 
     def driver_get_cookies(self, driver, url, manual):
         # Erstelle zufälligen Vermittlungscode für die Cookie-Generierung
@@ -467,6 +439,8 @@ class ImpfterminService():
     def driver_termin_buchen(self, driver, reservierung):
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         filepath = os.path.join(self.PATH, "tools", "log")
+        current_mouse_positon = (randint(1, driver.get_window_size()["width"]-1),
+                                 randint(1, driver.get_window_size()["height"]-1))
 
         try:
             self.driver_enter_code(
@@ -478,10 +452,7 @@ class ImpfterminService():
         try:
             # Klick auf "Termin suchen"
             button_xpath = "//button[@data-target=\"#itsSearchAppointmentsModal\"]"
-            button = WebDriverWait(driver, 1).until(
-                EC.element_to_be_clickable((By.XPATH, button_xpath)))
-            action = ActionChains(driver)
-            action.move_to_element(button).click().perform()
+            current_mouse_positon = self.move_and_click_xpath(button_xpath, current_mouse_positon, driver)
         except:
             self.log.error("Termine können nicht gesucht werden")
             try:
@@ -494,10 +465,7 @@ class ImpfterminService():
         try:
             random_sleep(3)
             button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[1]/div[2]/label/div[2]/div'
-            button = WebDriverWait(driver, 1).until(
-                EC.element_to_be_clickable((By.XPATH, button_xpath)))
-            action = ActionChains(driver)
-            action.move_to_element(button).click().perform()
+            current_mouse_positon = self.move_and_click_xpath(button_xpath, current_mouse_positon, driver)
             random_sleep(.5)
         except:
             self.log.error("Termine können nicht ausgewählt werden")
@@ -513,10 +481,7 @@ class ImpfterminService():
         # Klick Button "AUSWÄHLEN"
         try:
             button_xpath = '//*[@id="itsSearchAppointmentsModal"]//button[@type="submit"]'
-            button = WebDriverWait(driver, 1).until(
-                EC.element_to_be_clickable((By.XPATH, button_xpath)))
-            action = ActionChains(driver)
-            action.move_to_element(button).click().perform()
+            current_mouse_positon = self.move_and_click_xpath(button_xpath, current_mouse_positon, driver)
             random_sleep(.5)
         except:
             self.log.error("Termine können nicht ausgewählt werden (Button)")
@@ -525,10 +490,7 @@ class ImpfterminService():
         # Klick Daten erfassen
         try:
             button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[2]/div[2]/div[2]/button'
-            button = WebDriverWait(driver, 1).until(
-                EC.element_to_be_clickable((By.XPATH, button_xpath)))
-            action = ActionChains(driver)
-            action.move_to_element(button).click().perform()
+            current_mouse_positon = self.move_and_click_xpath(button_xpath, current_mouse_positon, driver)
             random_sleep(.5)
         except:
             self.log.error("1. Daten können nicht erfasst werden")
@@ -542,16 +504,12 @@ class ImpfterminService():
             else:
                 button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"Divers")]'
 
-            button = WebDriverWait(driver, 1).until(
-                EC.element_to_be_clickable((By.XPATH, button_xpath)))
-            action = ActionChains(driver)
-            action.move_to_element(button).click().perform()
+            current_mouse_positon = self.move_and_click_xpath(button_xpath, current_mouse_positon, driver)
 
             # Input Vorname
             input_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="firstname"]'
-            input_field = WebDriverWait(driver, 1).until(
-                EC.element_to_be_clickable((By.XPATH, input_xpath)))
-            action.move_to_element(input_field).click().perform()
+            input_field = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, input_xpath)))
+            current_mouse_positon = self.move_and_click_xpath(input_xpath, current_mouse_positon, driver)
             input_field.send_keys(self.kontakt['vorname'])
 
             # Input Nachname
@@ -599,10 +557,7 @@ class ImpfterminService():
         # Klick Button "ÜBERNEHMEN"
         try:
             button_xpath = '//*[@id="itsSearchContactModal"]//button[@type="submit"]'
-            button = WebDriverWait(driver, 1).until(
-                EC.element_to_be_clickable((By.XPATH, button_xpath)))
-            action = ActionChains(driver)
-            action.move_to_element(button).click().perform()
+            current_mouse_positon = self.move_and_click_xpath(button_xpath, current_mouse_positon, driver)
             random_sleep(.7)
         except:
             self.log.error("Button ÜBERNEHMEN kann nicht gedrückt werden")
@@ -611,10 +566,7 @@ class ImpfterminService():
         # Termin buchen
         try:
             button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[3]/div[2]/div[2]/button'
-            button = WebDriverWait(driver, 1).until(
-                EC.element_to_be_clickable((By.XPATH, button_xpath)))
-            action = ActionChains(driver)
-            action.move_to_element(button).click().perform()
+            current_mouse_positon = self.move_and_click_xpath(button_xpath, current_mouse_positon, driver)
         except:
             self.log.error("Button Termin buchen kann nicht gedrückt werden")
             pass
@@ -1090,10 +1042,7 @@ class ImpfterminService():
             # Simulation der Mausbewegung
             element = driver.find_element_by_xpath(button_xpath)
             driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: {element.location['x']}, y: {element.location['y']}'", check_p)
-            current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
-                                                                current_mouse_positon[1],
-                                                                element.location['x'],
-                                                                element.location['y'], driver)
+            current_mouse_positon = move_mouse_to_element(self.log, current_mouse_positon, element, driver)
             driver.execute_script(f"arguments[0].innerText='Status: Cookie-Banner Anklicken'", check_p)
             action.click(button).perform()
             time.sleep(0.5)
@@ -1107,10 +1056,7 @@ class ImpfterminService():
             # Simulation der Mausbewegung
             element = driver.find_element_by_xpath(input_xpath)
             driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: {element.location['x']}, y: {element.location['y']}'", check_p)
-            current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
-                                                                current_mouse_positon[1],
-                                                                element.location['x'],
-                                                                element.location['y'], driver)
+            current_mouse_positon = move_mouse_to_element(self.log, current_mouse_positon, element, driver)
             action.move_to_element(input_field).click().perform()
 
             # Chars einzeln eingeben mit kleiner Pause
@@ -1131,10 +1077,7 @@ class ImpfterminService():
             # Simulation der Mausbewegung
             element = driver.find_element_by_xpath(input_xpath)
             driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: {element.location['x']}, y: {element.location['y']}'", check_p)
-            current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
-                                                                current_mouse_positon[1],
-                                                                element.location['x'],
-                                                                element.location['y'], driver)
+            current_mouse_positon = move_mouse_to_element(self.log, current_mouse_positon, element, driver)
             action.move_to_element(input_field).click().perform()
 
             # Chars einzeln eingeben mit kleiner Pause
@@ -1154,10 +1097,7 @@ class ImpfterminService():
             # Simulation der Mausbewegung
             element = driver.find_element_by_xpath(button_xpath)
             driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: {element.location['x']}, y: {element.location['y']}'", check_p)
-            current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
-                                                                current_mouse_positon[1],
-                                                                element.location['x'],
-                                                                element.location['y'], driver)
+            current_mouse_positon = move_mouse_to_element(self.log, current_mouse_positon, element, driver)
             driver.execute_script(f"arguments[0].innerText='Status: Versuche Anfrage abzuschicken'", check_p)
             action.move_to_element(button).click().perform()
 
@@ -1482,3 +1422,13 @@ def get_headers(code: str):
 
 def extrahiere_impfstoffe(qualifikation: dict):
     return qualifikation.get("tssname", "N/A").replace(" ", "").split(",")
+
+
+def prepare_useragent() -> str:
+    """
+    Generiert einen zufälligen User Agent
+
+    :return: User agent
+    """
+    ua = UserAgent(fallback="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36")
+    return ua.random
