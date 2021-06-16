@@ -235,7 +235,7 @@ def fire_notifications(notifications: dict, operating_system: str, title: str, m
     if 'pushover' in notifications:
         pushover_notification(notifications["pushover"], title, message)
     if 'telegram' in notifications:
-        telegram_notification(notifications["telegram"], message)
+        telegram_notification(notifications["telegram"], title + "\n" + message)
 
 
 def unique(seq):

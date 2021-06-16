@@ -1,5 +1,6 @@
 # Alphabetisch sortiert:
 import copy
+import json
 import os
 import platform
 import string
@@ -11,7 +12,6 @@ from datetime import datetime, date, timedelta
 from datetime import time as dtime
 from itertools import cycle
 from json import JSONDecodeError
-import json
 from random import choice, choices, randint
 
 import cloudscraper
@@ -23,16 +23,15 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import MoveTargetOutOfBoundsException
 from seleniumwire import webdriver as selenium_wire
 
+from tools.chromium_downloader import chromium_executable, check_chromium, webdriver_executable, check_webdriver
 from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
 from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
     validate_zeitrahmen
+from tools.mousemover import move_mouse_to_coordinates
 from tools.utils import fire_notifications, unique
-from tools.chromium_downloader import chromium_executable, check_chromium, webdriver_executable, check_webdriver
-
 
 try:
     import beepy
@@ -295,117 +294,6 @@ class ImpfterminService():
 
         return Chrome(self.get_chromedriver_path(), options=chrome_options)
 
-    def generate_way_between_coordinates(self, source_x: int, source_y: int, target_x: int, target_y: int) -> tuple:
-        """Generate random waypoints between two x,y coordinates without numpy
-
-        Args:
-            source_x (int): x coordnate of source
-            source_y (int): y coordinate of source
-            target_x (int): x coordinate of target
-            target_y (int): y coordinate of target
-
-        Returns:
-            tuple: List of waypoints (x_coordinates, y_coordinates)
-        """
-        
-        # Init and add source coordinates
-        x_coordinates = [source_x]
-        y_coordinates = [source_y]
-        
-        x_target_reached = False
-        y_target_reached = False
-        
-        while not x_target_reached or not y_target_reached:
-            
-            # Create new random waypoints
-            source_x = source_x + randint(3,50)
-            source_y = source_y + randint(3,50)
-            
-            # If targets reached, stay at target
-            if source_x >= target_x:
-                source_x = target_x
-                x_target_reached = True
-            if source_y >= target_y:
-                source_y = target_y
-                y_target_reached = True
-            
-            # Append new waypoint coordinates
-            x_coordinates.append(source_x)
-            y_coordinates.append(source_y)
-                
-        return x_coordinates, y_coordinates
-
-    def move_mouse_by_offsets(self, x_coordinates: list, y_coordinates: list, driver) -> tuple:
-        """Move mouse by offeset to list of x and y coordinates
-
-        Args:
-            x_coordinates (list): x waypoints
-            y_coordinates (list): y waypoints
-            driver : Chromedriver
-
-        Returns:
-            tuple: Current mouse coordinates (mouse_x, mouse_y)
-        """
-        
-        # Init current mouse position
-        current_mouse_x = 0
-        current_mouse_y = 0
-
-        # Append mouse movement for each x,y coordinate
-        for index, coordinate in enumerate(zip(x_coordinates, y_coordinates)):
-
-            # Get current window size
-            window_width = driver.get_window_size()["width"]
-            window_height = driver.get_window_size()["height"]
-
-            # If not first index calculate difference to last coordinate and update next offset
-            if index:
-                x_offset = coordinate[0] - x_coordinates[index - 1]
-                y_offset = coordinate[1] - y_coordinates[index - 1]
-            # First offset has no previous coordinate
-            else:
-                x_offset = coordinate[0]
-                y_offset = coordinate[1]
-            
-            # Update predicted mouse position
-            current_mouse_x = current_mouse_x + x_offset
-            current_mouse_y = current_mouse_y + y_offset
-            
-            # Check wether predicted mouse position is out of bounds
-            if not current_mouse_x >= window_width and not current_mouse_y >= window_height:
-                # Append mouse movements
-                try:
-                    ActionChains(driver).move_by_offset(x_offset,y_offset).perform()
-
-                except MoveTargetOutOfBoundsException as e:
-                    pass
-            
-        time.sleep(randint(1,5))
-
-        return current_mouse_x, current_mouse_y
-
-    def move_mouse_to_coordinates(self, start_x: int, start_y: int, target_x: int, target_y: int, driver) -> tuple:
-        """Move mouse from x,y coordinates to x,y coordinates
-
-        Args:
-            start_x (int): x coordinate of start position
-            start_y (int): y coordinate of start position
-            target_x (int): x coordinate of target position
-            target_y (int): y x coordinate of target position
-            driver : Chromedriver
-
-        Returns:
-            tuple: Current mouse coordinates (mouse_x, mouse_y)
-        """
-        
-        # Generate waypoints
-        coordinates_to_element = self.generate_way_between_coordinates(start_x, start_y, target_x, target_y)
-
-        self.log.info(f"Simulation der Mausbewegungen gestartet. Von: ({start_x}, {start_y}) nach ({target_x}, {target_y})")
-
-        # Execute movements and return coordinates
-        return self.move_mouse_by_offsets(coordinates_to_element[0], coordinates_to_element[1], driver)
-
     def driver_enter_code(self, driver, impfzentrum, code):
         """
         TODO xpath code auslagern
@@ -436,11 +324,11 @@ class ImpfterminService():
 
 
         # random start position
-        current_mouse_positon = (randint(1,driver.get_window_size()["width"]-1), 
-                                 randint(1,driver.get_window_size()["height"]-1))
+        current_mouse_positon = (randint(1, driver.get_window_size()["width"]-1),
+                                 randint(1, driver.get_window_size()["height"]-1))
         # Simulation der Mausbewegung
-        current_mouse_positon = self.move_mouse_to_coordinates(0, 0, current_mouse_positon[0], 
-                                                               current_mouse_positon[1], driver)
+        current_mouse_positon = move_mouse_to_coordinates(self.log, 0, 0, current_mouse_positon[0],
+                                                          current_mouse_positon[1], driver)
 
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
         button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
@@ -450,10 +338,10 @@ class ImpfterminService():
 
         # Simulation der Mausbewegung
         element = driver.find_element_by_xpath(button_xpath)
-        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0],
-                                                               current_mouse_positon[1], 
-                                                               element.location['x'], 
-                                                               element.location['y'], driver)
+        current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                          current_mouse_positon[1],
+                                                          element.location['x'],
+                                                          element.location['y'], driver)
 
         action.click(button).perform()
         
@@ -466,10 +354,10 @@ class ImpfterminService():
 
         # Simulation der Mausbewegung
         element = driver.find_element_by_xpath(button_xpath)
-        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0], 
-                                                               current_mouse_positon[1], 
-                                                               element.location['x'], 
-                                                               element.location['y'], driver)
+        current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                          current_mouse_positon[1],
+                                                          element.location['x'],
+                                                          element.location['y'], driver)
 
         action.click(button).perform()
 
@@ -481,10 +369,10 @@ class ImpfterminService():
 
         # Simulation der Mausbewegung
         element = driver.find_element_by_xpath(input_xpath)
-        current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0], 
-                                                               current_mouse_positon[1], 
-                                                               element.location['x'], 
-                                                               element.location['y'], driver)
+        current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                          current_mouse_positon[1],
+                                                          element.location['x'],
+                                                          element.location['y'], driver)
 
         action.click(input_field).perform()
 
@@ -520,8 +408,8 @@ class ImpfterminService():
 
         element = driver.find_element_by_xpath(button_xpath)
         # Simulation der Mausbewegung
-        _ = self.move_mouse_to_coordinates(current_mouse_positon[0], current_mouse_positon[1], 
-                                           element.location['x'], element.location['y'], driver)
+        _ = move_mouse_to_coordinates(self.log, current_mouse_positon[0], current_mouse_positon[1],
+                                      element.location['x'], element.location['y'], driver)
         action.click(button).perform()
 
         # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
@@ -970,11 +858,15 @@ class ImpfterminService():
         tp_angenommen = choice(terminpaare_angenommen)
         self.log.success(f"Termin gefunden!")
         self.log.success(f"'{zentrumsname}' in {plz} {ort}")
+        msg = f"'{zentrumsname}' in {plz} {ort}\n"
         for num, termin in enumerate(tp_angenommen, 1):
             ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                 '%d.%m.%Y um %H:%M Uhr')
             self.log.success(f"{num}. Termin: {ts}")
+            msg += f"{num}. Termin: {ts}\n"
         self.log.success(f"Link: {url}impftermine/suche/{code}/{plz}")
+        msg += f"Link: {url}impftermine/suche/{code}/{plz}"
+        self.notify(title="Termin gefunden:", msg=msg)
 
         # Reservierungs-Objekt besteht aus Terminpaar und Impfzentrum
         return {
@@ -1152,22 +1044,36 @@ class ImpfterminService():
             driver.get(f"{url}impftermine/service?plz={plz_impfzentrum}")
             driver.refresh()
 
+
             # ets-session-its-cv-quick-check im SessionStorage setzen um verfügbare Termine zu simulieren
             ets_session_its_cv_quick_check = '{"birthdate":"'+ data["birthday"] +'","slotsAvailable":{"pair":true,"single":false}}'
             driver.execute_script('window.sessionStorage.setItem("ets-session-its-cv-quick-check",\''+ ets_session_its_cv_quick_check +'\');')
             self.log.info("\"ets-session-its-cv-quick-check\" Key:Value zum sessionStorage hinzugefügt.")
 
-            # Durch ets-session-its-cv-quick-check im SessionStorage kann direkt der Check aufgerufen werden 
+            # Durch ets-session-its-cv-quick-check im SessionStorage kann direkt der Check aufgerufen werden
             driver.get(f"{url}impftermine/check")
             self.log.info("Überprüfung der Impfberechtigung übersprungen / Vorhandene Termine simuliert und impftermine/check geladen.")
 
+            time.sleep(1)
+
+            # Anpassen der HTML elemente im Browser um Nutzer aktuellen Status anzuzeigen
+            check_h1_xpath = "//app-its-check-success//h1"
+            check_h1 = driver.find_element_by_xpath(check_h1_xpath)
+            driver.execute_script("arguments[0].setAttribute('style','color: #FF0000;font-weight: bold; font-size: 35px;')", check_h1)
+            driver.execute_script(f"arguments[0].innerText='Vaccipy! - Bitte nichts eingeben oder anklicken.'", check_h1)
+            check_p_xpath = "//app-its-check-success//p"
+            check_p = driver.find_element_by_xpath(check_p_xpath)
+            driver.execute_script("arguments[0].setAttribute('style','font-weight: bold; font-size: 25px;')", check_p)
+            
             # random start position
-            current_mouse_positon = (randint(1,driver.get_window_size()["width"]-1), 
+            current_mouse_positon = (randint(1,driver.get_window_size()["width"]-1),
                                  randint(1,driver.get_window_size()["height"]-1))
 
             # Simulation der Mausbewegung
-            current_mouse_positon = self.move_mouse_to_coordinates(0, 0, current_mouse_positon[0], 
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x:{current_mouse_positon[0]}, y:{current_mouse_positon[1]}'", check_p)
+            current_mouse_positon = move_mouse_to_coordinates(self.log, 0, 0, current_mouse_positon[0],
                                                                 current_mouse_positon[1], driver)
+            
 
             # Klick auf "Auswahl bestätigen" im Cookies-Banner
             button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
@@ -1177,11 +1083,12 @@ class ImpfterminService():
 
             # Simulation der Mausbewegung
             element = driver.find_element_by_xpath(button_xpath)
-            current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0],
-                                                                current_mouse_positon[1], 
-                                                                element.location['x'], 
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: {element.location['x']}, y: {element.location['y']}'", check_p)
+            current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                                current_mouse_positon[1],
+                                                                element.location['x'],
                                                                 element.location['y'], driver)
-
+            driver.execute_script(f"arguments[0].innerText='Status: Cookie-Banner Anklicken'", check_p)
             action.click(button).perform()
             time.sleep(0.5)
 
@@ -1193,15 +1100,16 @@ class ImpfterminService():
 
             # Simulation der Mausbewegung
             element = driver.find_element_by_xpath(input_xpath)
-            current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0],
-                                                                current_mouse_positon[1], 
-                                                                element.location['x'], 
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: {element.location['x']}, y: {element.location['y']}'", check_p)
+            current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                                current_mouse_positon[1],
+                                                                element.location['x'],
                                                                 element.location['y'], driver)
-
-            action.move_to_element(input_field).click().perform()  
+            action.move_to_element(input_field).click().perform()
 
             # Chars einzeln eingeben mit kleiner Pause
-            for char in data['email']:                      
+            driver.execute_script(f"arguments[0].innerText='Status: E-Mail wird eingegeben'", check_p)
+            for char in data['email']:
                 input_field.send_keys(char)
                 time.sleep(randint(500,1000)/1000)
 
@@ -1216,15 +1124,16 @@ class ImpfterminService():
 
             # Simulation der Mausbewegung
             element = driver.find_element_by_xpath(input_xpath)
-            current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0],
-                                                                current_mouse_positon[1], 
-                                                                element.location['x'], 
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: {element.location['x']}, y: {element.location['y']}'", check_p)
+            current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                                current_mouse_positon[1],
+                                                                element.location['x'],
                                                                 element.location['y'], driver)
-
-            action.move_to_element(input_field).click().perform()  
+            action.move_to_element(input_field).click().perform()
 
             # Chars einzeln eingeben mit kleiner Pause
-            for char in data['phone'][3:]:                      
+            driver.execute_script(f"arguments[0].innerText='Status: Phone wird eingegeben'", check_p)
+            for char in data['phone'][3:]:
                 input_field.send_keys(char)
                 time.sleep(randint(500,1000)/1000)
 
@@ -1238,71 +1147,97 @@ class ImpfterminService():
 
             # Simulation der Mausbewegung
             element = driver.find_element_by_xpath(button_xpath)
-            current_mouse_positon = self.move_mouse_to_coordinates(current_mouse_positon[0],
-                                                                current_mouse_positon[1], 
-                                                                element.location['x'], 
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: {element.location['x']}, y: {element.location['y']}'", check_p)
+            current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                                current_mouse_positon[1],
+                                                                element.location['x'],
                                                                 element.location['y'], driver)
+            driver.execute_script(f"arguments[0].innerText='Status: Versuche Anfrage abzuschicken'", check_p)
+            action.move_to_element(button).click().perform()
 
-            action.click(button).perform()
+            # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
+            # Falls eine andere Meldung aufgetrteten ist -> Abbruch
+            try:
+                answer_xpath = "//app-its-check-success//span[@class=\"text-pre-wrap\"]"
+                time.sleep(0.5)
+                element = driver.find_element_by_xpath(answer_xpath)
+            except Exception as e:
+                element = None
+
+            if element:
+                if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
+                    driver.execute_script(f"arguments[0].innerText='Status: Zweiter Versuch Anfrage abzuschicken'", check_p)
+                    action.move_to_element(button).click().perform()
+                elif element.text == "Anfragelimit erreicht.":
+                    driver.close()
+                    raise RuntimeError("Anfragelimit erreicht")
+                elif element.text == "Geburtsdatum ungueltig oder in der Zukunft":
+                    driver.close()
+                    raise RuntimeError("Geburtsdatum ungueltig oder in der Zukunft")
+
+            time.sleep(2)
+
+            # Prüfen ob SMS Verifizierung geladen wurde falls nicht Abbruch
+            sms_verifizierung_h1_xpath = "//app-page-its-check-result//h1"
+            sms_verifizierung_h1 = driver.find_element_by_xpath(sms_verifizierung_h1_xpath)
+            if sms_verifizierung_h1.text != "SMS Verifizierung":
+                driver.close()
+                raise RuntimeError("Vermittlungscode kann derzeit nicht angefragt werden. Versuchen Sie es später erneut.")
+
+            # Ab jetzt befinden wir uns auf der SMS Verifizierung Seite
+            location = f"{url}rest/smspin/verifikation"
             self.log.info("SMS-Anfrage an Server versandt.")
+            self.log.info("Bitte SMS-Code innerhalb der nächsten 60 Sekunden im Browser-Fenster eingeben.")
+            
+            # 90 Sekunden lang auf Antwort vom Server warten
+            # Eventuell gibt User seinen Pin falsch ein etc.
+            max_sms_code_eingabe_sekunden = 90
+            while max_sms_code_eingabe_sekunden:
 
-            # Cookies auslesen / Muss nicht über den langen river_enter_code() weg gemacht werden
-            cookies = driver.get_cookies()
-            required = ["bm_sz", "akavpau_User_allowed"]
-            optional = ["bm_sv", "bm_mi", "ak_bmsc", "_abck"]
-            cookies = {
-                    c["name"]: c["value"]
-                    for c in cookies
-                    if c["name"] in required or c["name"] in optional
-             }
+                # Verbleibende Zeit anzeigen
+                try:
+                    driver.execute_script(f"arguments[0].innerText='Vaccipy! - Bitte SMS-Code im Browser eingeben. Noch {max_sms_code_eingabe_sekunden} Sekunden verbleibend.'", sms_verifizierung_h1)
+                except Exception as e:
+                    pass
 
-            res = None
-            max_retry = 5
-            retry_counter = 0
-            while not res:
-                # Get response von rest/smspin/anforderung
+                # Alle bisherigen Requests laden
+                sms_verification_responses= []
                 for request in driver.requests:
                     if request.url == location:
-                        res = request.response
-                        break
-                if retry_counter >= max_retry:
-                    raise RuntimeError("Keine Antwort vom Server erhalten.")
-                else:
-                    retry_counter += 1
-                    self.log.info(f"Warten auf Antwort des Servers. Kann einige Sekunden dauern. Versuch {retry_counter} von {max_retry}")
-                    time.sleep(5)
+                        sms_verification_responses.append(request.response)
 
-            # Browser wird nicht mehr benötigt, SMS-Code wird in Vaccipy eingegeben
-            driver.close()
+                if sms_verification_responses:
 
-            if res.status_code == 429:
-                self.log.error("Anfrage wurde von der Botprotection geblockt")
-                self.log.error("Erneuter versuch in 30 Sekunden")
-                time.sleep(30)
-                continue
+                    # Neuste Antowrt vom Server auslesen
+                    # User kann z.B 2 mal den Pin falsch eingeben uns interessiert nur die neuste Antwort vom Server
+                    latest_reponse = sms_verification_responses[-1]
 
-            if res.status_code == 400:
-                try:
-                    # error Laden
-                    error = json.loads(res.body.decode('utf-8'))['error']
-                except JSONDecodeError as exc:
-                    raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
-                print(error)
-                # Spezifischen Fehlermeldung ausgeben
-                if error == 'Geburtsdatum ungueltig oder in der Zukunft':
-                    raise RuntimeError("Geburtsdatum ungueltig oder in der Zukunft")
-                elif error == 'Anfragelimit erreicht.':
-                    raise RuntimeError("Anfragelimit erreicht")
-                else:
-                    raise RuntimeError("Unbekannter Fehler beim Anfordern des SMS-Codes aufgetreten.")
+                    if latest_reponse is not None:
+                        if latest_reponse.status_code == 400:
+                            try:
+                                # error Laden
+                                error = json.loads(latest_reponse.body.decode('utf-8'))['error']
+                            except JSONDecodeError as exc:
+                                raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
 
-            try:
-                # Token laden
-                token = json.loads(res.body.decode('utf-8'))['token']
-            except JSONDecodeError as exc:
-                raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
+                            if error == "Pin ungültig":
+                                self.log.info("Der eingegebene SMS-Code ist ungültig.")
 
-            return (token, cookies)
+                        elif latest_reponse.status_code == 200:
+                                self.log.info(f"SMS-Code erfolgreich übermittelt. Bitte Prüfen Sie Ihre E-Mails.")
+                                driver.close()
+                                return True
+                        elif latest_reponse.status_code == 429:
+                            driver.close() 
+                            raise RuntimeError("SMS-Code konnte nicht übermittelt werden. Blockiert durch Botprotection.")
+
+                time.sleep(1)
+                max_sms_code_eingabe_sekunden -= 1
+                
+
+            driver.close() 
+            self.log.info(f"SMS-Verifikation nicht innerhalb von 90 Sekunden abgeschlossen. Versuchen Sie es später erneut.")   
+            return False
 
 
     def code_bestaetigen(self, token, cookies, sms_pin, plz_impfzentrum):
