@@ -37,7 +37,7 @@ class Worker(QObject):
     fertig = pyqtSignal()
     fehlschlag = pyqtSignal(Exception)
 
-    def __init__(self, kontaktdaten: dict, zeitrahmen: dict, ROOT_PATH: str, check_delay: int):
+    def __init__(self, kontaktdaten: dict, notifications: dict, zeitrahmen: dict, ROOT_PATH: str, check_delay: int):
         """
         Args:
             kontaktdaten (dict): kontakdaten aus kontaktdaten.json
@@ -47,6 +47,7 @@ class Worker(QObject):
         super().__init__()
 
         self.kontaktdaten = kontaktdaten
+        self.notifications = notifications
         self.zeitrahmen = zeitrahmen
         self.ROOT_PATH = ROOT_PATH
         self.check_delay = check_delay
@@ -62,7 +63,8 @@ class Worker(QObject):
 
         try:
             ImpfterminService.terminsuche(codes=codes, plz_impfzentren=plz_impfzentren, kontakt=kontakt,
-                                          PATH=self.ROOT_PATH, check_delay=self.check_delay, zeitrahmen=self.zeitrahmen)
+                                          notifications=self.notifications, PATH=self.ROOT_PATH,
+                                          check_delay=self.check_delay, zeitrahmen=self.zeitrahmen)
 
             self.fertig.emit()
 
@@ -87,7 +89,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
     ### QTextEdit (readonly) ###
     # console_text_edit
 
-    def __init__(self, kontaktdaten: dict, zeitrahmen: dict, ROOT_PATH: str, check_delay: int, pfad_fenster_layout=os.path.join(PATH, "terminsuche.ui")):
+    def __init__(self, kontaktdaten: dict, notifications: dict, zeitrahmen: dict, ROOT_PATH: str, check_delay: int, pfad_fenster_layout=os.path.join(PATH, "terminsuche.ui")):
 
         super().__init__()
 
@@ -99,6 +101,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
 
         # Attribute erstellen
         self.kontaktdaten = kontaktdaten
+        self.notifications = notifications
         self.zeitrahmen = zeitrahmen
         self.ROOT_PATH = ROOT_PATH
         self.check_delay = check_delay
@@ -120,7 +123,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         self.thread.start()
 
     @staticmethod
-    def start_suche(kontaktdaten: dict, zeitrahmen: dict, ROOT_PATH: str, check_delay: int):
+    def start_suche(kontaktdaten: dict, notifications: dict, zeitrahmen: dict, ROOT_PATH: str, check_delay: int):
         """
         Startet die Suche in einem eigenen Fenster mit Umlenkung der Konsolenausgabe in das Fenster
 
@@ -132,7 +135,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         """
         app = QtWidgets.QApplication(list())
         app.setAttribute(QtCore.Qt.AA_X11InitThreads)
-        window = QtTerminsuche(kontaktdaten, zeitrahmen, ROOT_PATH, check_delay)
+        window = QtTerminsuche(kontaktdaten, notifications, zeitrahmen, ROOT_PATH, check_delay)
         app.exec_()
 
     def setup_infos(self):
@@ -150,7 +153,7 @@ class QtTerminsuche(QtWidgets.QMainWindow):
         """
 
         self.thread = QThread(parent=self)
-        self.worker = Worker(self.kontaktdaten, self.zeitrahmen, self.ROOT_PATH, self.check_delay)
+        self.worker = Worker(self.kontaktdaten, self.notifications, self.zeitrahmen, self.ROOT_PATH, self.check_delay)
 
         # Worker und Thread verbinden
         self.worker.moveToThread(self.thread)
