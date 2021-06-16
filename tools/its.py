@@ -1,5 +1,6 @@
 # Alphabetisch sortiert:
 import copy
+import json
 import os
 import platform
 import string
@@ -9,6 +10,7 @@ import time
 from base64 import b64encode
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
+from itertools import cycle
 from json import JSONDecodeError
 from random import choice, choices, randint
 
@@ -21,13 +23,16 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from seleniumwire import webdriver as selenium_wire
 
+from tools.chromium_downloader import chromium_executable, check_chromium, webdriver_executable, \
+    check_webdriver
 from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
 from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
     validate_zeitrahmen
-from tools.utils import fire_notifications
-from tools.chromium_downloader import chromium_executable, check_chromium, webdriver_executable, check_webdriver
+from tools.mousemover import move_mouse_to_coordinates
+from tools.utils import fire_notifications, unique
 
 try:
     import beepy
@@ -64,9 +69,19 @@ class ImpfterminService():
                 self.log.info("Erneuter Versuch in 30 Sekunden")
                 time.sleep(30)
 
-        # Zunächst alle Codes zu allen URLs zuordnen. Aussortiert wird später.
-        self.codes = {
-            url: copy.copy(codes)
+        # Ein "Codepoint" ist ein dict, das einen Vermittlungscode ("code")
+        # und den Zeitpunkt ("next_use") enthält, zu dem der Code frühestens
+        # verwendet werden soll.
+        # So kann man die Verwendung eines Codes z. B. für 10 Minuten
+        # unterbinden.
+        # Wir ordnen zunächst alle Codepoints zu allen URLs zu.
+        # Aussortiert wird später, wenn die Verwendung von Codes fehlschlägt.
+        codepoints = [
+            {"code": code, "next_use": datetime.min}
+            for code in unique(codes)
+        ]
+        self.codepoints = {
+            url: copy.deepcopy(codepoints)
             for url in self.impfzentren
         }
 
@@ -252,7 +267,7 @@ class ImpfterminService():
         else:
             raise ValueError(f"Nicht unterstütztes Betriebssystem {self.operating_system}")
 
-    def get_chromedriver(self, headless):
+    def get_chrome_options(self, headless):
         chrome_options = Options()
 
         # deaktiviere Selenium Logging
@@ -263,7 +278,8 @@ class ImpfterminService():
 
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
         # chrome_options.add_argument("-no-sandbox");
-        chrome_options.add_argument("-disable-dev-shm-usage");
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--remote-debugging-port=9222")
 
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
@@ -277,7 +293,10 @@ class ImpfterminService():
 
         chrome_options.headless = headless
 
-        return Chrome(self.get_chromedriver_path(), options=chrome_options)
+        return chrome_options
+
+    def get_chromedriver(self, headless):
+        return Chrome(self.get_chromedriver_path(), options=self.get_chrome_options(headless))
 
     def driver_enter_code(self, driver, impfzentrum, code):
         """
@@ -307,76 +326,128 @@ class ImpfterminService():
             driver.get(location)
             driver.refresh()
 
+        # random start position
+        current_mouse_positon = (randint(1, driver.get_window_size()["width"] - 1),
+                                 randint(1, driver.get_window_size()["height"] - 1))
+        # Simulation der Mausbewegung
+        current_mouse_positon = move_mouse_to_coordinates(self.log, 0, 0, current_mouse_positon[0],
+                                                          current_mouse_positon[1], driver)
+
         # Klick auf "Auswahl bestätigen" im Cookies-Banner
         button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
-        action.move_to_element(button).click().perform()
-        time.sleep(.5)
 
-    # Zufälliges anklicken von 10-15 Elementen auf der Seite
-    # ggf. werden andere Seiten aufgerufen
-        # Zufälliges anklicken von 10-15 Elementen auf der Seite
-        # ggf. werden andere Seiten aufgerufen
-        for i in range(randint(10, 15)):
-            try:
-                action = ActionChains(driver)
-                elements = driver.find_elements_by_tag_name('div')
-                action.move_to_element(choice(elements)).click().perform()
-                time.sleep(.5)
-            except Exception as exc:
-                pass
+        # Simulation der Mausbewegung
+        element = driver.find_element_by_xpath(button_xpath)
+        current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                          current_mouse_positon[1],
+                                                          element.location['x'],
+                                                          element.location['y'], driver)
 
-        driver.get(location)
+        action.click(button).perform()
 
         # Klick auf "Vermittlungscode bereits vorhanden"
         button_xpath = "//input[@name=\"vaccination-approval-checked\"]/.."
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
-        action.move_to_element(button).click().perform()
+
+        # Simulation der Mausbewegung
+        element = driver.find_element_by_xpath(button_xpath)
+        current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                          current_mouse_positon[1],
+                                                          element.location['x'],
+                                                          element.location['y'], driver)
+
+        action.click(button).perform()
 
         # Auswahl des ersten Code-Input-Feldes
         input_xpath = "//input[@name=\"ets-input-code-0\"]"
         input_field = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, input_xpath)))
         action = ActionChains(driver)
-        action.move_to_element(input_field).click().perform()
 
-        # Code eintragen
-        input_field.send_keys(code)
-        time.sleep(.1)
+        # Simulation der Mausbewegung
+        element = driver.find_element_by_xpath(input_xpath)
+        current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                          current_mouse_positon[1],
+                                                          element.location['x'],
+                                                          element.location['y'], driver)
+
+        action.click(input_field).perform()
+
+        # Code etwas realistischer eingeben
+        # Zu schnelle Eingabe erzeugt ebenfalls manchmal "Ein unerwarteter Fehler ist aufgetreten"        
+        for index, subcode in enumerate(code.split("-")):
+
+            if index == 0:
+                # Auswahl des ersten Code-Input-Feldes
+                input_xpath = "//input[@name=\"ets-input-code-0\"]"
+            elif index == 1:
+                # Auswahl des zweiten Code-Input-Feldes
+                input_xpath = "//input[@name=\"ets-input-code-1\"]"
+            elif index == 2:
+                # Auswahl des dritten Code-Input-Feldes
+                input_xpath = "//input[@name=\"ets-input-code-2\"]"
+
+            # Input Feld auswählen
+            input_field = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH,
+                                                                                     input_xpath)))
+            action = ActionChains(driver)
+            action.move_to_element(input_field).click().perform()
+
+            # Chars einzeln eingeben mit kleiner Pause
+            for char in subcode:
+                input_field.send_keys(char)
+                time.sleep(randint(500, 1000) / 1000)
 
         # Klick auf "Termin suchen"
         button_xpath = "//app-corona-vaccination-yes//button[@type=\"submit\"]"
         button = WebDriverWait(driver, 1).until(
             EC.element_to_be_clickable((By.XPATH, button_xpath)))
         action = ActionChains(driver)
-        action.move_to_element(button).click().perform()
-        time.sleep(1.5)
 
+        element = driver.find_element_by_xpath(button_xpath)
+        # Simulation der Mausbewegung
+        _ = move_mouse_to_coordinates(self.log, current_mouse_positon[0], current_mouse_positon[1],
+                                      element.location['x'], element.location['y'], driver)
+        action.click(button).perform()
+
+        # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
+        answer_xpath = "//app-corona-vaccination-yes//span[@class=\"text-pre-wrap\"]"
+        try:
+            time.sleep(0.5)
+            element = driver.find_element_by_xpath(answer_xpath)
+            if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
+                action.click(button).perform()
+        except Exception as e:
+            pass
+
+        time.sleep(1.5)
 
     def driver_get_cookies(self, driver, url, manual):
         # Erstelle zufälligen Vermittlungscode für die Cookie-Generierung
-        legal_chars = string.ascii_uppercase + string.digits
-        random_chars = "".join(choices(legal_chars, k=5))
-        random_code = f"VACC-IPY{random_chars[0]}-{random_chars[1:]}"
+        chars = string.ascii_uppercase + string.digits
+        random_code = f"{choices(chars, k=4)}-{choices(chars, k=4)}-{choices(chars, k=4)}"
 
         # Kann WebDriverException nach außen werfen:
         self.driver_enter_code(
             driver, choice(self.impfzentren[url]), random_code)
         if manual:
             self.log.warn(
-                "Du hast jetzt 30 Sekunden Zeit möglichst viele Elemente im Chrome Fenster anzuklicken. Das Fenster schließt sich automatisch.")
+                "Du hast jetzt 30 Sekunden Zeit möglichst viele Elemente im Chrome Fenster "
+                "anzuklicken. Das Fenster schließt sich automatisch.")
             time.sleep(30)
 
         required = ["bm_sz", "akavpau_User_allowed"]
+        optional = ["bm_sv", "bm_mi", "ak_bmsc", "_abck"]
 
         cookies = {
             c["name"]: c["value"]
             for c in driver.get_cookies()
-            if c["name"] in required
+            if c["name"] in required or c["name"] in optional
         }
 
         # prüfen, ob Cookies gesetzt wurden und in Session übernehmen
@@ -389,7 +460,7 @@ class ImpfterminService():
 
     def driver_termin_buchen(self, driver, reservierung):
         timestamp = time.strftime("%Y%m%d-%H%M%S")
-        filepath = os.path.join(self.PATH, "tools\\log\\")
+        filepath = os.path.join(self.PATH, "tools", "log")
 
         try:
             self.driver_enter_code(
@@ -408,7 +479,8 @@ class ImpfterminService():
         except:
             self.log.error("Termine können nicht gesucht werden")
             try:
-                driver.save_screenshot(filepath + "errorterminsuche" + timestamp + ".png")
+                driver.save_screenshot(
+                    os.path.join(filepath, "errorterminsuche" + timestamp + ".png"))
             except:
                 self.log.error("Screenshot konnte nicht gespeichert werden")
             pass
@@ -416,7 +488,8 @@ class ImpfterminService():
         # Termin auswählen
         try:
             time.sleep(3)
-            button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/div[1]/div[2]/label/div[2]/div'
+            button_xpath = '//*[@id="itsSearchAppointmentsModal"]/div/div/div[2]/div/div/form/' \
+                           'div[1]/div[2]/label/div[2]/div'
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
@@ -425,10 +498,11 @@ class ImpfterminService():
         except:
             self.log.error("Termine können nicht ausgewählt werden")
             try:
-                with open(filepath + "errorterminauswahl" + timestamp + ".html", 'w',
+                with open(os.path.join(filepath, "errorterminauswahl" + timestamp + ".html"), 'w',
                           encoding='utf-8') as file:
                     file.write(str(driver.page_source))
-                driver.save_screenshot(filepath + "errorterminauswahl" + timestamp + ".png")
+                driver.save_screenshot(
+                    os.path.join(filepath, "errorterminauswahl" + timestamp + ".png"))
             except:
                 self.log.error("HTML und Screenshot konnten nicht gespeichert werden")
             pass
@@ -447,7 +521,8 @@ class ImpfterminService():
 
         # Klick Daten erfassen
         try:
-            button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[2]/div[2]/div[2]/button'
+            button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/' \
+                           'div[5]/div/div[2]/div[2]/div[2]/button'
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
@@ -460,10 +535,14 @@ class ImpfterminService():
             # Klick Anrede
             arrAnreden = ["Herr", "Frau", "Kind", "Divers"]
             if self.kontakt['anrede'] in arrAnreden:
-                button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"' + \
+                button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//' \
+                               'div[contains(@class,"ets-radio-wrapper")]/label[@class=' \
+                               '"ets-radio-control"]/span[contains(text(),"' + \
                                self.kontakt['anrede'] + '")]'
             else:
-                button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div[contains(@class,"ets-radio-wrapper")]/label[@class="ets-radio-control"]/span[contains(text(),"Divers")]'
+                button_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//div' \
+                               '[contains(@class,"ets-radio-wrapper")]/label[@class=' \
+                               '"ets-radio-control"]/span[contains(text(),"Divers")]'
 
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
@@ -471,7 +550,8 @@ class ImpfterminService():
             action.move_to_element(button).click().perform()
 
             # Input Vorname
-            input_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="firstname"]'
+            input_xpath = '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input' \
+                          '[@formcontrolname="firstname"]'
             input_field = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, input_xpath)))
             action.move_to_element(input_field).click().perform()
@@ -479,42 +559,50 @@ class ImpfterminService():
 
             # Input Nachname
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="lastname"]')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input'
+                '[@formcontrolname="lastname"]')
             input_field.send_keys(self.kontakt['nachname'])
 
             # Input PLZ
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="zip"]')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input'
+                '[@formcontrolname="zip"]')
             input_field.send_keys(self.kontakt['plz'])
 
             # Input City
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="city"]')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input'
+                '[@formcontrolname="city"]')
             input_field.send_keys(self.kontakt['ort'])
 
             # Input Strasse
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="street"]')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input'
+                '[@formcontrolname="street"]')
             input_field.send_keys(self.kontakt['strasse'])
 
             # Input Hasunummer
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="housenumber"]')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input'
+                '[@formcontrolname="housenumber"]')
             input_field.send_keys(self.kontakt['hausnummer'])
 
             # Input Telefonnummer
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="phone"]')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input'
+                '[@formcontrolname="phone"]')
             input_field.send_keys(self.kontakt['phone'].replace("+49", ""))
 
             # Input Mail
             input_field = driver.find_element_by_xpath(
-                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input[@formcontrolname="notificationReceiver"]')
+                '//*[@id="itsSearchContactModal"]//app-booking-contact-form//input'
+                '[@formcontrolname="notificationReceiver"]')
             input_field.send_keys(self.kontakt['notificationReceiver'])
         except:
             self.log.error("Kontaktdaten können nicht eingegeben werden")
             try:
-                driver.save_screenshot(filepath + "errordateneingeben" + timestamp + ".png")
+                driver.save_screenshot(
+                    os.path.join(filepath, "errordateneingeben" + timestamp + ".png"))
             except:
                 self.log.error("Screenshot konnte nicht gespeichert werden")
             pass
@@ -533,7 +621,8 @@ class ImpfterminService():
 
         # Termin buchen
         try:
-            button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/div/div/div[5]/div/div[3]/div[2]/div[2]/button'
+            button_xpath = '/html/body/app-root/div/app-page-its-search/div/div/div[2]/' \
+                           'div/div/div[5]/div/div[3]/div[2]/div[2]/button'
             button = WebDriverWait(driver, 1).until(
                 EC.element_to_be_clickable((By.XPATH, button_xpath)))
             action = ActionChains(driver)
@@ -632,42 +721,45 @@ class ImpfterminService():
                 "Login mit Code fehlgeschlagen: "
                 f"JSONDecodeError: {str(exc)}") from exc
 
-    def reservierung_finden(self, plz_impfzentren: list, zeitrahmen: dict):
-        for url in self.impfzentren:
-            ausgewaehlte_impfzentren = [
-                iz for iz in self.impfzentren[url]
-                if iz["PLZ"] in plz_impfzentren
-            ]
-            if not ausgewaehlte_impfzentren:
-                continue
+    def reservierung_finden(self, zeitrahmen: dict, plz: str):
+        url = self.impfzentrum_in_plz(plz)["URL"]
+        codepoints = self.codepoints[url]
+        if not codepoints:
+            self.log.warn(f"Kein gültiger Vermittlungscode vorhanden für PLZ {plz}")
+            return None
 
-            plz = choice(ausgewaehlte_impfzentren)["PLZ"]
-            codes = self.codes[url]
-            if not codes:
-                self.log.warn(f"Kein gültiger Vermittlungscode vorhanden für PLZ {plz}")
-                continue
+        now = datetime.now()
+        usable_codepoints = [
+            cp for cp in codepoints if cp["next_use"] <= now
+        ]
+        if not usable_codepoints:
+            return None
 
-            try:
-                reservierung = self.reservierung_hier_finden(
-                    zeitrahmen, plz, codes[0])
-                if reservierung is not None:
-                    return reservierung
-            except UnmatchingCodeError:
-                code = codes.pop(0)
-                plz_ausgeschlossen = [
-                    iz["PLZ"] for iz in ausgewaehlte_impfzentren
-                ]
-                self.log.info(
-                    f"Überspringe Code {code[:4]}* "
-                    f"für {', '.join(plz_ausgeschlossen)}")
-            except TimeframeMissed:
-                self.rotiere_codes(url)
-            except RuntimeError as exc:
-                self.log.error(str(exc))
+        codepoint = usable_codepoints[0]
+        code = codepoint["code"]
+
+        try:
+            reservierung = self.reservierung_finden_mit_code(
+                zeitrahmen, plz, code)
+            if reservierung is not None:
+                return reservierung
+        except UnmatchingCodeError:
+            codepoints.remove(codepoint)
+            self.log.info(f"Überspringe Code {code[:4]}* für {plz}")
+        except TimeframeMissed:
+            # Es wurden Termine gefunden und alle gefundenen Termine
+            # abgelehnt.
+            # Der verwendete Code soll frühestens in 10 Minuten erneut
+            # verwendet werden, da sonst immer wieder die gleichen Termine
+            # gefunden und abgelehnt werden.
+            self.log.info(f"Pausiere Code {code[:4]}* für 10 Minuten")
+            codepoint["next_use"] = now + timedelta(minutes=10)
+        except RuntimeError as exc:
+            self.log.error(str(exc))
 
         return None
 
-    def reservierung_hier_finden(
+    def reservierung_finden_mit_code(
             self, zeitrahmen: dict, plz: str, code: str):
         """
         Es wird überprüft, ob im Impfzentrum in der gegebenen PLZ ein oder
@@ -683,7 +775,7 @@ class ImpfterminService():
                 'von_datum': '29.03.2021'
             }
 
-            self.reservierung_hier_finden(
+            self.reservierung_finden_mit_code(
                 zeitrahmen, '68163', 'XXXX-XXXX-XXXX')
             {
                 'code': 'XXXX-XXXX-XXXX',
@@ -732,7 +824,7 @@ class ImpfterminService():
                 f"Vermittlungscode nicht gültig für diese PLZ")
         if not res.ok:
             raise RuntimeError(
-                "Termine in {plz} können nicht geladen werden: "
+                f"Termine in {plz} können nicht geladen werden: "
                 f"{res.status_code} {res.text}")
 
         if 'Virtueller Warteraum des Impfterminservice' in res.text:
@@ -784,11 +876,15 @@ class ImpfterminService():
         tp_angenommen = choice(terminpaare_angenommen)
         self.log.success(f"Termin gefunden!")
         self.log.success(f"'{zentrumsname}' in {plz} {ort}")
+        msg = f"'{zentrumsname}' in {plz} {ort}\n"
         for num, termin in enumerate(tp_angenommen, 1):
             ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
                 '%d.%m.%Y um %H:%M Uhr')
             self.log.success(f"{num}. Termin: {ts}")
+            msg += f"{num}. Termin: {ts}\n"
         self.log.success(f"Link: {url}impftermine/suche/{code}/{plz}")
+        msg += f"Link: {url}impftermine/suche/{code}/{plz}"
+        self.notify(title="Termin gefunden:", msg=msg)
 
         # Reservierungs-Objekt besteht aus Terminpaar und Impfzentrum
         return {
@@ -834,7 +930,8 @@ class ImpfterminService():
                 # Example response data with status 400:
                 # {"errors":[{"code":"BU004","text":"Slot nicht frei"}]}
                 # {"errors":[{"code":"WP009","text":"Buchung bereits durchgefuehrt"}]}
-                # {"errors":[{"code":"WP011","text":"Der ausgewählte Termin ist nicht mehr verfügbar. Bitte wählen Sie einen anderen Termin aus"}]}
+                # {"errors":[{"code":"WP011","text":"Der ausgewählte Termin ist nicht mehr verfügbar.
+                # Bitte wählen Sie einen anderen Termin aus"}]}
                 raise AppointmentGone()
             if res.status_code != 201:
                 raise RuntimeError(
@@ -917,6 +1014,282 @@ class ImpfterminService():
 
             return (token, cookies)
 
+    def selenium_code_anfordern(self, mail, telefonnummer,
+                                plz_impfzentrum, geburtsdatum):
+        """
+        SMS-Code beim Impfterminservice via Selenium anfordern.
+
+        :param mail: Mail für Empfang des Codes
+        :param telefonnummer: Telefonnummer für SMS-Code, inkl. Präfix +49
+        :param plz_impfzentrum: PLZ des Impfzentrums, für das ein Code erstellt werden soll
+        :param geburtsdatum: Geburtsdatum der Person
+        :return:
+        """
+
+        url = self.impfzentrum_in_plz(plz_impfzentrum)["URL"]
+
+        data = {
+            "plz": plz_impfzentrum,
+            "email": mail,
+            "phone": telefonnummer,
+            "birthday": "{}-{:02d}-{:02d}".format(*reversed([int(d) for d
+                                                             in geburtsdatum.split(".")])),
+            "einzeltermin": False
+        }
+
+        # Wire Selenium driver um request im webdriver auszulesen
+        driver = selenium_wire.Chrome(self.get_chromedriver_path(),
+                                      options=self.get_chrome_options(False))
+
+        while True:
+
+            driver.get(f"{url}impftermine/service?plz={plz_impfzentrum}")
+            self.log.info("Generierung eines Vermittlungscodes via Selenium gestartet.")
+
+            # Queue Bypass
+            while True:
+                queue_cookie = driver.get_cookie("akavpwr_User_allowed")
+
+                if not queue_cookie \
+                        or "Virtueller Warteraum" not in driver.page_source:
+                    break
+
+                self.log.info("Im Warteraum, Seite neu laden")
+                queue_cookie["name"] = "akavpau_User_allowed"
+                driver.add_cookie(queue_cookie)
+
+            # Seite des Impzentrums laden
+            time.sleep(5)
+            driver.get(f"{url}impftermine/service?plz={plz_impfzentrum}")
+            driver.refresh()
+
+            # ets-session-its-cv-quick-check im SessionStorage setzen um verfügbare Termine
+            # zu simulieren
+            ets_session_its_cv_quick_check = '{"birthdate":"' + data["birthday"] + \
+                                             '","slotsAvailable":{"pair":true,"single":false}}'
+            driver.execute_script(
+                'window.sessionStorage.setItem("ets-session-its-cv-quick-check",\''
+                + ets_session_its_cv_quick_check + '\');')
+            self.log.info(
+                "\"ets-session-its-cv-quick-check\" Key:Value zum sessionStorage hinzugefügt.")
+
+            # Durch ets-session-its-cv-quick-check im SessionStorage kann direkt der Check
+            # aufgerufen werden
+            driver.get(f"{url}impftermine/check")
+            self.log.info("Überprüfung der Impfberechtigung übersprungen / Vorhandene Termine "
+                          "simuliert und impftermine/check geladen.")
+
+            time.sleep(1)
+
+            # Anpassen der HTML elemente im Browser um Nutzer aktuellen Status anzuzeigen
+            check_h1_xpath = "//app-its-check-success//h1"
+            check_h1 = driver.find_element_by_xpath(check_h1_xpath)
+            driver.execute_script("arguments[0].setAttribute('style','color: #FF0000;font-weight: "
+                                  "bold; font-size: 35px;')", check_h1)
+            driver.execute_script(f"arguments[0].innerText='Vaccipy! - Bitte nichts eingeben "
+                                  f"oder anklicken.'", check_h1)
+            check_p_xpath = "//app-its-check-success//p"
+            check_p = driver.find_element_by_xpath(check_p_xpath)
+            driver.execute_script("arguments[0].setAttribute('style','font-weight: bold; "
+                                  "font-size: 25px;')", check_p)
+
+            # random start position
+            current_mouse_positon = (randint(1, driver.get_window_size()["width"] - 1),
+                                     randint(1, driver.get_window_size()["height"] - 1))
+
+            # Simulation der Mausbewegung
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: "
+                                  f"{current_mouse_positon[0]}, y:{current_mouse_positon[1]}'",
+                                  check_p)
+            current_mouse_positon = move_mouse_to_coordinates(self.log, 0, 0,
+                                                              current_mouse_positon[0],
+                                                              current_mouse_positon[1], driver)
+
+            # Klick auf "Auswahl bestätigen" im Cookies-Banner
+            button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+
+            # Simulation der Mausbewegung
+            element = driver.find_element_by_xpath(button_xpath)
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: "
+                                  f"{element.location['x']}, y: {element.location['y']}'", check_p)
+            current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                              current_mouse_positon[1],
+                                                              element.location['x'],
+                                                              element.location['y'], driver)
+            driver.execute_script(f"arguments[0].innerText='Status: Cookie-Banner Anklicken'",
+                                  check_p)
+            action.click(button).perform()
+            time.sleep(0.5)
+
+            # Eingabe Mail
+            input_xpath = "//input[@formcontrolname=\"email\"]"
+            # Input Feld auswählen
+            input_field = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH,
+                                                                                     input_xpath)))
+            action = ActionChains(driver)
+
+            # Simulation der Mausbewegung
+            element = driver.find_element_by_xpath(input_xpath)
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: "
+                                  f"{element.location['x']}, y: {element.location['y']}'",
+                                  check_p)
+            current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                              current_mouse_positon[1],
+                                                              element.location['x'],
+                                                              element.location['y'], driver)
+            action.move_to_element(input_field).click().perform()
+
+            # Chars einzeln eingeben mit kleiner Pause
+            driver.execute_script(f"arguments[0].innerText='Status: E-Mail wird eingegeben'",
+                                  check_p)
+            for char in data['email']:
+                input_field.send_keys(char)
+                time.sleep(randint(500, 1000) / 1000)
+
+            self.log.info("E-Mail Adresse eingegeben.")
+            time.sleep(0.5)
+
+            # Eingabe Phone
+            input_xpath = "//input[@formcontrolname=\"phone\"]"
+            # Input Feld auswählen
+            input_field = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH,
+                                                                                     input_xpath)))
+            action = ActionChains(driver)
+
+            # Simulation der Mausbewegung
+            element = driver.find_element_by_xpath(input_xpath)
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: "
+                                  f"{element.location['x']}, y: {element.location['y']}'", check_p)
+            current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                              current_mouse_positon[1],
+                                                              element.location['x'],
+                                                              element.location['y'], driver)
+            action.move_to_element(input_field).click().perform()
+
+            # Chars einzeln eingeben mit kleiner Pause
+            driver.execute_script(f"arguments[0].innerText='Status: Telefonnummer wird eingegeben'",
+                                  check_p)
+            for char in data['phone'][3:]:
+                input_field.send_keys(char)
+                time.sleep(randint(500, 1000) / 1000)
+
+            self.log.info("Telefonnummer eingegeben.")
+            time.sleep(0.5)
+
+            # Anfrage absenden
+            button_xpath = "//app-its-check-success//button[@type=\"submit\"]"
+            button = WebDriverWait(driver, 1).until(
+                EC.element_to_be_clickable((By.XPATH, button_xpath)))
+            action = ActionChains(driver)
+
+            # Simulation der Mausbewegung
+            element = driver.find_element_by_xpath(button_xpath)
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: "
+                                  f"{element.location['x']}, y: {element.location['y']}'", check_p)
+            current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
+                                                              current_mouse_positon[1],
+                                                              element.location['x'],
+                                                              element.location['y'], driver)
+            driver.execute_script(
+                f"arguments[0].innerText='Status: Versuche Anfrage abzuschicken'",
+                check_p)
+            action.move_to_element(button).click().perform()
+
+            # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
+            # Falls eine andere Meldung aufgetrteten ist -> Abbruch
+            try:
+                answer_xpath = "//app-its-check-success//span[@class=\"text-pre-wrap\"]"
+                time.sleep(0.5)
+                element = driver.find_element_by_xpath(answer_xpath)
+            except Exception as e:
+                element = None
+
+            if element:
+                if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
+                    driver.execute_script(f"arguments[0].innerText='Status: Zweiter Versuch "
+                                          f"Anfrage abzuschicken'", check_p)
+                    action.move_to_element(button).click().perform()
+                elif element.text == "Anfragelimit erreicht.":
+                    driver.close()
+                    raise RuntimeError("Anfragelimit erreicht")
+                elif element.text == "Geburtsdatum ungueltig oder in der Zukunft":
+                    driver.close()
+                    raise RuntimeError("Geburtsdatum ungueltig oder in der Zukunft")
+
+            time.sleep(2)
+
+            # Prüfen ob SMS Verifizierung geladen wurde falls nicht Abbruch
+            sms_verifizierung_h1_xpath = "//app-page-its-check-result//h1"
+            sms_verifizierung_h1 = driver.find_element_by_xpath(sms_verifizierung_h1_xpath)
+            if sms_verifizierung_h1.text != "SMS Verifizierung":
+                driver.close()
+                raise RuntimeError("Vermittlungscode kann derzeit nicht angefragt werden. "
+                                   "Versuchen Sie es später erneut.")
+
+            # Ab jetzt befinden wir uns auf der SMS Verifizierung Seite
+            location = f"{url}rest/smspin/verifikation"
+            self.log.info("SMS-Anfrage an Server versandt.")
+            self.log.info("Bitte SMS-Code innerhalb der nächsten 60 Sekunden im Browser-Fenster "
+                          "eingeben.")
+
+            # 90 Sekunden lang auf Antwort vom Server warten
+            # Eventuell gibt User seinen Pin falsch ein etc.
+            max_sms_code_eingabe_sekunden = 90
+            while max_sms_code_eingabe_sekunden:
+
+                # Verbleibende Zeit anzeigen
+                try:
+                    driver.execute_script(f"arguments[0].innerText='Vaccipy! - Bitte SMS-Code "
+                                          f"im Browser eingeben. Noch {max_sms_code_eingabe_sekunden} "
+                                          f"Sekunden verbleibend.'", sms_verifizierung_h1)
+                except Exception as e:
+                    pass
+
+                # Alle bisherigen Requests laden
+                sms_verification_responses = []
+                for request in driver.requests:
+                    if request.url == location:
+                        sms_verification_responses.append(request.response)
+
+                if sms_verification_responses:
+
+                    # Neuste Antowrt vom Server auslesen
+                    # User kann z.B 2 mal den Pin falsch eingeben
+                    # uns interessiert nur die neuste Antwort vom Server
+                    latest_reponse = sms_verification_responses[-1]
+
+                    if latest_reponse is not None:
+                        if latest_reponse.status_code == 400:
+                            try:
+                                # error Laden
+                                error = json.loads(latest_reponse.body.decode('utf-8'))['error']
+                            except JSONDecodeError as exc:
+                                raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
+
+                            if error == "Pin ungültig":
+                                self.log.info("Der eingegebene SMS-Code ist ungültig.")
+
+                        elif latest_reponse.status_code == 200:
+                            self.log.info(f"SMS-Code erfolgreich übermittelt. Bitte Prüfen "
+                                          f"Sie Ihre E-Mails.")
+                            driver.close()
+                            return True
+                        elif latest_reponse.status_code == 429:
+                            driver.close()
+                            raise RuntimeError("SMS-Code konnte nicht übermittelt werden. "
+                                               "Blockiert durch Botprotection.")
+
+                time.sleep(1)
+                max_sms_code_eingabe_sekunden -= 1
+
+            driver.close()
+            self.log.info(f"SMS-Verifikation nicht innerhalb von 90 Sekunden abgeschlossen. "
+                          f"Versuchen Sie es später erneut.")
+            return False
+
     def code_bestaetigen(self, token, cookies, sms_pin, plz_impfzentrum):
         """
         Bestätigung der Code-Generierung mittels SMS-Code
@@ -936,13 +1309,12 @@ class ImpfterminService():
 
         manual = False
         while True:
-            if cookies is None:
+            if not cookies:
                 try:
                     cookies = self.get_cookies(url, manual=manual)
                 except RuntimeError as exc:
                     self.log.error(str(exc))
                     continue  # Neuer Versuch in nächster Iteration
-
             try:
                 self.s.cookies.clear()
                 res = self.s.post(
@@ -988,9 +1360,9 @@ class ImpfterminService():
         raise ValueError(
             f"Gewünschte PLZ {plz_impfzentrum} wurde bei Initialisierung nicht angegeben")
 
-    def rotiere_codes(self, url):
-        codes = self.codes[url]
-        self.codes[url] = codes[1:] + codes[:1]
+    def rotiere_codepoints(self, url):
+        codepoints = self.codepoints[url]
+        self.codepoints[url] = codepoints[1:] + codepoints[:1]
 
     def notify(self, title: str, msg: str):
         fire_notifications(self.notifications, self.operating_system, title, msg)
@@ -1049,32 +1421,47 @@ class ImpfterminService():
         its.log.info("Teste Chromedriver")
         its.get_chromedriver(headless=True).quit()
 
-        while True:
+        for plz_impfzentrum in cycle(plz_impfzentren):
             its.log.set_prefix(" ".join([
                 plz for plz in plz_impfzentren
-                if its.codes[izs_by_plz[plz]["URL"]]
+                if its.codepoints[izs_by_plz[plz]["URL"]]
             ]))
-            reservierung = its.reservierung_finden(plz_impfzentren, zeitrahmen)
+            url = its.impfzentrum_in_plz(plz_impfzentrum)["URL"]
+            reservierung = its.reservierung_finden(zeitrahmen, plz_impfzentrum)
             if reservierung is not None:
-                url = reservierung["impfzentrum"]["URL"]
                 try:
                     its.termin_buchen(reservierung)
                     msg = "Termin erfolgreich gebucht!"
                     its.log.success(msg)
-                    its.log.info("[SPENDE] Unterstütze hier unsere Spendenkampagne für 'Ärzte ohne Grenzen': https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m")
+                    its.log.info(
+                        "[SPENDE] Unterstütze hier unsere Spendenkampagne für 'Ärzte ohne "
+                        "Grenzen': https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m")
                     its.notify(title="Terminbuchung:", msg=msg)
                     # Programm beenden, wenn Termin gefunden wurde
                     return
                 except AppointmentGone:
                     msg = f"Termin ist nicht mehr verfügbar"
-                    its.rotiere_codes(url)
+                    its.log.error(msg)
+                    its.notify(title="Terminbuchung:", msg=msg)
+                    # Der verwendete Code soll frühestens in 10 Minuten erneut
+                    # verwendet werden, da sonst immer wieder der gleiche
+                    # Termin zu buchen versucht wird.
+                    code = reservierung["code"]
+                    its.log.info(f"Pausiere Code {code[:4]}* für 10 Minuten")
+                    now = datetime.now()
+                    for codepoint in its.codepoints[url]:
+                        if codepoint["code"] == code:
+                            codepoint["next_use"] = now + timedelta(minutes=10)
                 except BookingError:
                     msg = f"Termin konnte nicht gebucht werden."
-                its.log.error(msg)
-                its.notify(title="Terminbuchung:", msg=msg)
+                    its.log.error(msg)
+                    its.notify(title="Terminbuchung:", msg=msg)
+
+            # Rotiere Codes, um in nächster Iteration andere Codes zu
+            # verwenden.
+            its.rotiere_codepoints(url)
 
             time.sleep(check_delay)
-
 
 
 def terminpaar_im_zeitrahmen(terminpaar, zeitrahmen):

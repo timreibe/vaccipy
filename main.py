@@ -74,7 +74,7 @@ def update_kontaktdaten_interactive(
 
         if "anrede" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
-                kontaktdaten, ["kontakt", "anrede"], "> Anrede (Frau/Herr/...): ")
+                kontaktdaten, ["kontakt", "anrede"], "> Anrede (Frau/Herr/Kind/Divers): ")
 
         if "vorname" not in kontaktdaten["kontakt"] and command == "search":
             input_kontaktdaten_key(
@@ -378,29 +378,14 @@ def gen_code(kontaktdaten):
             print("Das Datum entspricht nicht dem richtigen Format (DD.MM.YYYY). "
                   "Bitte erneut versuchen.")
 
-    print()
-    # code anfordern
+    # code anfordern via selenium
     try:
-        token, cookies = its.code_anfordern(
-            mail, telefonnummer, plz_impfzentrum, geburtsdatum)
+        if its.selenium_code_anfordern(mail, telefonnummer, plz_impfzentrum, geburtsdatum):
+            return True
     except RuntimeError as exc:
         print(
             f"\nDie Code-Generierung war leider nicht erfolgreich:\n{str(exc)}")
         return False
-
-    # code bestätigen
-    print("\nDu erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
-          "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
-          "Beispiel: 123-456")
-
-    # 3 Versuche für die SMS-Code-Eingabe
-    for _ in range(3):
-        sms_pin = input("\n> SMS-Code: ").replace("-", "")
-        print()
-        if its.code_bestaetigen(token, cookies, sms_pin, plz_impfzentrum):
-            print("\nDu kannst jetzt mit der Terminsuche fortfahren.")
-            return True
-        print("\nSMS-Code ungültig")
 
     print("Die Code-Generierung war leider nicht erfolgreich.")
     return False
@@ -566,6 +551,9 @@ def main():
                         f"--read-only {'de' if not args.read_only else ''}aktiviert.")
                 elif extended_settings and option == "s":
                     args.retry_sec = int(input("> --retry-sec="))
+                    if args.retry_sec<30:
+                        print("[RETRY-SEC] Um die Server nicht übermäßig zu belasten, wurde der Wert auf 30 Sekunden gesetzt")
+                        args.retry_sec = 30
                 elif extended_settings and option == "n":
                     new_args = copy.copy(args)
                     new_args.configure_notifications = not new_args.configure_notifications
