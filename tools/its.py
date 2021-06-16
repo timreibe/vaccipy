@@ -1050,6 +1050,7 @@ class ImpfterminService():
             driver.get(f"{url}impftermine/service?plz={plz_impfzentrum}")
             driver.refresh()
 
+
             # ets-session-its-cv-quick-check im SessionStorage setzen um verfügbare Termine zu simulieren
             ets_session_its_cv_quick_check = '{"birthdate":"'+ data["birthday"] +'","slotsAvailable":{"pair":true,"single":false}}'
             driver.execute_script('window.sessionStorage.setItem("ets-session-its-cv-quick-check",\''+ ets_session_its_cv_quick_check +'\');')
@@ -1059,13 +1060,26 @@ class ImpfterminService():
             driver.get(f"{url}impftermine/check")
             self.log.info("Überprüfung der Impfberechtigung übersprungen / Vorhandene Termine simuliert und impftermine/check geladen.")
 
+            time.sleep(1)
+
+            # Anpassen der HTML elemente im Browser um Nutzer aktuellen Status anzuzeigen
+            check_h1_xpath = "//app-its-check-success//h1"
+            check_h1 = driver.find_element_by_xpath(check_h1_xpath)
+            driver.execute_script("arguments[0].setAttribute('style','color: #FF0000;font-weight: bold; font-size: 35px;')", check_h1)
+            driver.execute_script(f"arguments[0].innerText='Vaccipy! - Bitte nichts eingeben oder anklicken.'", check_h1)
+            check_p_xpath = "//app-its-check-success//p"
+            check_p = driver.find_element_by_xpath(check_p_xpath)
+            driver.execute_script("arguments[0].setAttribute('style','font-weight: bold; font-size: 25px;')", check_p)
+            
             # random start position
             current_mouse_positon = (randint(1,driver.get_window_size()["width"]-1),
                                  randint(1,driver.get_window_size()["height"]-1))
 
             # Simulation der Mausbewegung
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x:{current_mouse_positon[0]}, y:{current_mouse_positon[1]}'", check_p)
             current_mouse_positon = move_mouse_to_coordinates(self.log, 0, 0, current_mouse_positon[0],
                                                                 current_mouse_positon[1], driver)
+            
 
             # Klick auf "Auswahl bestätigen" im Cookies-Banner
             button_xpath = "//a[contains(@class,'cookies-info-close')][1]"
@@ -1075,11 +1089,12 @@ class ImpfterminService():
 
             # Simulation der Mausbewegung
             element = driver.find_element_by_xpath(button_xpath)
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: {element.location['x']}, y: {element.location['y']}'", check_p)
             current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
                                                                 current_mouse_positon[1],
                                                                 element.location['x'],
                                                                 element.location['y'], driver)
-
+            driver.execute_script(f"arguments[0].innerText='Status: Cookie-Banner Anklicken'", check_p)
             action.click(button).perform()
             time.sleep(0.5)
 
@@ -1091,14 +1106,15 @@ class ImpfterminService():
 
             # Simulation der Mausbewegung
             element = driver.find_element_by_xpath(input_xpath)
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: {element.location['x']}, y: {element.location['y']}'", check_p)
             current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
                                                                 current_mouse_positon[1],
                                                                 element.location['x'],
                                                                 element.location['y'], driver)
-
             action.move_to_element(input_field).click().perform()
 
             # Chars einzeln eingeben mit kleiner Pause
+            driver.execute_script(f"arguments[0].innerText='Status: E-Mail wird eingegeben'", check_p)
             for char in data['email']:
                 input_field.send_keys(char)
                 time.sleep(randint(500,1000)/1000)
@@ -1114,14 +1130,15 @@ class ImpfterminService():
 
             # Simulation der Mausbewegung
             element = driver.find_element_by_xpath(input_xpath)
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: {element.location['x']}, y: {element.location['y']}'", check_p)
             current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
                                                                 current_mouse_positon[1],
                                                                 element.location['x'],
                                                                 element.location['y'], driver)
-
             action.move_to_element(input_field).click().perform()
 
             # Chars einzeln eingeben mit kleiner Pause
+            driver.execute_script(f"arguments[0].innerText='Status: Phone wird eingegeben'", check_p)
             for char in data['phone'][3:]:
                 input_field.send_keys(char)
                 time.sleep(randint(500,1000)/1000)
@@ -1136,71 +1153,97 @@ class ImpfterminService():
 
             # Simulation der Mausbewegung
             element = driver.find_element_by_xpath(button_xpath)
+            driver.execute_script(f"arguments[0].innerText='Status: Maussimulation nach x: {element.location['x']}, y: {element.location['y']}'", check_p)
             current_mouse_positon = move_mouse_to_coordinates(self.log, current_mouse_positon[0],
                                                                 current_mouse_positon[1],
                                                                 element.location['x'],
                                                                 element.location['y'], driver)
+            driver.execute_script(f"arguments[0].innerText='Status: Versuche Anfrage abzuschicken'", check_p)
+            action.move_to_element(button).click().perform()
 
-            action.click(button).perform()
+            # Zweiter Klick-Versuch, falls Meldung "Es ist ein unerwarteter Fehler aufgetreten" erscheint
+            # Falls eine andere Meldung aufgetrteten ist -> Abbruch
+            try:
+                answer_xpath = "//app-its-check-success//span[@class=\"text-pre-wrap\"]"
+                time.sleep(0.5)
+                element = driver.find_element_by_xpath(answer_xpath)
+            except Exception as e:
+                element = None
+
+            if element:
+                if element.text == "Es ist ein unerwarteter Fehler aufgetreten":
+                    driver.execute_script(f"arguments[0].innerText='Status: Zweiter Versuch Anfrage abzuschicken'", check_p)
+                    action.move_to_element(button).click().perform()
+                elif element.text == "Anfragelimit erreicht.":
+                    driver.close()
+                    raise RuntimeError("Anfragelimit erreicht")
+                elif element.text == "Geburtsdatum ungueltig oder in der Zukunft":
+                    driver.close()
+                    raise RuntimeError("Geburtsdatum ungueltig oder in der Zukunft")
+
+            time.sleep(2)
+
+            # Prüfen ob SMS Verifizierung geladen wurde falls nicht Abbruch
+            sms_verifizierung_h1_xpath = "//app-page-its-check-result//h1"
+            sms_verifizierung_h1 = driver.find_element_by_xpath(sms_verifizierung_h1_xpath)
+            if sms_verifizierung_h1.text != "SMS Verifizierung":
+                driver.close()
+                raise RuntimeError("Vermittlungscode kann derzeit nicht angefragt werden. Versuchen Sie es später erneut.")
+
+            # Ab jetzt befinden wir uns auf der SMS Verifizierung Seite
+            location = f"{url}rest/smspin/verifikation"
             self.log.info("SMS-Anfrage an Server versandt.")
+            self.log.info("Bitte SMS-Code innerhalb der nächsten 60 Sekunden im Browser-Fenster eingeben.")
+            
+            # 90 Sekunden lang auf Antwort vom Server warten
+            # Eventuell gibt User seinen Pin falsch ein etc.
+            max_sms_code_eingabe_sekunden = 90
+            while max_sms_code_eingabe_sekunden:
 
-            # Cookies auslesen / Muss nicht über den langen river_enter_code() weg gemacht werden
-            cookies = driver.get_cookies()
-            required = ["bm_sz", "akavpau_User_allowed"]
-            optional = ["bm_sv", "bm_mi", "ak_bmsc", "_abck"]
-            cookies = {
-                    c["name"]: c["value"]
-                    for c in cookies
-                    if c["name"] in required or c["name"] in optional
-             }
+                # Verbleibende Zeit anzeigen
+                try:
+                    driver.execute_script(f"arguments[0].innerText='Vaccipy! - Bitte SMS-Code im Browser eingeben. Noch {max_sms_code_eingabe_sekunden} Sekunden verbleibend.'", sms_verifizierung_h1)
+                except Exception as e:
+                    pass
 
-            res = None
-            max_retry = 5
-            retry_counter = 0
-            while not res:
-                # Get response von rest/smspin/anforderung
+                # Alle bisherigen Requests laden
+                sms_verification_responses= []
                 for request in driver.requests:
                     if request.url == location:
-                        res = request.response
-                        break
-                if retry_counter >= max_retry:
-                    raise RuntimeError("Keine Antwort vom Server erhalten.")
-                else:
-                    retry_counter += 1
-                    self.log.info(f"Warten auf Antwort des Servers. Kann einige Sekunden dauern. Versuch {retry_counter} von {max_retry}")
-                    time.sleep(5)
+                        sms_verification_responses.append(request.response)
 
-            # Browser wird nicht mehr benötigt, SMS-Code wird in Vaccipy eingegeben
-            driver.close()
+                if sms_verification_responses:
 
-            if res.status_code == 429:
-                self.log.error("Anfrage wurde von der Botprotection geblockt")
-                self.log.error("Erneuter versuch in 30 Sekunden")
-                time.sleep(30)
-                continue
+                    # Neuste Antowrt vom Server auslesen
+                    # User kann z.B 2 mal den Pin falsch eingeben uns interessiert nur die neuste Antwort vom Server
+                    latest_reponse = sms_verification_responses[-1]
 
-            if res.status_code == 400:
-                try:
-                    # error Laden
-                    error = json.loads(res.body.decode('utf-8'))['error']
-                except JSONDecodeError as exc:
-                    raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
-                print(error)
-                # Spezifischen Fehlermeldung ausgeben
-                if error == 'Geburtsdatum ungueltig oder in der Zukunft':
-                    raise RuntimeError("Geburtsdatum ungueltig oder in der Zukunft")
-                elif error == 'Anfragelimit erreicht.':
-                    raise RuntimeError("Anfragelimit erreicht")
-                else:
-                    raise RuntimeError("Unbekannter Fehler beim Anfordern des SMS-Codes aufgetreten.")
+                    if latest_reponse is not None:
+                        if latest_reponse.status_code == 400:
+                            try:
+                                # error Laden
+                                error = json.loads(latest_reponse.body.decode('utf-8'))['error']
+                            except JSONDecodeError as exc:
+                                raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
 
-            try:
-                # Token laden
-                token = json.loads(res.body.decode('utf-8'))['token']
-            except JSONDecodeError as exc:
-                raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
+                            if error == "Pin ungültig":
+                                self.log.info("Der eingegebene SMS-Code ist ungültig.")
 
-            return (token, cookies)
+                        elif latest_reponse.status_code == 200:
+                                self.log.info(f"SMS-Code erfolgreich übermittelt. Bitte Prüfen Sie Ihre E-Mails.")
+                                driver.close()
+                                return True
+                        elif latest_reponse.status_code == 429:
+                            driver.close() 
+                            raise RuntimeError("SMS-Code konnte nicht übermittelt werden. Blockiert durch Botprotection.")
+
+                time.sleep(1)
+                max_sms_code_eingabe_sekunden -= 1
+                
+
+            driver.close() 
+            self.log.info(f"SMS-Verifikation nicht innerhalb von 90 Sekunden abgeschlossen. Versuchen Sie es später erneut.")   
+            return False
 
 
     def code_bestaetigen(self, token, cookies, sms_pin, plz_impfzentrum):
