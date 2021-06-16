@@ -88,7 +88,6 @@ mkShell {
       p.idna
       p.plyer
       p.python-i18n
-      p.python-prctl
       p.pyyaml
       p.selenium
       p.urllib3
