@@ -62,7 +62,6 @@ class Worker(QObject):
         self.plz_impfzentrum = ""
         self.mail = ""
         self.telefonnummer = ""
-        self.sms_pin = ""
         
         # connect to signals
         self.signalUpdateData.connect(self.updateData)
@@ -92,9 +91,6 @@ class Worker(QObject):
         if strmode == "GEBURTSDATUM":
             print(txt)
             self.geburtsdatum = txt
-        elif strmode == "SMSCODE":
-            print(txt)
-            self.sms_pin = txt
             
         self.signalGot = True
         return True
@@ -125,9 +121,11 @@ class Worker(QObject):
         if self.stopped is True:
             return False
             
-        # code anfordern
+        # code anfordern via selenium
         try:
-            token, cookies = its.code_anfordern(self.mail, self.telefonnummer,  self.plz_impfzentrum, self.geburtsdatum)
+            if its.selenium_code_anfordern(self.mail, self.telefonnummer,  self.plz_impfzentrum, self.geburtsdatum):
+                self.sendSignalAndWait("signalShowInput","SMSCODE_OK")
+                return True
         except RuntimeError as exc:
             print(
                 f"\nDie Code-Generierung war leider nicht erfolgreich:\n{str(exc)}")
@@ -136,18 +134,6 @@ class Worker(QObject):
                 QtCore.QThread.msleep(100)
             return False
 
-        # code bestätigen
-        # allow 3 retries
-        for _ in range(3):
-            if self.stopped is False:
-                self.sendSignalAndWait("signalShowInput","SMSCODE")
-                if its.code_bestaetigen(token, cookies, self.sms_pin, self.plz_impfzentrum):
-                    self.sendSignalAndWait("signalShowInput","SMSCODE_OK")
-                    return True
-            else:
-                return False
-
-        print("\nSMS-Code ungültig")
         print("Die Code-Generierung war leider nicht erfolgreich.")
 
         self.signalShowDlg.emit("CRITICAL_CLOSE",f"SMS-Code ungültig.\n\nDie Code-Generierung war leider nicht erfolgreich")
@@ -257,16 +243,7 @@ class QtCodeGen(QtWidgets.QDialog):
                         break
                 except ValidationError as exc:
                     QtWidgets.QMessageBox.critical(self, "Geburtsdatum ungültiges Format", "Das Datum entspricht nicht dem richtigen Format (DD.MM.YYYY).")
-        elif dlgType == "SMSCODE":
-            text, ok = QtWidgets.QInputDialog.getText(self, 'SMS Code', 
-                'Du erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer\n'
-                'Bitte trage nachfolgend den SMS-Code ein.\n'
-                'Beispiel: 551-550\n')
-            if ok:
-                sms_pin = str(text).replace("-", "")
-                self.worker.signalUpdateData.emit("SMSCODE",sms_pin) 
-            else:
-                self.hardClose()
+ 
         elif dlgType == "SMSCODE_OK":
             ret = QtWidgets.QMessageBox.information(self, "Erfolgreich", "Code erfolgreich generiert. Du kannst jetzt mit der Terminsuche fortfahren.",QMessageBox.StandardButton.Ok)
             if ret == QMessageBox.StandardButton.Ok:
