@@ -378,29 +378,14 @@ def gen_code(kontaktdaten):
             print("Das Datum entspricht nicht dem richtigen Format (DD.MM.YYYY). "
                   "Bitte erneut versuchen.")
 
-    print()
-    # code anfordern
+    # code anfordern via selenium
     try:
-        token, cookies = its.selenium_code_anfordern(
-            mail, telefonnummer, plz_impfzentrum, geburtsdatum)
+        if its.selenium_code_anfordern(mail, telefonnummer, plz_impfzentrum, geburtsdatum):
+            return True
     except RuntimeError as exc:
         print(
             f"\nDie Code-Generierung war leider nicht erfolgreich:\n{str(exc)}")
         return False
-
-    # code bestätigen
-    print("\nDu erhältst gleich eine SMS mit einem Code zur Bestätigung deiner Telefonnummer.\n"
-          "Trage diesen hier ein. Solltest du dich vertippen, hast du noch 2 weitere Versuche.\n"
-          "Beispiel: 123-456")
-
-    # 3 Versuche für die SMS-Code-Eingabe
-    for _ in range(3):
-        sms_pin = input("\n> SMS-Code: ").replace("-", "")
-        print()
-        if its.code_bestaetigen(token, cookies, sms_pin, plz_impfzentrum):
-            print("\nDu kannst jetzt mit der Terminsuche fortfahren.")
-            return True
-        print("\nSMS-Code ungültig")
 
     print("Die Code-Generierung war leider nicht erfolgreich.")
     return False
