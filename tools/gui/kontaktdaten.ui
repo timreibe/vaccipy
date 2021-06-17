@@ -53,6 +53,9 @@
    </item>
    <item>
     <widget class="QToolBox" name="toolBox">
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
      <property name="toolTip">
       <string/>
      </property>
@@ -64,6 +67,9 @@
         <width>748</width>
         <height>232</height>
        </rect>
+      </property>
+      <property name="cursor">
+       <cursorShape>ArrowCursor</cursorShape>
       </property>
       <attribute name="label">
        <string>1. Kontaktdaten eingeben</string>
@@ -99,6 +105,9 @@
          </item>
          <item row="0" column="1">
           <widget class="QPushButton" name="b_impfzentren_waehlen">
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
            <property name="text">
             <string>Impfzentren auswählen</string>
            </property>
@@ -115,6 +124,9 @@
        </item>
        <item row="1" column="1">
         <widget class="QComboBox" name="i_anrede_combo_box">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nutze die Anrede &amp;quot;Kind&amp;quot; bis 12 Jahre oder gar nicht.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="editable">
           <bool>true</bool>
          </property>
@@ -215,6 +227,9 @@
              <height>0</height>
             </size>
            </property>
+           <property name="placeholderText">
+            <string>Musterstraße</string>
+           </property>
            <property name="clearButtonEnabled">
             <bool>false</bool>
            </property>
@@ -224,6 +239,9 @@
           <widget class="QLineEdit" name="i_hausnummer">
            <property name="inputMask">
             <string/>
+           </property>
+           <property name="placeholderText">
+            <string>1</string>
            </property>
            <property name="clearButtonEnabled">
             <bool>false</bool>
@@ -256,6 +274,9 @@
         <layout class="QGridLayout" name="plz_grid_layout">
          <item row="0" column="3">
           <widget class="QLineEdit" name="i_wohnort">
+           <property name="placeholderText">
+            <string>Musterstadt</string>
+           </property>
            <property name="clearButtonEnabled">
             <bool>false</bool>
            </property>
@@ -311,6 +332,9 @@
        </item>
        <item row="6" column="1">
         <widget class="QLineEdit" name="i_telefon">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Von der Webseite werden nur deutsche Handynummern unterstützt.&lt;br/&gt;Due to restrictions by impfterminservice.de only German phone numbers are applicable.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="inputMask">
           <string/>
          </property>
@@ -334,6 +358,9 @@
        </item>
        <item row="7" column="1">
         <widget class="QLineEdit" name="i_mail">
+         <property name="placeholderText">
+          <string>vaccipy@vaccipy.de</string>
+         </property>
          <property name="clearButtonEnabled">
           <bool>false</bool>
          </property>
@@ -349,6 +376,9 @@
         <width>748</width>
         <height>232</height>
        </rect>
+      </property>
+      <property name="cursor">
+       <cursorShape>ArrowCursor</cursorShape>
       </property>
       <attribute name="label">
        <string>2. Vermittlungscodes eingeben</string>
@@ -571,6 +601,9 @@
         <width>748</width>
         <height>232</height>
        </rect>
+      </property>
+      <property name="cursor">
+       <cursorShape>ArrowCursor</cursorShape>
       </property>
       <attribute name="label">
        <string>3. Suchzeitraum eingrenzen (Optional)</string>
@@ -922,6 +955,9 @@
         <height>232</height>
        </rect>
       </property>
+      <property name="cursor">
+       <cursorShape>ArrowCursor</cursorShape>
+      </property>
       <attribute name="label">
        <string>4. Externe Benachrichtigungen (Optional)</string>
       </attribute>
@@ -992,6 +1028,9 @@ Dann nehme hier die Einstelungen vor.</string>
                 </item>
                 <item row="2" column="1" colspan="2">
                  <widget class="QPushButton" name="b_test_telegram">
+                  <property name="cursor">
+                   <cursorShape>PointingHandCursor</cursorShape>
+                  </property>
                   <property name="text">
                    <string>Telegram testen</string>
                   </property>
@@ -1041,6 +1080,9 @@ Dann nehme hier die Einstelungen vor.</string>
                 </item>
                 <item row="5" column="0" colspan="2">
                  <widget class="QPushButton" name="b_test_pushover">
+                  <property name="cursor">
+                   <cursorShape>PointingHandCursor</cursorShape>
+                  </property>
                   <property name="text">
                    <string>Pushover testen</string>
                   </property>
@@ -1081,6 +1123,9 @@ Dann nehme hier die Einstelungen vor.</string>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="cursor">
+      <cursorShape>ArrowCursor</cursorShape>
+     </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Open|QDialogButtonBox::Reset|QDialogButtonBox::Save</set>
      </property>

@@ -48,6 +48,12 @@ für den Corona Impfterminservice </string>
       </item>
       <item>
        <widget class="QToolBox" name="toolBox">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::TabFocus</enum>
+        </property>
         <property name="locale">
          <locale language="German" country="Germany"/>
         </property>
@@ -72,8 +78,14 @@ für den Corona Impfterminservice </string>
            <height>281</height>
           </rect>
          </property>
+         <property name="cursor">
+          <cursorShape>ArrowCursor</cursorShape>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <attribute name="label">
-          <string>1. Vermittlungscode</string>
+          <string>1. Vermittlungscode generieren</string>
          </attribute>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
@@ -100,6 +112,9 @@ für den Corona Impfterminservice </string>
              <layout class="QGridLayout" name="codegen_links_layout">
               <item row="1" column="0">
                <widget class="QPushButton" name="b_code_generieren">
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
                 <property name="text">
                  <string>Vermittlungscode generieren</string>
                 </property>
@@ -108,7 +123,7 @@ für den Corona Impfterminservice </string>
               <item row="0" column="0">
                <widget class="QGroupBox" name="groupBox">
                 <property name="title">
-                 <string>Hinweis</string>
+                 <string>Anleitung</string>
                 </property>
                 <property name="flat">
                  <bool>false</bool>
@@ -123,7 +138,7 @@ für den Corona Impfterminservice </string>
                  <item>
                   <widget class="QLabel" name="label_4">
                    <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du benötigst ein Vermittlungscode?&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kein Problem, halte dein Handy für den SMS-Code bereit und drücke auf &amp;quot;Vermittlungscode generieren&amp;quot;.Folge danach den Anweisungen. Nach erfolgreicher Generierung bekommst du eine E-Mail mit deinem Vermittlungscode&lt;br/&gt;Bis deine E-Mail kommt, können einige Minuten vergehen.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast bereits einen Vermittlungcode?&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Gehe zu Schritt 2 und passe deine Daten und Einstellungen an.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du benötigst ein Vermittlungscode?&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kein Problem, halte dein Handy für den SMS-Code bereit und drücke auf &amp;quot;&lt;span style=&quot; font-style:italic;&quot;&gt;Vermittlungscode generieren&lt;/span&gt;&amp;quot;.Folge danach den Anweisungen. Nach erfolgreicher Generierung bekommst du eine E-Mail mit deinem Vermittlungscode&lt;br/&gt;Bis deine E-Mail kommt, können einige Minuten vergehen.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast bereits einen Vermittlungcode?&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Gehe zu Schritt 2 und passe deine Daten und Einstellungen an.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -197,8 +212,11 @@ für den Corona Impfterminservice </string>
            <height>281</height>
           </rect>
          </property>
+         <property name="cursor">
+          <cursorShape>ArrowCursor</cursorShape>
+         </property>
          <attribute name="label">
-          <string>2. Persönliche Einstellungen</string>
+          <string>2. Persönliche Daten eingeben</string>
          </attribute>
          <layout class="QHBoxLayout" name="horizontalLayout" stretch="1">
           <item>
@@ -206,7 +224,7 @@ für den Corona Impfterminservice </string>
             <item>
              <widget class="QGroupBox" name="groupBox_3">
               <property name="title">
-               <string>Hinweis</string>
+               <string>Anleitung</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_6">
                <property name="bottomMargin">
@@ -220,8 +238,8 @@ für den Corona Impfterminservice </string>
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast bereits einen Vermittlungscode?&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Super, bevor wir mit der Terminsuche losgehe, gibt es noch eine Kleinigkeit zu erledigen.&lt;br /&gt;Klicke auf den Knopf &amp;quot;Einstellungen bearbeiten&amp;quot;und passe deine Daten an. Erst nachdem du deine persönlichen Daten angegeben hast, kannst du mit der Terminsuche loslegen.&lt;br /&gt;Rechts kannst du auch das Abfrageintervall anpassen&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast keinen Vermittlungscode?&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Dann gehe zurück zu Schritt 1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Super, bevor du mit der Terminsuche loslegen kannst, gibt es noch eine Kleinigkeit zu erledigen.&lt;br /&gt;Klicke auf den Knopf &amp;quot;&lt;span style=&quot; font-style:italic;&quot;&gt;Persönlche Daten bearbeiten&amp;quot;  &lt;/span&gt;und passe deine Daten an. Erst nachdem du deine Adresse und Co. angegeben hast, kannst du mit der Terminsuche loslegen.&lt;br /&gt;Rechts kannst du auch das Abfrageintervall anpassen&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast keinen Vermittlungscode?&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Dann gehe zurück zu Schritt 1 und erstelle einen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -280,13 +298,13 @@ p, li { white-space: pre-wrap; }
               <item>
                <widget class="QGroupBox" name="groupBox_8">
                 <property name="title">
-                 <string>Einstellungen</string>
+                 <string>Pers;nliche Daten</string>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_7">
                  <item>
                   <widget class="QLabel" name="kontaktdaten_label">
                    <property name="text">
-                    <string>Momentan sind folgende Einstellungen geladen:</string>
+                    <string>Momentan ist folgender Datenstz geladen:</string>
                    </property>
                   </widget>
                  </item>
@@ -305,8 +323,11 @@ p, li { white-space: pre-wrap; }
                  </item>
                  <item>
                   <widget class="QPushButton" name="b_neue_kontaktdaten">
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
+                   </property>
                    <property name="text">
-                    <string>Einstellungen bearbeiten</string>
+                    <string>Persönliche Daten bearbeiten</string>
                    </property>
                   </widget>
                  </item>
@@ -327,6 +348,9 @@ p, li { white-space: pre-wrap; }
            <width>722</width>
            <height>281</height>
           </rect>
+         </property>
+         <property name="cursor">
+          <cursorShape>ArrowCursor</cursorShape>
          </property>
          <attribute name="label">
           <string>3. Terminsuche</string>
@@ -356,6 +380,9 @@ p, li { white-space: pre-wrap; }
              <layout class="QGridLayout" name="ts_links_layout">
               <item row="1" column="0">
                <widget class="QPushButton" name="b_termin_suchen">
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
                 <property name="text">
                  <string>Termin suchen</string>
                 </property>
@@ -364,18 +391,24 @@ p, li { white-space: pre-wrap; }
               <item row="0" column="0">
                <widget class="QGroupBox" name="anleitng_ts_groupBox">
                 <property name="title">
-                 <string>Hinweis</string>
+                 <string>Anleitng</string>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_5">
                  <item row="0" column="0">
                   <widget class="QLabel" name="anleitung_ts_lable">
+                   <property name="cursor">
+                    <cursorShape>ArrowCursor</cursorShape>
+                   </property>
                    <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast deine Einstellungen angepasst?&lt;br/&gt;&lt;/span&gt;&lt;br/&gt;Perfekt, dann steht der Suche nichts mehr im Weg Klicke einfach auf den Knopf &amp;quot;Termin suchen&amp;quot; und warte, bis Vaccipy einen Termin für dich gefunden hat.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast deine Einstellungen nicht angepasst?&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;Gehe zurück zu Schritt 2 und passe deine Einstellungen an.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Dir gefällt Vaccipy?&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;Wir freuen uns, wenn du dich an unserer Kampagne für Ärzte ohne Grenzen beteiligst. Den Link findest du &lt;a href=&quot;https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;hier&lt;/span&gt;&lt;/a&gt; oder unten :)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast deine Daten angepasst?&lt;br/&gt;&lt;/span&gt;&lt;br/&gt;Perfekt, dann steht der Suche nichts mehr im Weg Klicke einfach auf den Knopf &amp;quot;&lt;span style=&quot; font-style:italic;&quot;&gt;Termin suchen&lt;/span&gt;&amp;quot; und warte, bis Vaccipy einen Termin für dich gefunden hat.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast deine Einstellungen nicht angepasst?&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;Gehe zurück zu Schritt 2 und passe deine Daten an.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Dir gefällt Vaccipy?&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;Wir freuen uns, wenn du dich an unserer Kampagne für Ärzte ohne Grenzen beteiligst. Den Link findest du &lt;a href=&quot;https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;hier&lt;/span&gt;&lt;/a&gt; oder unten :)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                    </property>
                    <property name="wordWrap">
+                    <bool>true</bool>
+                   </property>
+                   <property name="openExternalLinks">
                     <bool>true</bool>
                    </property>
                    <property name="textInteractionFlags">
@@ -457,7 +490,7 @@ p, li { white-space: pre-wrap; }
       <item>
        <widget class="QLabel" name="spenden_label">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#000000;&quot;&gt;Bedanken? Musst du dich nicht&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#000000;&quot;&gt;Wir freuen uns trotzdem, wenn du dich an unserer Spendenaktion für Ärzte ohne Grenzeb beteiligst!&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#000000;&quot;&gt;Es wäre mega coo - ist aber vollkommen freiwillig :)&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#000000;&quot;&gt;Bedanken? Musst du dich nicht&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#000000;&quot;&gt;Wir freuen uns trotzdem, wenn du dich an unserer Spendenaktion für Ärzte ohne Grenzen beteiligst!&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#000000;&quot;&gt;Es wäre mega cool - ist aber vollkommen freiwillig :)&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
