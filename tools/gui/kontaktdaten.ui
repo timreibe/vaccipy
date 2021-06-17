@@ -346,8 +346,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>748</width>
-        <height>232</height>
+        <width>490</width>
+        <height>208</height>
        </rect>
       </property>
       <attribute name="label">
@@ -568,8 +568,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>748</width>
-        <height>232</height>
+        <width>506</width>
+        <height>207</height>
        </rect>
       </property>
       <attribute name="label">
@@ -901,9 +901,17 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="page">
+     <widget class="QWidget" name="notifications_tab">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>748</width>
+        <height>232</height>
+       </rect>
+      </property>
       <attribute name="label">
-       <string>Externe Benachrichtigungen (Optional)</string>
+       <string>4. Externe Benachrichtigungen (Optional)</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
@@ -943,35 +951,35 @@ Dann nehme hier die Einstelungen vor.</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_13">
                 <item row="0" column="2">
-                 <widget class="QLineEdit" name="i_api_token_2">
+                 <widget class="QLineEdit" name="i_api_token">
                   <property name="clearButtonEnabled">
                    <bool>false</bool>
                   </property>
                  </widget>
                 </item>
                 <item row="1" column="2">
-                 <widget class="QLineEdit" name="i_chat_id_2">
+                 <widget class="QLineEdit" name="i_chat_id">
                   <property name="clearButtonEnabled">
                    <bool>false</bool>
                   </property>
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QLabel" name="api_token_label_2">
+                 <widget class="QLabel" name="api_token_label">
                   <property name="text">
                    <string>Api-Token:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QLabel" name="chat_id_label_2">
+                 <widget class="QLabel" name="chat_id_label">
                   <property name="text">
                    <string>Chat-ID:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="2" column="1" colspan="2">
-                 <widget class="QPushButton" name="b_test_telegram_2">
+                 <widget class="QPushButton" name="b_test_telegram">
                   <property name="text">
                    <string>Telegram testen</string>
                   </property>
@@ -999,35 +1007,35 @@ Dann nehme hier die Einstelungen vor.</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_17">
                 <item row="3" column="1">
-                 <widget class="QLineEdit" name="i_user_key_2">
+                 <widget class="QLineEdit" name="i_user_key">
                   <property name="clearButtonEnabled">
                    <bool>false</bool>
                   </property>
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QLineEdit" name="i_app_token_2">
+                 <widget class="QLineEdit" name="i_app_token">
                   <property name="clearButtonEnabled">
                    <bool>false</bool>
                   </property>
                  </widget>
                 </item>
                 <item row="0" column="0">
-                 <widget class="QLabel" name="app_token_label_2">
+                 <widget class="QLabel" name="app_token_label">
                   <property name="text">
                    <string>App-Token:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="5" column="0" colspan="2">
-                 <widget class="QPushButton" name="b_test_pushover_2">
+                 <widget class="QPushButton" name="b_test_pushover">
                   <property name="text">
                    <string>Pushover testen</string>
                   </property>
                  </widget>
                 </item>
                 <item row="3" column="0">
-                 <widget class="QLabel" name="user_key_label_2">
+                 <widget class="QLabel" name="user_key_label">
                   <property name="text">
                    <string>User-Key:</string>
                   </property>

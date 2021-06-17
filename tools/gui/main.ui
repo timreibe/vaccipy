@@ -276,7 +276,7 @@ den Knopf &quot;Datei auswählen&quot; aus.</string>
                  <item>
                   <widget class="QLabel" name="kontaktdaten_label">
                    <property name="text">
-                    <string>Momentan gewählte Kontaktdatendatei:</string>
+                    <string>Momentan gewählte Datei:</string>
                    </property>
                   </widget>
                  </item>
@@ -303,7 +303,7 @@ den Knopf &quot;Datei auswählen&quot; aus.</string>
                  <item>
                   <widget class="QPushButton" name="b_neue_kontaktdaten">
                    <property name="text">
-                    <string>Kontaktdaten bearbeiten</string>
+                    <string>Einstellungen bearbeiten</string>
                    </property>
                   </widget>
                  </item>
