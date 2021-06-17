@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>vaccipy - Kontaktdaten</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,1,21,1,1">
    <item>
     <widget class="QLabel" name="header_label">
      <property name="font">
@@ -37,7 +37,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Gib bitte deine Vermittlungscodes, deine persöhnlichen Daten und den Zeitrahmen ein</string>
+      <string>Bitte nehme deine persönlichen Einstellungen vor und speichere diese.</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -62,7 +62,7 @@
         <x>0</x>
         <y>0</y>
         <width>748</width>
-        <height>229</height>
+        <height>232</height>
        </rect>
       </property>
       <attribute name="label">
@@ -347,7 +347,7 @@
         <x>0</x>
         <y>0</y>
         <width>748</width>
-        <height>208</height>
+        <height>232</height>
        </rect>
       </property>
       <attribute name="label">
@@ -569,7 +569,7 @@
         <x>0</x>
         <y>0</y>
         <width>748</width>
-        <height>207</height>
+        <height>232</height>
        </rect>
       </property>
       <attribute name="label">
@@ -605,7 +605,7 @@
             <item row="0" column="0">
              <widget class="QLabel" name="kalender_label">
               <property name="text">
-               <string>Termin frühestens ab:</string>
+               <string>Termin frühestens am</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -614,6 +614,9 @@
             </item>
             <item row="0" column="1">
              <widget class="QDateEdit" name="i_start_datum_qdate">
+              <property name="locale">
+               <locale language="German" country="Germany"/>
+              </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
@@ -630,8 +633,8 @@
                 <second>0</second>
                </time>
               </property>
-              <property name="currentSection">
-               <enum>QDateTimeEdit::DaySection</enum>
+              <property name="displayFormat">
+               <string>dd.MM.yyyy</string>
               </property>
               <property name="calendarPopup">
                <bool>true</bool>
@@ -648,7 +651,7 @@
             <item row="1" column="0">
              <widget class="QLabel" name="label_3">
               <property name="text">
-               <string>Start:</string>
+               <string>Termin frühestens um</string>
               </property>
              </widget>
             </item>
@@ -686,7 +689,7 @@
             <item row="2" column="0">
              <widget class="QLabel" name="label_4">
               <property name="text">
-               <string>Ende:</string>
+               <string>Termin spätestens um</string>
               </property>
              </widget>
             </item>
@@ -831,7 +834,7 @@
                </sizepolicy>
               </property>
               <property name="text">
-               <string>Nur an folgenden Tagen:</string>
+               <string>An welchen Wochentagen darf der Termin sein?</string>
               </property>
              </widget>
             </item>
@@ -895,6 +898,149 @@
           <set>Qt::AlignCenter</set>
          </property>
         </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page">
+      <attribute name="label">
+       <string>Externe Benachrichtigungen (Optional)</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,2">
+         <item>
+          <widget class="QGroupBox" name="groupBox_9">
+           <property name="title">
+            <string>Hinweis</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_16">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>Dieser Schritt ist optional. Wenn du nicht weißt
+was hier gemacht wird, überspringe diesen Schritt.
+
+Du möchtest Benachrichtigungen über Telegram
+oder PushOver bekommen?
+Dann nehme hier die Einstelungen vor.</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_9">
+             <item>
+              <widget class="QGroupBox" name="groupBox_10">
+               <property name="title">
+                <string>Telegram</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_13">
+                <item row="0" column="2">
+                 <widget class="QLineEdit" name="i_api_token_2">
+                  <property name="clearButtonEnabled">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QLineEdit" name="i_chat_id_2">
+                  <property name="clearButtonEnabled">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLabel" name="api_token_label_2">
+                  <property name="text">
+                   <string>Api-Token:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLabel" name="chat_id_label_2">
+                  <property name="text">
+                   <string>Chat-ID:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1" colspan="2">
+                 <widget class="QPushButton" name="b_test_telegram_2">
+                  <property name="text">
+                   <string>Telegram testen</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_11">
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="title">
+                <string>PushOver</string>
+               </property>
+               <property name="flat">
+                <bool>false</bool>
+               </property>
+               <property name="checkable">
+                <bool>false</bool>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_17">
+                <item row="3" column="1">
+                 <widget class="QLineEdit" name="i_user_key_2">
+                  <property name="clearButtonEnabled">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="i_app_token_2">
+                  <property name="clearButtonEnabled">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="app_token_label_2">
+                  <property name="text">
+                   <string>App-Token:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="0" colspan="2">
+                 <widget class="QPushButton" name="b_test_pushover_2">
+                  <property name="text">
+                   <string>Pushover testen</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="user_key_label_2">
+                  <property name="text">
+                   <string>User-Key:</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

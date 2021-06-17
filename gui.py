@@ -36,7 +36,8 @@ class HauptGUI(QtWidgets.QMainWindow):
     # b_neue_kontaktdaten
 
     ### Layouts ###
-    # prozesse_layout
+    #codeGenProzesse_layout
+    #sucheProzesse_layout
 
     ### QSpinBox ###
     # i_interval
@@ -194,11 +195,11 @@ class HauptGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei Fehlen Daten:\n\n{error}")
             return
             
-        strProcName = "Codegen"
+        strProcName = "Codegen (+49****{phone2})".format(phone2=kontaktdaten["kontakt"]["phone"][-4:])
 
         # allow only 1 Code Gen at a time
-        for subProvess in self.such_prozesse:
-            if subProvess.name == strProcName:
+        for subProzess in self.such_prozesse:
+            if subProzess.name.find("Codegen") >= 0:
                 QtWidgets.QMessageBox.information(self, "STOP", "Es läuft bereits eine Codegenerierung!")
                 return False
 
@@ -261,8 +262,11 @@ class HauptGUI(QtWidgets.QMainWindow):
 
         check_delay = self.i_interval.value()
         codes = kontaktdaten["codes"]
-        notifications = kontaktdaten.get("notifications", {})
-        terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=f"{codes[0]}-{self.prozesse_counter}", daemon=True, kwargs={
+        name_stubb = kontaktdaten["kontakt"]["vorname"][:15]
+        code_stubb = codes[0][-4:]
+        strProcName = "{name} [*-{code}]".format(name=name_stubb,
+                                               code = code_stubb)
+        terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=strProcName, daemon=True, kwargs={
                                                       "kontaktdaten": kontaktdaten,
                                                       "notifications": notifications,
                                                       "zeitrahmen": zeitrahmen,
@@ -309,17 +313,23 @@ class HauptGUI(QtWidgets.QMainWindow):
         self.pfad_kontaktdaten = pfad
         self.i_kontaktdaten_pfad.setText(self.pfad_kontaktdaten)
 
-    def __add_prozess_in_gui(self, prozess: multiprocessing.Process):
+    def __add_prozess_in_gui(self, prozess: multiprocessing.Process,):
         """
         Die Prozesse werden in der GUI in dem prozesse_layout angezeigt
         """
-
-        label = QtWidgets.QLabel(f"Prozess: {prozess.name}")
-        button = QtWidgets.QPushButton("Stoppen")
-        button.setObjectName(prozess.name)
-        button.clicked.connect(lambda: self.__stop_prozess(prozess))
-
-        self.prozesse_layout.addRow(label, button)
+        if prozess.name.find("Codegen") >= 0:
+            label = QtWidgets.QLabel(f"{prozess.name}")
+            button = QtWidgets.QPushButton("Stoppen")
+            button.setObjectName(prozess.name)
+            button.clicked.connect(lambda: self.__stop_prozess(prozess))
+            self.codeGenProzesse_layout.addRow(label, button)
+        else:
+            label = QtWidgets.QLabel(f"{prozess.name}")
+            button = QtWidgets.QPushButton("Stoppen")
+            button.setObjectName(prozess.name)
+            button.clicked.connect(lambda: self.__stop_prozess(prozess))
+            self.sucheProzesse_layout.addRow(label, button)
+        
 
     def __stop_prozess(self, prozess: multiprocessing.Process):
         """
@@ -342,7 +352,12 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
 
         button = self.findChild(QtWidgets.QPushButton, prozess.name)
-        self.prozesse_layout.removeRow(button)
+
+        if prozess.name.find("Codegen") >= 0:
+            self.codeGenProzesse_layout.removeRow(button)
+        else:
+            self.sucheProzesse_layout.removeRow( button)
+
 
     def __check_status_der_prozesse(self):
         """

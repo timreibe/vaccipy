@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout">
     <item row="0" column="0">
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,6,1">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,4,1">
       <item>
        <widget class="QLabel" name="header_label">
         <property name="font">
@@ -66,7 +66,7 @@ für den Corona Impfterminservice </string>
            <x>0</x>
            <y>0</y>
            <width>722</width>
-           <height>259</height>
+           <height>255</height>
           </rect>
          </property>
          <attribute name="label">
@@ -74,7 +74,7 @@ für den Corona Impfterminservice </string>
          </attribute>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1">
+           <layout class="QHBoxLayout" name="codegen_tab_layout" stretch="1,1">
             <property name="spacing">
              <number>6</number>
             </property>
@@ -94,7 +94,7 @@ für den Corona Impfterminservice </string>
              <number>6</number>
             </property>
             <item>
-             <layout class="QGridLayout" name="gridLayout">
+             <layout class="QGridLayout" name="codegen_links_layout">
               <item row="1" column="0">
                <widget class="QPushButton" name="b_code_generieren">
                 <property name="text">
@@ -135,24 +135,45 @@ Dann kannst du mit Schritt 2 fortfahren.</string>
              </layout>
             </item>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,4">
+             <layout class="QVBoxLayout" name="codegen_rechts_layout" stretch="1,5">
               <item>
                <widget class="QLabel" name="label_3">
                 <property name="text">
-                 <string>Folgende Vermittlungscodes werden generiert:</string>
+                 <string>Momentan laufen folgende Generierungen:</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>
               <item>
-               <layout class="QGridLayout" name="gridLayout_2">
-                <item row="0" column="0" colspan="2">
-                 <widget class="QLabel" name="label_5">
-                  <property name="text">
-                   <string>Momentan läuft keine Generierung</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+               <widget class="QScrollArea" name="codeGenProzesse_scrollArea">
+                <property name="widgetResizable">
+                 <bool>true</bool>
+                </property>
+                <widget class="QWidget" name="codeGenProzesse_scrollAreaContents">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>334</width>
+                   <height>179</height>
+                  </rect>
+                 </property>
+                 <layout class="QFormLayout" name="codeGenProzesse_layout">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="keine_codeGen_lable">
+                    <property name="text">
+                     <string>Momentan läuft keine Generierung</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
               </item>
              </layout>
             </item>
@@ -166,7 +187,7 @@ Dann kannst du mit Schritt 2 fortfahren.</string>
            <x>0</x>
            <y>0</y>
            <width>722</width>
-           <height>259</height>
+           <height>255</height>
           </rect>
          </property>
          <attribute name="label">
@@ -295,176 +316,13 @@ den Knopf &quot;Datei auswählen&quot; aus.</string>
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="toolBoxPage_telegram">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>722</width>
-           <height>259</height>
-          </rect>
-         </property>
-         <attribute name="label">
-          <string>3.Externe Benachrichtigungen (Optional)</string>
-         </attribute>
-         <layout class="QGridLayout" name="gridLayout_9">
-          <item row="1" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,2">
-            <item>
-             <widget class="QGroupBox" name="groupBox_4">
-              <property name="title">
-               <string>Hinweis</string>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_14">
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_9">
-                 <property name="text">
-                  <string>Dieser Schritt ist optional. Wenn du nicht weißt
-was hier gemacht wird, überspringe diesen Schritt.
-
-Du möchtest Benachrichtigungen über Telegram
-oder PushOver bekommen?
-Dann nehme hier die Einstelungen vor.
-Gespeicherte Einstellungen findest du in deiner
-Kontaktdaten-Datei.</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_4">
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_5">
-                <item>
-                 <widget class="QGroupBox" name="groupBox_5">
-                  <property name="title">
-                   <string>Telegram</string>
-                  </property>
-                  <layout class="QGridLayout" name="gridLayout_12">
-                   <item row="0" column="2">
-                    <widget class="QLineEdit" name="i_api_token">
-                     <property name="clearButtonEnabled">
-                      <bool>false</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="2">
-                    <widget class="QLineEdit" name="i_chat_id">
-                     <property name="clearButtonEnabled">
-                      <bool>false</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QLabel" name="api_token_label">
-                     <property name="text">
-                      <string>Api-Token:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QLabel" name="chat_id_label">
-                     <property name="text">
-                      <string>Chat-ID:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1" colspan="2">
-                    <widget class="QPushButton" name="b_test_telegram">
-                     <property name="text">
-                      <string>Telegram Testen</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QGroupBox" name="groupBox_6">
-                  <property name="font">
-                   <font>
-                    <weight>50</weight>
-                    <bold>false</bold>
-                   </font>
-                  </property>
-                  <property name="title">
-                   <string>PushOver</string>
-                  </property>
-                  <property name="flat">
-                   <bool>false</bool>
-                  </property>
-                  <property name="checkable">
-                   <bool>false</bool>
-                  </property>
-                  <layout class="QGridLayout" name="gridLayout_11">
-                   <item row="3" column="1">
-                    <widget class="QLineEdit" name="i_user_key">
-                     <property name="clearButtonEnabled">
-                      <bool>false</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QLineEdit" name="i_app_token">
-                     <property name="clearButtonEnabled">
-                      <bool>false</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="app_token_label">
-                     <property name="text">
-                      <string>App-Token:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="0" colspan="2">
-                    <widget class="QPushButton" name="b_test_pushover">
-                     <property name="text">
-                      <string>Pushover Testen</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="0">
-                    <widget class="QLabel" name="user_key_label">
-                     <property name="text">
-                      <string>User-Key:</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <widget class="QDialogButtonBox" name="buttonBox">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Die Einstellungen sind in der Kontaktdaten.json gespeichert.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="standardButtons">
-                 <set>QDialogButtonBox::Open|QDialogButtonBox::Reset|QDialogButtonBox::Save</set>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
         <widget class="QWidget" name="toolBoxPage_terminsuche">
          <property name="geometry">
           <rect>
            <x>0</x>
            <y>0</y>
            <width>722</width>
-           <height>259</height>
+           <height>255</height>
           </rect>
          </property>
          <attribute name="label">
@@ -472,7 +330,7 @@ Kontaktdaten-Datei.</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout_7">
           <item row="0" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0,1">
+           <layout class="QHBoxLayout" name="tab_layout" stretch="1,0,1">
             <property name="spacing">
              <number>6</number>
             </property>
@@ -492,7 +350,7 @@ Kontaktdaten-Datei.</string>
              <number>6</number>
             </property>
             <item>
-             <layout class="QGridLayout" name="gridLayout_3">
+             <layout class="QGridLayout" name="ts_links_layout">
               <item row="1" column="0">
                <widget class="QPushButton" name="b_termin_suchen">
                 <property name="text">
@@ -501,13 +359,13 @@ Kontaktdaten-Datei.</string>
                </widget>
               </item>
               <item row="0" column="0">
-               <widget class="QGroupBox" name="groupBox_2">
+               <widget class="QGroupBox" name="anleitng_ts_groupBox">
                 <property name="title">
                  <string>Hinweis</string>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_5">
                  <item row="0" column="0">
-                  <widget class="QLabel" name="label_6">
+                  <widget class="QLabel" name="anleitung_ts_lable">
                    <property name="text">
                     <string>Wenn du alle Einstellungen vorgeommen hast, steht der Suche
 nichts mehr im Weg.
@@ -540,24 +398,49 @@ ohne Grenzen beteiligst. Den Link findest du unten :)</string>
              </widget>
             </item>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,4">
+             <layout class="QVBoxLayout" name="ts_rechts_layout" stretch="1,5">
               <item>
                <widget class="QLabel" name="label_7">
                 <property name="text">
-                 <string>Momentan laufen folgende Suchen</string>
+                 <string>Momentan laufen folgende Suchen:</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>
               <item>
-               <layout class="QGridLayout" name="gridLayout_4">
-                <item row="0" column="0" colspan="2">
-                 <widget class="QLabel" name="label_8">
-                  <property name="text">
-                   <string>Momentan läuft keine Suche</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+               <widget class="QScrollArea" name="sucheProzesse_scrollArea">
+                <property name="widgetResizable">
+                 <bool>true</bool>
+                </property>
+                <widget class="QWidget" name="sucheProzesse_scrollArea_Contents">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>334</width>
+                   <height>179</height>
+                  </rect>
+                 </property>
+                 <layout class="QFormLayout" name="sucheProzesse_layout">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_5">
+                    <property name="text">
+                     <string>[Name], [Code]</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QLabel" name="label_6">
+                    <property name="text">
+                     <string>Momentan läuft keine Suche.</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
               </item>
              </layout>
             </item>
