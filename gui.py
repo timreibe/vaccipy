@@ -267,6 +267,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         """
 
         check_delay = self.i_interval.value()
+        notifications = kontaktdaten.get("notifications", {})
         codes = kontaktdaten["codes"]
         name_stubb = kontaktdaten["kontakt"]["vorname"][:15]
         code_stubb = codes[0][-4:]
