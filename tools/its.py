@@ -276,9 +276,6 @@ class ImpfterminService():
     def get_chrome_options(self, headless):
         chrome_options = uc.ChromeOptions()
 
-        # deaktiviere Selenium Logging
-        chrome_options.add_argument('disable-infobars')
-
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
         # chrome_options.add_argument("-no-sandbox");
         chrome_options.add_argument("--disable-dev-shm-usage")
@@ -990,8 +987,9 @@ class ImpfterminService():
         }
 
         # Wire Selenium driver um request im webdriver auszulesen
-        driver = selenium_wire.Chrome(self.get_chromedriver_path(),
-                                      options=self.get_chrome_options(False))
+        #driver = selenium_wire.Chrome(self.get_chromedriver_path(),
+         #                             options=self.get_chrome_options(False))
+        driver = self.get_chromedriver(headless=False)
 
         while True:
 
