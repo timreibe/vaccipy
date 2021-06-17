@@ -16,9 +16,9 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout">
     <item row="0" column="0">
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,4,1">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,6,1">
       <property name="bottomMargin">
-       <number>0</number>
+       <number>5</number>
       </property>
       <item>
        <widget class="QLabel" name="header_label">
@@ -69,7 +69,7 @@ für den Corona Impfterminservice </string>
            <x>0</x>
            <y>0</y>
            <width>722</width>
-           <height>255</height>
+           <height>281</height>
           </rect>
          </property>
          <attribute name="label">
@@ -117,21 +117,19 @@ für den Corona Impfterminservice </string>
                  <bool>false</bool>
                 </property>
                 <layout class="QVBoxLayout" name="_2">
+                 <property name="bottomMargin">
+                  <number>2</number>
+                 </property>
                  <item>
                   <widget class="QLabel" name="label_4">
                    <property name="text">
-                    <string>Du benötigst ein Vermittlungscode?
-Kein Problem, halte dein Handy für den SMS-Code bereit und drücke
-auf &quot;Vermittlungscode generieren&quot;.Folge danach den Anweisungen.
-Nach erfolgreicher Generierung bekommst du eine E-Mail mit deinem
-Vermittlungscode.
-Bis deine E-Mail kommt, können einige Minuten vergehen.
-
-Du hast bereits einen Vermittlungcode?
-Dann kannst du in Schritt 2 deine Daten und Einstellungen anpassen.</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du benötigst ein Vermittlungscode?&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Kein Problem, halte dein Handy für den SMS-Code bereit und drücke auf &amp;quot;Vermittlungscode generieren&amp;quot;.Folge danach den Anweisungen. Nach erfolgreicher Generierung bekommst du eine E-Mail mit deinem Vermittlungscode&lt;br/&gt;Bis deine E-Mail kommt, können einige Minuten vergehen.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast bereits einen Vermittlungcode?&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Gehe zu Schritt 2 und passe deine Daten und Einstellungen an.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                   </property>
+                   <property name="wordWrap">
+                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
@@ -165,8 +163,8 @@ Dann kannst du in Schritt 2 deine Daten und Einstellungen anpassen.</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>330</width>
-                   <height>179</height>
+                   <width>339</width>
+                   <height>200</height>
                   </rect>
                  </property>
                  <layout class="QFormLayout" name="codeGenProzesse_layout">
@@ -196,7 +194,7 @@ Dann kannst du in Schritt 2 deine Daten und Einstellungen anpassen.</string>
            <x>0</x>
            <y>0</y>
            <width>722</width>
-           <height>255</height>
+           <height>281</height>
           </rect>
          </property>
          <attribute name="label">
@@ -204,33 +202,32 @@ Dann kannst du in Schritt 2 deine Daten und Einstellungen anpassen.</string>
          </attribute>
          <layout class="QHBoxLayout" name="horizontalLayout" stretch="1">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,2">
+           <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="2,3">
             <item>
              <widget class="QGroupBox" name="groupBox_3">
               <property name="title">
                <string>Hinweis</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_6">
+               <property name="bottomMargin">
+                <number>2</number>
+               </property>
                <item row="0" column="0">
                 <widget class="QLabel" name="label">
                  <property name="text">
-                  <string>Du hast einen Vermittlungscode?
-Super,dann kann es fast mit der
-Suche losgehen. Klicke auf den
-Knopf &quot;Einstellungen bearbeiten&quot;
-und passe deine Daten an.
-Danach kannst du mit der Termin-
-Suche loslegen.
-
-Wenn du eine andere Datei laden
-möchtest, klicke auf &quot;Datei auswählen&quot;
-
-Rechts kannst du auch noch das 
-Suchintervall anpassen.
-</string>
+                  <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast bereits einen Vermittlungscode?&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Super, bevor wir mit der Terminsuche losgehe, gibt es noch eine Kleinigkeit zu erledigen.&lt;br /&gt;Klicke auf den Knopf &amp;quot;Einstellungen bearbeiten&amp;quot;und passe deine Daten an. Erst nachdem du deine persönlichen Daten angegeben hast, kannst du mit der Terminsuche loslegen.&lt;br /&gt;Rechts kannst du auch das Abfrageintervall anpassen&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast keinen Vermittlungscode?&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Dann gehe zurück zu Schritt 1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -242,13 +239,13 @@ Suchintervall anpassen.
               <item>
                <widget class="QGroupBox" name="groupBox_7">
                 <property name="title">
-                 <string>Suchintervall</string>
+                 <string>Abfrageintervall</string>
                 </property>
                 <layout class="QFormLayout" name="formLayout_2">
                  <item row="0" column="0">
                   <widget class="QLabel" name="interval_label">
                    <property name="text">
-                    <string>Suchintervall [s]:</string>
+                    <string>Abfrageintervall in Sekunden:</string>
                    </property>
                   </widget>
                  </item>
@@ -267,7 +264,7 @@ Suchintervall anpassen.
                     </size>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In welchem Abstand soll nach einem Termin gesucht werden?&lt;br/&gt;Der Abstand muss zwischen 30 und 300 Sekunden liegen.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In welchem Abstand soll nach einem Termin gesucht werden?&lt;br/&gt;Der Abstand muss zwischen 30 und 300 Sekunden liegen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="minimum">
                     <number>30</number>
@@ -283,13 +280,13 @@ Suchintervall anpassen.
               <item>
                <widget class="QGroupBox" name="groupBox_8">
                 <property name="title">
-                 <string>Dateiauswahl</string>
+                 <string>Einstellungen</string>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_7">
                  <item>
                   <widget class="QLabel" name="kontaktdaten_label">
                    <property name="text">
-                    <string>Momentan gewählte Datei:</string>
+                    <string>Momentan sind folgende Einstellungen geladen:</string>
                    </property>
                   </widget>
                  </item>
@@ -303,13 +300,6 @@ Suchintervall anpassen.
                    </property>
                    <property name="readOnly">
                     <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="b_dateien_kontaktdaten">
-                   <property name="text">
-                    <string>Datei auswählen</string>
                    </property>
                   </widget>
                  </item>
@@ -335,7 +325,7 @@ Suchintervall anpassen.
            <x>0</x>
            <y>0</y>
            <width>722</width>
-           <height>255</height>
+           <height>281</height>
           </rect>
          </property>
          <attribute name="label">
@@ -380,18 +370,16 @@ Suchintervall anpassen.
                  <item row="0" column="0">
                   <widget class="QLabel" name="anleitung_ts_lable">
                    <property name="text">
-                    <string>Wenn du in Schritt 2 alle Daten angegeben  hast, steht der Suche
-nichts mehr im Weg.
-Klicke einfach auf den Knopf &quot;Termin suchen&quot; und warte, bis
-Vaccipy einen Termin für dich gefunden hat.
-
-
-Dir gefällt Vaccipy?
-Wir freuen uns, wenn du dich an unserer Kmapagne für Ärzte
-ohne Grenzen beteiligst. Den Link findest du unten :)</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast deine Einstellungen angepasst?&lt;br/&gt;&lt;/span&gt;&lt;br/&gt;Perfekt, dann steht der Suche nichts mehr im Weg Klicke einfach auf den Knopf &amp;quot;Termin suchen&amp;quot; und warte, bis Vaccipy einen Termin für dich gefunden hat.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Du hast deine Einstellungen nicht angepasst?&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;Gehe zurück zu Schritt 2 und passe deine Einstellungen an.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Dir gefällt Vaccipy?&lt;br/&gt;&lt;br/&gt;&lt;/span&gt;Wir freuen uns, wenn du dich an unserer Kampagne für Ärzte ohne Grenzen beteiligst. Den Link findest du &lt;a href=&quot;https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;hier&lt;/span&gt;&lt;/a&gt; oder unten :)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                   </property>
+                   <property name="wordWrap">
+                    <bool>true</bool>
+                   </property>
+                   <property name="textInteractionFlags">
+                    <set>Qt::TextBrowserInteraction</set>
                    </property>
                   </widget>
                  </item>
@@ -436,7 +424,7 @@ ohne Grenzen beteiligst. Den Link findest du unten :)</string>
                    <x>0</x>
                    <y>0</y>
                    <width>334</width>
-                   <height>179</height>
+                   <height>200</height>
                   </rect>
                  </property>
                  <layout class="QFormLayout" name="sucheProzesse_layout">

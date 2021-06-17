@@ -122,7 +122,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         # Funktionen den Buttons zuweisen
         self.b_termin_suchen.clicked.connect(self.__termin_suchen)
         self.b_code_generieren.clicked.connect(self.__code_generieren)
-        self.b_dateien_kontaktdaten.clicked.connect(self.__update_kontaktdaten_pfad)
+        #self.b_dateien_kontaktdaten.clicked.connect(self.__update_kontaktdaten_pfad)
         self.b_neue_kontaktdaten.clicked.connect(lambda: self.kontaktdaten_erstellen(Modus.TERMIN_SUCHEN))
 
         # Pfade in der GUI anpassen
