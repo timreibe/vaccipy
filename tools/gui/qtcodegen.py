@@ -245,7 +245,7 @@ class QtCodeGen(QtWidgets.QDialog):
                     QtWidgets.QMessageBox.critical(self, "Geburtsdatum ungültiges Format", "Das Datum entspricht nicht dem richtigen Format (DD.MM.YYYY).")
  
         elif dlgType == "SMSCODE_OK":
-            ret = QtWidgets.QMessageBox.information(self, "Erfolgreich", "Code erfolgreich generiert. Du kannst jetzt mit der Terminsuche fortfahren.",QMessageBox.StandardButton.Ok)
+            ret = QtWidgets.QMessageBox.information(self, "Erfolgreich", "Code erfolgreich generiert. Demnächst bekommst du eine E-Mail mit deinem Vermittlungscode. Dann kannst du mit der Terminsuche fortfahren.",QMessageBox.StandardButton.Ok)
             if ret == QMessageBox.StandardButton.Ok:
                 self.worker.signalUpdateData.emit("SMSCODE_OK","")
                 self.hardClose()

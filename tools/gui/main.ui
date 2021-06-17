@@ -17,6 +17,9 @@
    <layout class="QGridLayout">
     <item row="0" column="0">
      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,4,1">
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QLabel" name="header_label">
         <property name="font">
@@ -120,9 +123,12 @@ für den Corona Impfterminservice </string>
                     <string>Du benötigst ein Vermittlungscode?
 Kein Problem, halte dein Handy für den SMS-Code bereit und drücke
 auf &quot;Vermittlungscode generieren&quot;.Folge danach den Anweisungen.
+Nach erfolgreicher Generierung bekommst du eine E-Mail mit deinem
+Vermittlungscode.
+Bis deine E-Mail kommt, können einige Minuten vergehen.
 
 Du hast bereits einen Vermittlungcode?
-Dann kannst du mit Schritt 2 fortfahren.</string>
+Dann kannst du in Schritt 2 deine Daten und Einstellungen anpassen.</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -148,6 +154,9 @@ Dann kannst du mit Schritt 2 fortfahren.</string>
               </item>
               <item>
                <widget class="QScrollArea" name="codeGenProzesse_scrollArea">
+                <property name="lineWidth">
+                 <number>0</number>
+                </property>
                 <property name="widgetResizable">
                  <bool>true</bool>
                 </property>
@@ -156,13 +165,13 @@ Dann kannst du mit Schritt 2 fortfahren.</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>334</width>
+                   <width>330</width>
                    <height>179</height>
                   </rect>
                  </property>
                  <layout class="QFormLayout" name="codeGenProzesse_layout">
                   <item row="0" column="0">
-                   <widget class="QLabel" name="keine_codeGen_lable">
+                   <widget class="QLabel" name="keine_codeGen_label">
                     <property name="text">
                      <string>Momentan läuft keine Generierung</string>
                     </property>
@@ -206,15 +215,19 @@ Dann kannst du mit Schritt 2 fortfahren.</string>
                 <widget class="QLabel" name="label">
                  <property name="text">
                   <string>Du hast einen Vermittlungscode?
-Super, dann kannst du hier Einstellungen
-anpassen. Rechts kannst du das Intervall
-zur Suche anpassen.
-Darunter kannst du deine persönlichen
-Daten anpassen. Drücke dazu auf den
-Knopf &quot;Kontaktdaten bearbeiten&quot;.
-Möchtest du eine andere als die angezeigte
-Datei bearbeiten, wähle diese vorher über
-den Knopf &quot;Datei auswählen&quot; aus.</string>
+Super,dann kann es fast mit der
+Suche losgehen. Klicke auf den
+Knopf &quot;Einstellungen bearbeiten&quot;
+und passe deine Daten an.
+Danach kannst du mit der Termin-
+Suche loslegen.
+
+Wenn du eine andere Datei laden
+möchtest, klicke auf &quot;Datei auswählen&quot;
+
+Rechts kannst du auch noch das 
+Suchintervall anpassen.
+</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -326,7 +339,7 @@ den Knopf &quot;Datei auswählen&quot; aus.</string>
           </rect>
          </property>
          <attribute name="label">
-          <string>4. Terminsuche</string>
+          <string>3. Terminsuche</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout_7">
           <item row="0" column="0">
@@ -367,7 +380,7 @@ den Knopf &quot;Datei auswählen&quot; aus.</string>
                  <item row="0" column="0">
                   <widget class="QLabel" name="anleitung_ts_lable">
                    <property name="text">
-                    <string>Wenn du alle Einstellungen vorgeommen hast, steht der Suche
+                    <string>Wenn du in Schritt 2 alle Daten angegeben  hast, steht der Suche
 nichts mehr im Weg.
 Klicke einfach auf den Knopf &quot;Termin suchen&quot; und warte, bis
 Vaccipy einen Termin für dich gefunden hat.
@@ -376,6 +389,9 @@ Vaccipy einen Termin für dich gefunden hat.
 Dir gefällt Vaccipy?
 Wir freuen uns, wenn du dich an unserer Kmapagne für Ärzte
 ohne Grenzen beteiligst. Den Link findest du unten :)</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                    </property>
                   </widget>
                  </item>
@@ -425,14 +441,14 @@ ohne Grenzen beteiligst. Den Link findest du unten :)</string>
                  </property>
                  <layout class="QFormLayout" name="sucheProzesse_layout">
                   <item row="0" column="0">
-                   <widget class="QLabel" name="label_5">
+                   <widget class="QLabel" name="suchProzesse_label">
                     <property name="text">
-                     <string>[Name], [Code]</string>
+                     <string>[Vorname], [Vermittlungscode]</string>
                     </property>
                    </widget>
                   </item>
                   <item row="0" column="1">
-                   <widget class="QLabel" name="label_6">
+                   <widget class="QLabel" name="keine_suchProzesse_label">
                     <property name="text">
                      <string>Momentan läuft keine Suche.</string>
                     </property>
@@ -451,12 +467,18 @@ ohne Grenzen beteiligst. Den Link findest du unten :)</string>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="spenden_label">
         <property name="text">
-         <string>LINK SPENDEN</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#000000;&quot;&gt;Bedanken? Musst du dich nicht&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#000000;&quot;&gt;Wir freuen uns trotzdem, wenn du dich an unserer Spendenaktion für Ärzte ohne Grenzeb beteiligst!&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.aerzte-ohne-grenzen.de/spenden-sammeln?cfd=pjs3m&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#000000;&quot;&gt;Es wäre mega coo - ist aber vollkommen freiwillig :)&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
+        </property>
+        <property name="openExternalLinks">
+         <bool>true</bool>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextBrowserInteraction</set>
         </property>
        </widget>
       </item>

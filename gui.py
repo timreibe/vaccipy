@@ -136,6 +136,10 @@ class HauptGUI(QtWidgets.QMainWindow):
         self.prozess_bewacher = threading.Thread(target=self.__check_status_der_prozesse, daemon=True)
         self.prozess_bewacher.start()
 
+        # Label deaktivieren
+        self.findChild(QtWidgets.QLabel, name="suchProzesse_label").setVisible(False)
+
+
     def check_update(self):
         """
         Prüft auf neuere Version und gibt evtl. ne Benachrichtigung an den User
@@ -243,10 +247,12 @@ class HauptGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, "Datei nicht gefunden!", f"Datei zum Laden konnte nicht gefunden werden\n\nBitte erstellen")
             return
         except ValidationError as error:
-            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei sind Fehler:\n\n{error}")
+            QtWidgets.QMessageBox.critical(self, "Daten fehlerhaft!", f"Es scheinen Infos in den Kontaktdaten zu fehlen."
+                                                 " Bitte gehe zu Schritt 2 und passe deine Daten an.")
             return
         except MissingValuesError as error:
-            QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei Fehlen Daten:\n\n{error}")
+            QtWidgets.QMessageBox.critical(self, "Daten fehlerhaft!", f"Es scheinen Infos in den Kontaktdaten zu fehlen."
+                                                 " Bitte gehe zu Schritt 2 und passe deine Daten an.")
             return
 
         self.__start_terminsuche(kontaktdaten, zeitrahmen)
@@ -264,8 +270,9 @@ class HauptGUI(QtWidgets.QMainWindow):
         codes = kontaktdaten["codes"]
         name_stubb = kontaktdaten["kontakt"]["vorname"][:15]
         code_stubb = codes[0][-4:]
-        strProcName = "{name} [*-{code}]".format(name=name_stubb,
-                                               code = code_stubb)
+        strProcName = "{name} [*-{code}]:{id}".format(name=name_stubb,
+                                                      code=code_stubb,
+                                                      id=str(self.prozesse_counter))
         terminsuche_prozess = multiprocessing.Process(target=QtTerminsuche.start_suche, name=strProcName, daemon=True, kwargs={
                                                       "kontaktdaten": kontaktdaten,
                                                       "notifications": notifications,
@@ -318,13 +325,16 @@ class HauptGUI(QtWidgets.QMainWindow):
         Die Prozesse werden in der GUI in dem prozesse_layout angezeigt
         """
         if prozess.name.find("Codegen") >= 0:
+            self.findChild(QtWidgets.QLabel, name="keine_codeGen_label").setVisible(False)
             label = QtWidgets.QLabel(f"{prozess.name}")
             button = QtWidgets.QPushButton("Stoppen")
             button.setObjectName(prozess.name)
             button.clicked.connect(lambda: self.__stop_prozess(prozess))
             self.codeGenProzesse_layout.addRow(label, button)
         else:
-            label = QtWidgets.QLabel(f"{prozess.name}")
+            self.findChild(QtWidgets.QLabel, name="keine_suchProzesse_label").setVisible(False)
+            self.findChild(QtWidgets.QLabel, name="suchProzesse_label").setVisible(True)
+            label = QtWidgets.QLabel(f"{prozess.name[0:prozess.name.find(':')]}")
             button = QtWidgets.QPushButton("Stoppen")
             button.setObjectName(prozess.name)
             button.clicked.connect(lambda: self.__stop_prozess(prozess))
@@ -354,8 +364,18 @@ class HauptGUI(QtWidgets.QMainWindow):
         button = self.findChild(QtWidgets.QPushButton, prozess.name)
 
         if prozess.name.find("Codegen") >= 0:
-            self.codeGenProzesse_layout.removeRow(button)
+            self.findChild(QtWidgets.QLabel, name="keine_codeGen_label").setVisible(True)
+            self.keine_codeGen_label.setVisible(True)
+            self.codeGenProzesse_layout.removeRow( button)
+
         else:
+            if len(self.such_prozesse) == 0:
+                self.findChild(QtWidgets.QLabel, name="keine_suchProzesse_label").setVisible(True)
+                self.findChild(QtWidgets.QLabel, name="suchProzesse_label").setVisible(False)
+            elif len(self.such_prozesse) == 1:
+                if self.such_prozesse[0].name.find("Codegen") >= 0:
+                    self.findChild(QtWidgets.QLabel, name="keine_suchProzesse_label").setVisible(True)
+                    self.findChild(QtWidgets.QLabel, name="suchProzesse_label").setVisible(False)
             self.sucheProzesse_layout.removeRow( button)
 
 
