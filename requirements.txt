@@ -12,3 +12,4 @@ PyQt5-sip==12.9.0
 requests>=2.25.1
 tqdm>=4.61.0
 selenium-wire>=4.3.1
+undetected-chromedriver>=3.0.1

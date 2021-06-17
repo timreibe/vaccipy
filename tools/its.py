@@ -15,6 +15,7 @@ from itertools import cycle
 from json import JSONDecodeError
 from random import choice, choices, randint
 from typing import Optional
+import undetected_chromedriver.v2 as uc
 
 import cloudscraper
 from requests.exceptions import RequestException
@@ -273,13 +274,10 @@ class ImpfterminService():
             raise ValueError(f"Nicht unterstütztes Betriebssystem {self.operating_system}")
 
     def get_chrome_options(self, headless):
-        chrome_options = Options()
+        chrome_options = uc.ChromeOptions()
 
         # deaktiviere Selenium Logging
         chrome_options.add_argument('disable-infobars')
-        chrome_options.add_experimental_option('useAutomationExtension', False)
-        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
         # chrome_options.add_argument("-no-sandbox");
@@ -296,15 +294,13 @@ class ImpfterminService():
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
             chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
-        elif check_chromium():
-            chrome_options.binary_location = str(chromium_executable())
 
         chrome_options.headless = headless
 
         return chrome_options
 
     def get_chromedriver(self, headless):
-        return Chrome(self.get_chromedriver_path(), options=self.get_chrome_options(headless))
+        return uc.Chrome(options=self.get_chrome_options(headless))
 
     def driver_enter_code(self, driver, impfzentrum, code):
         """
