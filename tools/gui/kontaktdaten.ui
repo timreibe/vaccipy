@@ -346,8 +346,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>490</width>
-        <height>208</height>
+        <width>748</width>
+        <height>232</height>
        </rect>
       </property>
       <attribute name="label">
@@ -568,8 +568,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>506</width>
-        <height>207</height>
+        <width>748</width>
+        <height>232</height>
        </rect>
       </property>
       <attribute name="label">
@@ -659,8 +659,14 @@
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
                <widget class="QTimeEdit" name="i_start_time_qtime">
+                <property name="locale">
+                 <locale language="German" country="Germany"/>
+                </property>
                 <property name="currentSection">
                  <enum>QDateTimeEdit::HourSection</enum>
+                </property>
+                <property name="displayFormat">
+                 <string>hh:mm</string>
                 </property>
                 <property name="calendarPopup">
                  <bool>false</bool>
@@ -697,6 +703,12 @@
              <layout class="QHBoxLayout" name="horizontalLayout">
               <item>
                <widget class="QTimeEdit" name="i_end_time_qtime">
+                <property name="locale">
+                 <locale language="German" country="Germany"/>
+                </property>
+                <property name="displayFormat">
+                 <string>hh:mm</string>
+                </property>
                 <property name="time">
                  <time>
                   <hour>23</hour>
@@ -760,7 +772,7 @@
             <enum>QFrame::Plain</enum>
            </property>
            <property name="lineWidth">
-            <number>0</number>
+            <number>1</number>
            </property>
            <layout class="QGridLayout" name="tage_grig" columnstretch="1,1" columnminimumwidth="1,1">
             <property name="rightMargin">
