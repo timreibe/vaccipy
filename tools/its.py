@@ -988,7 +988,7 @@ class ImpfterminService():
 
         # Wire Selenium driver um request im webdriver auszulesen
         #driver = selenium_wire.Chrome(self.get_chromedriver_path(),
-         #                             options=self.get_chrome_options(False))
+        #                             options=self.get_chrome_options(False))
         driver = self.get_chromedriver(headless=False)
 
         while True:
@@ -1160,7 +1160,7 @@ class ImpfterminService():
                                    "Versuchen Sie es später erneut.")
 
             # Ab jetzt befinden wir uns auf der SMS Verifizierung Seite
-            location = f"{url}rest/smspin/verifikation"
+            success_location = f"{url}impftermine/service/{plz_impfzentrum}"
             self.log.info("SMS-Anfrage an Server versandt.")
             self.log.info("Bitte SMS-Code innerhalb der nächsten 60 Sekunden im Browser-Fenster "
                           "eingeben.")
@@ -1178,39 +1178,9 @@ class ImpfterminService():
                 except Exception as e:
                     pass
 
-                # Alle bisherigen Requests laden
-                sms_verification_responses = []
-                for request in driver.requests:
-                    if request.url == location:
-                        sms_verification_responses.append(request.response)
-
-                if sms_verification_responses:
-
-                    # Neuste Antowrt vom Server auslesen
-                    # User kann z.B 2 mal den Pin falsch eingeben
-                    # uns interessiert nur die neuste Antwort vom Server
-                    latest_reponse = sms_verification_responses[-1]
-
-                    if latest_reponse is not None:
-                        if latest_reponse.status_code == 400:
-                            try:
-                                # error Laden
-                                error = json.loads(latest_reponse.body.decode('utf-8'))['error']
-                            except JSONDecodeError as exc:
-                                raise RuntimeError(f"JSONDecodeError: {str(exc)}") from exc
-
-                            if error == "Pin ungültig":
-                                self.log.info("Der eingegebene SMS-Code ist ungültig.")
-
-                        elif latest_reponse.status_code == 200:
-                            self.log.info(f"SMS-Code erfolgreich übermittelt. Bitte Prüfen "
-                                          f"Sie Ihre E-Mails.")
-                            driver.close()
-                            return True
-                        elif latest_reponse.status_code == 429:
-                            driver.close()
-                            raise RuntimeError("SMS-Code konnte nicht übermittelt werden. "
-                                               "Blockiert durch Botprotection.")
+                if driver.current_url == success_location:
+                    self.log.info("Bestätigungscode erfolgreich an Server versandt. Bitte prüfen Sie Ihre E-Mails.")
+                    return True
 
                 time.sleep(1)
                 max_sms_code_eingabe_sekunden -= 1
