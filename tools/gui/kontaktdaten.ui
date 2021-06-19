@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>vaccipy - Kontaktdaten</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,1,0,1,1">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,1,21,1,1">
    <item>
     <widget class="QLabel" name="header_label">
      <property name="font">
@@ -75,7 +75,7 @@
         <x>0</x>
         <y>0</y>
         <width>745</width>
-        <height>229</height>
+        <height>266</height>
        </rect>
       </property>
       <property name="font">
@@ -400,7 +400,7 @@
         <x>0</x>
         <y>0</y>
         <width>745</width>
-        <height>208</height>
+        <height>266</height>
        </rect>
       </property>
       <property name="font">
@@ -635,7 +635,7 @@
         <x>0</x>
         <y>0</y>
         <width>745</width>
-        <height>209</height>
+        <height>266</height>
        </rect>
       </property>
       <property name="font">
@@ -998,7 +998,7 @@
         <x>0</x>
         <y>0</y>
         <width>745</width>
-        <height>132</height>
+        <height>266</height>
        </rect>
       </property>
       <property name="font">
