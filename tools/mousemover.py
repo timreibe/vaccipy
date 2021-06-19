@@ -2,6 +2,7 @@ import math
 import random
 import time
 from random import randint
+from typing import Tuple
 
 from selenium.common.exceptions import MoveTargetOutOfBoundsException
 from selenium.webdriver import ActionChains
@@ -138,7 +139,7 @@ def pick_next_step(source: int, target: int, max_stepwidth: int, min_stepwidth: 
     return source + step_x
 
 
-def move_mouse_to_element(log: CLogger, current_positon: tuple[int, int], element: WebElement, driver: WebDriver) -> tuple:
+def move_mouse_to_element(log: CLogger, current_positon: Tuple[int, int], element: WebElement, driver: WebDriver) -> tuple:
     """Move mouse from x,y coordinates to the coordinates of the element
 
     Args:
@@ -168,8 +169,6 @@ def move_mouse_to_coordinates(log: CLogger, start_x: int, start_y: int, target_x
 
     # Generate waypoints
     coordinates_to_element = generate_way_between_coordinates(start_x, start_y, target_x, target_y)
-
     log.info(f"Simulation der Mausbewegungen gestartet. Von: ({start_x}, {start_y}) nach ({target_x}, {target_y})")
-
     # Execute movements and return coordinates
     return move_mouse_by_offsets(coordinates_to_element[0], coordinates_to_element[1], driver)
