@@ -164,6 +164,9 @@ class QtKontakt(QtWidgets.QDialog):
             # '' sind alle Standard-Buttons e.g. Save, Reset
             self.disable_all_buttons(['', 'b_impfzentren_waehlen'])
 
+            #
+            self.i_anrede_combo_box.setCurrentText("Daten werden nicht benötigt")
+
         else:
             raise RuntimeError("Modus ungueltig!")
 
@@ -211,7 +214,7 @@ class QtKontakt(QtWidgets.QDialog):
             str: Speicherpfad
         """
 
-        speicherpfad = oeffne_file_dialog_save(self, "Kontaktdaten", self.standard_speicherpfad)
+        speicherpfad = self.standard_speicherpfad #oeffne_file_dialog_save(self, "Kontaktdaten", self.standard_speicherpfad)
 
         speichern(speicherpfad, data)
         return speicherpfad
@@ -247,7 +250,7 @@ class QtKontakt(QtWidgets.QDialog):
         """
 
         clicked_button = self.buttonBox.standardButton(button)
-        if clicked_button == QtWidgets.QDialogButtonBox.Save:
+        if clicked_button == QtWidgets.QDialogButtonBox.Apply:
             self.bestaetigt()
         elif clicked_button == QtWidgets.QDialogButtonBox.Reset:
             self.__reset_vermittlungscodes()

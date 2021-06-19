@@ -63,7 +63,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Code:</string>
+           <string>Vermittlungscodes:</string>
           </property>
          </widget>
         </item>
@@ -135,7 +135,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Interval: </string>
+           <string>Abfrageintervall:</string>
           </property>
          </widget>
         </item>

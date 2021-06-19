@@ -199,7 +199,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, "Daten Fehlerhaft!", f"In der angegebenen Datei Fehlen Daten:\n\n{error}")
             return
             
-        strProcName = "Codegen (+49****{phone2})".format(phone2=kontaktdaten["kontakt"]["phone"][-4:])
+        strProcName = "Codegen (+49****{phone})".format(phone=kontaktdaten["kontakt"]["phone"][-4:])
 
         # allow only 1 Code Gen at a time
         for subProzess in self.such_prozesse:
@@ -240,6 +240,9 @@ class HauptGUI(QtWidgets.QMainWindow):
         try:
             kontaktdaten = self.__get_kontaktdaten(Modus.TERMIN_SUCHEN)
             if not kontaktdaten:
+                QtWidgets.QMessageBox.critical(self, "Persönliche Daten nicht vorhanden!", f"Es sind keine persönlichen Daten hinterlegt."
+                                        " Passe diese in Schritt zwei an.")
+                self.toolBox.setCurrentIndex(1)
                 return
             zeitrahmen = kontaktdaten["zeitrahmen"]
 
@@ -247,12 +250,14 @@ class HauptGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, "Datei nicht gefunden!", f"Datei zum Laden konnte nicht gefunden werden\n\nBitte erstellen")
             return
         except ValidationError as error:
-            QtWidgets.QMessageBox.critical(self, "Daten fehlerhaft!", f"Es scheinen Infos in den Kontaktdaten zu fehlen."
-                                                 " Bitte gehe zu Schritt 2 und passe deine Daten an.")
+            QtWidgets.QMessageBox.critical(self, "Persönliche Daten fehlerhaft!", f"Es fehlen Infos in den Kontaktdaten."
+                                                 " Gehe zu Schritt 2 und passe deine Daten an.")
+            self.toolBox.setCurrentIndex(1)
             return
         except MissingValuesError as error:
-            QtWidgets.QMessageBox.critical(self, "Daten fehlerhaft!", f"Es scheinen Infos in den Kontaktdaten zu fehlen."
-                                                 " Bitte gehe zu Schritt 2 und passe deine Daten an.")
+            QtWidgets.QMessageBox.critical(self, "Persönliche Daten fehlerhaft!", f"Es fehlen Infos in den Kontaktdaten."
+                                                 " Gehe zu Schritt 2 und passe deine Daten an.")
+            self.toolBox.setCurrentIndex(1)
             return
 
         self.__start_terminsuche(kontaktdaten, zeitrahmen)
@@ -367,7 +372,7 @@ class HauptGUI(QtWidgets.QMainWindow):
         if prozess.name.find("Codegen") >= 0:
             self.findChild(QtWidgets.QLabel, name="keine_codeGen_label").setVisible(True)
             self.keine_codeGen_label.setVisible(True)
-            self.codeGenProzesse_layout.removeRow( button)
+            self.codeGenProzesse_layout.removeRow(button)
 
         else:
             if len(self.such_prozesse) == 0:
@@ -377,7 +382,7 @@ class HauptGUI(QtWidgets.QMainWindow):
                 if self.such_prozesse[0].name.find("Codegen") >= 0:
                     self.findChild(QtWidgets.QLabel, name="keine_suchProzesse_label").setVisible(True)
                     self.findChild(QtWidgets.QLabel, name="suchProzesse_label").setVisible(False)
-            self.sucheProzesse_layout.removeRow( button)
+            self.sucheProzesse_layout.removeRow(button)
 
 
     def __check_status_der_prozesse(self):
@@ -456,7 +461,7 @@ class HauptGUI(QtWidgets.QMainWindow):
             dict: Kontakdaten
         """
         if not os.path.isfile(self.pfad_kontaktdaten):
-            if not self.kontaktdaten_erstellen(modus):
+            if (modus == Modus.TERMIN_SUCHEN) or (not self.kontaktdaten_erstellen(modus)):
                 return {}
 
         kontaktdaten = kontak_tools.get_kontaktdaten(self.pfad_kontaktdaten)
