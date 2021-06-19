@@ -275,6 +275,15 @@ class ImpfterminService():
     def get_chrome_options(self, headless: bool):
         chrome_options = uc.ChromeOptions()
 
+        # deaktiviere Selenium Logging
+        chrome_options.add_argument('disable-infobars')
+
+        # TODO: according to the annotations, second param should be a dict
+        # FIXME invalid argument: cannot parse capability: goog:chromeOptions
+        # FIXME invalid argument: unrecognized chrome option: useAutomationExtension
+        #chrome_options.add_experimental_option('useAutomationExtension', False)
+        #chrome_options.add_experimental_option('excludeSwitches', ['enable-automation', 'enable-logging'])
+
         # Zur Behebung von "DevToolsActivePort file doesn't exist"
         # chrome_options.add_argument("-no-sandbox");
         chrome_options.add_argument("--disable-dev-shm-usage")
@@ -282,10 +291,6 @@ class ImpfterminService():
 
         # Chrome head is only required for the backup booking process.
         # User-Agent is required for headless, because otherwise the server lets us hang.
-
-        # Echte useragents benutzen, zufaelligen waehlen
-
-        chrome_options.add_argument("user-agent=" + self.useragent)
 
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
@@ -295,7 +300,7 @@ class ImpfterminService():
 
         return chrome_options
 
-    def get_chromedriver(self, headless):
+    def get_chromedriver(self, headless: bool) -> WebDriver:
         return uc.Chrome(options=self.get_chrome_options(headless))
 
     def driver_enter_code(self, driver: WebDriver, impfzentrum: Dict, code: str):
@@ -1124,6 +1129,7 @@ class ImpfterminService():
 
             if driver.current_url == success_location:
                 self.log.info("Bestätigungscode erfolgreich an Server versandt. Bitte prüfen Sie Ihre E-Mails.")
+                driver.close()
                 return True
 
             time.sleep(1)
