@@ -222,7 +222,7 @@ class QtKontakt(QtWidgets.QDialog):
 
     def __lade_einstellungen(self):
         """
-        Lädt alle Werte aus einer JSON-Datei
+        Lädt alle Werte aus einer JSON-Datei.
         Speicherpfad wird vom User angefragt
         """
         try:
@@ -235,11 +235,16 @@ class QtKontakt(QtWidgets.QDialog):
         if speicherpfad is None:
             return
 
+        # Setze alle Werte Eingabefelder zurück
+        self.__reset_vermittlungscodes()
+        self.__reset_kontakdaten()
+        self.__reset_zeitrahmen()
+        self.__reset_notifications()
+
         self.standard_speicherpfad = speicherpfad
         self.update_path.emit(speicherpfad)
 
         self.__lade_alle_werte()
-
 
     def __button_box_clicked(self, button: QtWidgets.QPushButton):
         """
@@ -258,10 +263,6 @@ class QtKontakt(QtWidgets.QDialog):
             self.__reset_zeitrahmen()
             self.__reset_notifications()
         elif clicked_button == QtWidgets.QDialogButtonBox.Open:
-            self.__reset_vermittlungscodes()
-            self.__reset_kontakdaten()
-            self.__reset_zeitrahmen()
-            self.__reset_notifications()
             self.__lade_einstellungen()
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
             self.reject()
@@ -429,7 +430,7 @@ class QtKontakt(QtWidgets.QDialog):
         Öffnet den Dialog um PLZ auszuwählen
         """
 
-        impfzentren_dialog = QtImpfzentren(self)
+        impfzentren_dialog = QtImpfzentren(self, modus = self.modus)
         impfzentren_dialog.update_impfzentren_plz.connect(self.__set_impzentren_plz)
         impfzentren_dialog.show()
         impfzentren_dialog.exec_()
