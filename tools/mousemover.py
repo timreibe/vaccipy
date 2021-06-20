@@ -1,9 +1,15 @@
 import math
+import random
 import time
 from random import randint
+from typing import Tuple
 
 from selenium.common.exceptions import MoveTargetOutOfBoundsException
 from selenium.webdriver import ActionChains
+from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
+
+from tools.clog import CLogger
 
 
 def move_mouse_by_offsets(x_coordinates: list, y_coordinates: list, driver) -> tuple:
@@ -93,9 +99,20 @@ def generate_way_between_coordinates(source_x: int, source_y: int, target_x: int
         if source_y == target_y:
             y_target_reached = True
 
+        # Wiggle a bit
+        if not x_target_reached or not y_target_reached:
+            if x_target_reached:
+                source_x += random.randint(-x_min_stepwidth, x_min_stepwidth)
+            if y_target_reached:
+                source_y += random.randint(-y_min_stepwidth, y_min_stepwidth)
+
         # Append new waypoint coordinates
         x_coordinates.append(source_x)
         y_coordinates.append(source_y)
+
+    # Don't hit exactly
+    x_coordinates.append(source_x + random.randint(-x_min_stepwidth, x_min_stepwidth))
+    y_coordinates.append(source_y + random.randint(-y_min_stepwidth, y_min_stepwidth))
 
     return x_coordinates, y_coordinates
 
@@ -122,7 +139,21 @@ def pick_next_step(source: int, target: int, max_stepwidth: int, min_stepwidth: 
     return source + step_x
 
 
-def move_mouse_to_coordinates(log, start_x: int, start_y: int, target_x: int, target_y: int, driver) -> tuple:
+def move_mouse_to_element(log: CLogger, current_positon: Tuple[int, int], element: WebElement, driver: WebDriver) -> tuple:
+    """Move mouse from x,y coordinates to the coordinates of the element
+
+    Args:
+        current_positon (tuple[int, int]): start position
+        element (WebElement): target element
+        driver (WebDriver): Chromedriver
+    
+    Returns:
+        tuple: Current mouse coordinates (mouse_x, mouse_y)
+    """
+    return move_mouse_to_coordinates(log, current_positon[0], current_positon[1], element.location['x'], element.location['y'], driver)
+
+
+def move_mouse_to_coordinates(log: CLogger, start_x: int, start_y: int, target_x: int, target_y: int, driver: WebDriver) -> tuple:
     """Move mouse from x,y coordinates to x,y coordinates
 
     Args:
@@ -138,8 +169,6 @@ def move_mouse_to_coordinates(log, start_x: int, start_y: int, target_x: int, ta
 
     # Generate waypoints
     coordinates_to_element = generate_way_between_coordinates(start_x, start_y, target_x, target_y)
-
     log.info(f"Simulation der Mausbewegungen gestartet. Von: ({start_x}, {start_y}) nach ({target_x}, {target_y})")
-
     # Execute movements and return coordinates
     return move_mouse_by_offsets(coordinates_to_element[0], coordinates_to_element[1], driver)
