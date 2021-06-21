@@ -319,7 +319,7 @@ Die Distributionen können im [neusten Release heruntergeladen werden](https://g
 Es gibt noch ein paar Features, die cool wären. Die Ideen werden hier mal gesammelt und
 werden (von uns oder euch - feel free!) irgendwann hinzukommen:
 
-- [ ] Datum eingrenzen bei der Terminwahl
+- [x] Datum eingrenzen bei der Terminwahl
 - [ ] Github Pages
 - [ ] Integrierter updater.
 - [ ] Macosx Build / Pipeline (Mac currently blocks the app: [Branch](https://github.com/iamnotturner/vaccipy/tree/mac-intel-build))
