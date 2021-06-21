@@ -571,10 +571,12 @@ def main():
                 print()
             except TypeError as exc:
                 if str(exc) == "expected str, bytes or os.PathLike object, not NoneType":
-                    print("\nChromium nicht gefunden. Zwei Möglichkeiten zur Problembehebung:\n"
+                    print("\nChromium nicht gefunden. Drei Möglichkeiten zur Problembehebung:\n"
                           "1) Google Chrome installieren: https://www.google.com/intl/de_de/chrome/\n"
                           "2) Chromium über das Vaccipy-Menü installieren: "
-                          "'[3] Eigene Chromium Instanz im Vaccipy Ordner installieren'\n")
+                          "'[3] Eigene Chromium Instanz im Vaccipy Ordner installieren'\n"
+                          "3) Pfad für Chromium und Chromedriver über Umgebungsvariablen festlegen: "
+                          "VACCIPY_CHROME_BIN (Chromium) und VACCIPY_CHROMEDRIVER (Chromedriver)\n")
                 else:
                     print(f"\nUnbekannter TypeError:\n{str(exc)}\n")
             except Exception as exc:
