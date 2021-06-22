@@ -4,8 +4,8 @@ import os
 import platform
 import random
 import string
-import sys
 import time
+
 # Alphabetisch sortiert:
 from base64 import b64encode
 from datetime import datetime, date, timedelta
@@ -26,7 +26,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from tools.chromium_downloader import webdriver_executable, \
-    check_webdriver
+    check_webdriver, chromium_executable, check_chromium
 from tools.clog import CLogger
 from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, UnmatchingCodeError
 from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
@@ -254,29 +254,13 @@ class ImpfterminService():
         if chromedriver_from_env:
             return chromedriver_from_env
         if check_webdriver():
-            return webdriver_executable()
-
-        # Chromedriver anhand des OS auswählen
-        if 'linux' in self.operating_system:
-            if "64" in platform.architecture() or sys.maxsize > 2 ** 32:
-                return os.path.join(self.PATH, "tools/chromedriver/chromedriver-linux-64")
-            else:
-                return os.path.join(self.PATH, "tools/chromedriver/chromedriver-linux-32")
-        elif 'windows' in self.operating_system:
-            return os.path.join(self.PATH, "tools/chromedriver/chromedriver-windows.exe")
-        elif 'darwin' in self.operating_system:
-            if "arm" in platform.processor().lower():
-                return os.path.join(self.PATH, "tools/chromedriver/chromedriver-mac-m1")
-            else:
-                return os.path.join(self.PATH, "tools/chromedriver/chromedriver-mac-intel")
-        else:
-            raise ValueError(f"Nicht unterstütztes Betriebssystem {self.operating_system}")
+            return str(webdriver_executable())
 
     def get_chrome_options(self, headless: bool):
         chrome_options = uc.ChromeOptions()
 
         # deaktiviere Selenium Logging
-        chrome_options.add_argument('disable-infobars')
+        chrome_options.add_argument('--disable-infobars')
 
         # TODO: according to the annotations, second param should be a dict
         # FIXME invalid argument: cannot parse capability: goog:chromeOptions
@@ -294,14 +278,19 @@ class ImpfterminService():
 
         chromebin_from_env = os.getenv("VACCIPY_CHROME_BIN")
         if chromebin_from_env:
-            chrome_options.binary_location = os.getenv("VACCIPY_CHROME_BIN")
+            # check for env variable with chromium binary path
+            chrome_options.binary_location = chromebin_from_env
+        elif check_chromium():
+            # check for local installed chromium and set as binary executable
+            chrome_options.binary_location = str(chromium_executable())
 
         chrome_options.headless = headless
 
         return chrome_options
 
     def get_chromedriver(self, headless: bool) -> WebDriver:
-        return uc.Chrome(options=self.get_chrome_options(headless))
+        return uc.Chrome(executable_path=self.get_chromedriver_path(),
+            options=self.get_chrome_options(headless))
 
     def driver_enter_code(self, driver: WebDriver, impfzentrum: Dict, code: str):
         """
@@ -1022,8 +1011,8 @@ class ImpfterminService():
         driver.execute_script(
             'window.sessionStorage.setItem("ets-session-its-cv-quick-check",\''
             + ets_session_its_cv_quick_check + '\');')
-        self.log.info(
-            "\"ets-session-its-cv-quick-check\" Key:Value zum sessionStorage hinzugefügt.")
+        # self.log.info(
+        #     "\"ets-session-its-cv-quick-check\" Key:Value zum sessionStorage hinzugefügt.")
 
         # Durch ets-session-its-cv-quick-check im SessionStorage kann direkt der Check
         # aufgerufen werden
@@ -1271,7 +1260,7 @@ class ImpfterminService():
 
         # Einmal Chrome starten, um früh einen Fehler zu erzeugen, falls die
         # erforderliche Software nicht installiert ist.
-        its.log.info("Teste Chromedriver")
+        its.log.info("Prüfen von Chromium und Chromedriver")
         its.get_chromedriver(headless=True).quit()
 
         for plz_impfzentrum in cycle(plz_impfzentren):

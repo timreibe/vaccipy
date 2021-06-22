@@ -367,6 +367,11 @@ def gen_code(kontaktdaten):
 
     its = ImpfterminService([], {}, PATH)
 
+    # Einmal Chrome starten, um früh einen Fehler zu erzeugen, falls die
+    # erforderliche Software nicht installiert ist.
+    its.log.info("Prüfen von Chromium und Chromedriver")
+    its.get_chromedriver(headless=True).quit()
+
     print("\nBitte trage nachfolgend dein Geburtsdatum im Format DD.MM.YYYY ein.\n"
           "Beispiel: 02.03.1982\n")
     while True:
@@ -564,6 +569,16 @@ def main():
                 else:
                     print("Falscheingabe! Bitte erneut versuchen.")
                 print()
+            except TypeError as exc:
+                if str(exc) == "expected str, bytes or os.PathLike object, not NoneType":
+                    print("\nChromium nicht gefunden. Drei Möglichkeiten zur Problembehebung:\n"
+                          "1) Google Chrome installieren: https://www.google.com/intl/de_de/chrome/\n"
+                          "2) Chromium über das Vaccipy-Menü installieren: "
+                          "'[3] Eigene Chromium Instanz im Vaccipy Ordner installieren'\n"
+                          "3) Pfad für Chromium und Chromedriver über Umgebungsvariablen festlegen: "
+                          "VACCIPY_CHROME_BIN (Chromium) und VACCIPY_CHROMEDRIVER (Chromedriver)\n")
+                else:
+                    print(f"\nUnbekannter TypeError:\n{str(exc)}\n")
             except Exception as exc:
                 print(f"\nFehler:\n{str(exc)}\n")
 
