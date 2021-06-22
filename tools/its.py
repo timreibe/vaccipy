@@ -254,7 +254,7 @@ class ImpfterminService():
         if chromedriver_from_env:
             return chromedriver_from_env
         if check_webdriver():
-            return webdriver_executable()
+            return str(webdriver_executable())
 
     def get_chrome_options(self, headless: bool):
         chrome_options = uc.ChromeOptions()
