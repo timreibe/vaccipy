@@ -1,4 +1,4 @@
-# vaccipy
+# <img width="30px" src="images/spritze.ico"> vaccipy <img width="30px" src="images/spritze.ico">
 [![build](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml)
 [![deploy](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml/badge.svg)](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml)
 
@@ -64,6 +64,15 @@ Mehr Informationen, wie die Releases funktionieren findest du [hier](https://git
 #### BETA Version
 
 Der [BETA-Branch](https://github.com/iamnotturner/vaccipy/tree/beta) enthält neue, noch nicht final getestete Features. Hierfür gibt es keine Distribution für Windows oder Ubuntu. [Sollten Fehler auftreten könnt ihr hier ein Issue erstellen.](https://github.com/iamnotturner/vaccipy/issues)  
+
+## Wir suchen Unterstützung
+
+Themen die bei denen wir DICH brauchen könnten: 
+* Erstellung eines Logos: Es gibt aktuell schon ein [icon](images/spritze.ico). Etwas ähnliches/passendes mit Schriftzug wäre super!
+* Code-Signing und Implementierung eines Updaters: [Issue Link](https://github.com/iamnotturner/vaccipy/issues/128)
+* EIGENE IDEEN! 
+
+[Mehr Informationen](CONTRIBUTING.md)
 
 
 ## Ausgangssituation
