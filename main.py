@@ -409,7 +409,7 @@ def subcommand_search(args):
 def subcommand_code(args):
     if args.configure_only:
         update_kontaktdaten_interactive(
-            get_kontaktdaten(args.file), "code", args.file)
+            get_kontaktdaten(args.file), "code", args.configure_notifications, args.file)
     elif args.read_only:
         gen_code(get_kontaktdaten(args.file))
     else:
