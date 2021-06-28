@@ -268,7 +268,8 @@ class ImpfterminService():
         else:
             raise ValueError(f"Nicht unterstütztes Betriebssystem {self.operating_system}")
 
-    def get_chrome_options(self, headless):
+    def get_chromedriver(self, headless):
+        time.sleep(30)
         chrome_options = Options()
 
         # deaktiviere Selenium Logging
