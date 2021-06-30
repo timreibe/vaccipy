@@ -32,7 +32,7 @@ from tools.exceptions import AppointmentGone, BookingError, TimeframeMissed, Unm
 from tools.kontaktdaten import decode_wochentag, validate_codes, validate_kontakt, \
     validate_zeitrahmen
 from tools.mousemover import move_mouse_to_coordinates, move_mouse_to_element
-from tools.utils import fire_notifications, unique
+from tools.utils import fire_notifications, read_telegram, unique
 
 try:
     import beepy
@@ -43,7 +43,7 @@ except ImportError:
 
 
 class ImpfterminService():
-    def __init__(self, codes: list, kontakt: dict, PATH: str, notifications=None):
+    def __init__(self, codes: list, kontakt: dict, PATH: str, notifications=None, booking=True):
         if notifications is None:
             notifications = dict()
         self.PATH = PATH
@@ -51,6 +51,8 @@ class ImpfterminService():
         self.operating_system = platform.system().lower()
 
         self.notifications = notifications
+
+        self.booking = booking
 
         # Logging einstellen
         self.log = CLogger("impfterminservice")
@@ -682,8 +684,13 @@ class ImpfterminService():
         code = codepoint["code"]
 
         try:
-            reservierung = self.reservierung_finden_mit_code(
-                zeitrahmen, plz, code)
+            if self.booking:
+                reservierung = self.reservierung_finden_mit_code(
+                    zeitrahmen, plz, code)
+            else:
+                reservierung = self.reservierung_finden_benachrichtigung(
+                    zeitrahmen, plz, code)
+
             if reservierung is not None:
                 return reservierung
         except UnmatchingCodeError:
@@ -835,6 +842,159 @@ class ImpfterminService():
             "impfzentrum": impfzentrum,
             "terminpaar": tp_angenommen,
         }
+
+    def reservierung_finden_benachrichtigung(
+            self, zeitrahmen: Dict, plz: str, code: str) -> Optional[Dict]:
+        """
+        Es wird überprüft, ob im Impfzentrum in der gegebenen PLZ ein oder
+        mehrere Terminpaare (oder Einzeltermine) verfügbar sind, die dem
+        Zeitrahmen entsprechen.
+        Falls ja, wird eine Benachrichtigung gesendet und
+        10min auf eine Antwort gewartet. Fall die Antwort kommt wird ein
+        Dict mit der reservierung zurückgegeben, falls nicht wird None
+        zurückgegeben.
+        Zum Format der Rückgabe, siehe Beispiel.
+
+        Beispiel:
+            zeitrahmen = {
+                'einhalten_bei': '1',
+                'von_datum': '29.03.2021'
+            }
+
+            self.reservierung_finden_mit_code(
+                zeitrahmen, '68163', 'XXXX-XXXX-XXXX')
+            {
+                'code': 'XXXX-XXXX-XXXX',
+                'impfzentrum': {
+                    'Zentrumsname': 'Maimarkthalle',
+                    'PLZ': '68163',
+                    'Ort': 'Mannheim',
+                    'URL': 'https://001-iz.impfterminservice.de/',
+                },
+                'terminpaar': [
+                    {
+                        'slotId': 'slot-56817da7-3f46-4f97-9868-30a6ddabcdef',
+                        'begin': 1616999901000,
+                        'bsnr': '005221080'
+                    },
+                    {
+                        'slotId': 'slot-d29f5c22-384c-4928-922a-30a6ddabcdef',
+                        'begin': 1623999901000,
+                        'bsnr': '005221080'
+                    }
+                ]
+            }
+
+        :param zeitrahmen: Zeitrahmen, dem das Terminpaar entsprechen muss
+        :param plz: PLZ des Impfzentrums, in dem geprüft wird
+        :param code: Vermittlungscode, für den eventuell gefundene Terminpaare
+            reserviert werden.
+        :return: Reservierungs-Objekt (siehe obiges Beispiel), falls ein
+            passender Termin gefunden wurde, sonst None.
+        :raise RuntimeError: Termine können nicht geladen werden
+        """
+
+        impfzentrum = self.impfzentrum_in_plz(plz)
+        url = impfzentrum["URL"]
+        location = f"{url}rest/suche/impfterminsuche?plz={plz}"
+
+        try:
+            self.s.cookies.clear()
+            res = self.s.get(location, headers=get_headers(code), timeout=5)
+        except RequestException as exc:
+            raise RuntimeError(
+                f"Termine in {plz} können nicht geladen werden: {str(exc)}")
+        if res.status_code == 401:
+            raise UnmatchingCodeError(
+                f"Termine in {plz} können nicht geladen werden: "
+                f"Vermittlungscode nicht gültig für diese PLZ")
+        if not res.ok:
+            raise RuntimeError(
+                f"Termine in {plz} können nicht geladen werden: "
+                f"{res.status_code} {res.text}")
+
+        if 'Virtueller Warteraum des Impfterminservice' in res.text:
+            return None
+
+        try:
+            terminpaare = res.json().get("termine")
+        except JSONDecodeError as exc:
+            raise RuntimeError(
+                f"Termine in {plz} können nicht geladen werden: "
+                f"JSONDecodeError: {str(exc)}")
+        if not terminpaare:
+            self.log.info(f"Keine Termine verfügbar in {plz}")
+            return None
+
+        if ENABLE_BEEPY:
+            beepy.beep('coin')
+        else:
+            print("\a")
+
+        terminpaare_angenommen = [
+            tp for tp in terminpaare
+            if terminpaar_im_zeitrahmen(tp, zeitrahmen)
+        ]
+        terminpaare_abgelehnt = [
+            tp for tp in terminpaare
+            if tp not in terminpaare_angenommen
+        ]
+
+        zentrumsname = impfzentrum.get('Zentrumsname').strip()
+        ort = impfzentrum.get('Ort')
+
+        for tp_abgelehnt in terminpaare_abgelehnt:
+            self.log.warn(
+                "Termin gefunden - jedoch nicht im entsprechenden Zeitraum:")
+            self.log.info('-' * 50)
+            self.log.warn(f"'{zentrumsname}' in {plz} {ort}")
+            for num, termin in enumerate(tp_abgelehnt, 1):
+                ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
+                    '%d.%m.%Y um %H:%M Uhr')
+                self.log.warn(f"{num}. Termin: {ts}")
+            self.log.warn(f"Link: {url}impftermine/suche/{code}/{plz}")
+            self.log.info('-' * 50)
+
+        if not terminpaare_angenommen:
+            raise TimeframeMissed()
+
+        msg = f"'{zentrumsname}' in {plz} {ort}\n"
+        self.log.success(f"Termin gefunden!")
+        self.log.success(f"'{zentrumsname}' in {plz} {ort}")
+
+        termine_num = {}
+
+        for n, tp in enumerate(terminpaare_angenommen, 1):
+            termine_num[n] = tp
+            msg += f"\nTerminpaar {n} - Buchen mit #{n} (Telegram)\n"
+            for num, termin in enumerate(tp, 1):
+                ts = datetime.fromtimestamp(termin["begin"] / 1000).strftime(
+                    '%d.%m.%Y um %H:%M Uhr')
+                self.log.success(f"{num}. Termin: {ts}")
+                msg += f"{num}. Termin: {ts}\n"
+
+        msg += f"Link: {url}impftermine/suche/{code}/{plz}"
+
+        self.notify("Termin gefunden!", msg)
+        self.log.info("Warte auf Antwort...")
+        t = 0
+        while True:
+            t += 1
+            answer = read_telegram(self.notifications["telegram"])
+            if answer is not None:
+                self.log.info(f"Antwort über Telegram: {answer}")
+                if int(answer) in termine_num.keys():
+                    self.log.info(f"Termin {answer} ausgewählt.")
+                    return {
+                        "code": code,
+                        "impfzentrum": impfzentrum,
+                        "terminpaar": termine_num[int(answer)],
+                    }
+            if t >= 120:
+                break
+            time.sleep(5)
+
+        return None
 
     def termin_buchen(self, reservierung):
         """Termin wird gebucht für die Kontaktdaten, die beim Starten des
@@ -1208,7 +1368,7 @@ class ImpfterminService():
     @staticmethod
     def terminsuche(codes: list, plz_impfzentren: list, kontakt: dict,
                     PATH: str, notifications: Dict = None, zeitrahmen: Dict = None,
-                    check_delay: int = 30):
+                    check_delay: int = 30, booking=True):
         """
         Sucht mit mehreren Vermittlungscodes bei einer Liste von Impfzentren nach
         Terminen und bucht den erstbesten, der dem Zeitrahmen entspricht,
@@ -1242,7 +1402,7 @@ class ImpfterminService():
         if len(plz_impfzentren) == 0:
             raise ValueError("Kein Impfzentrum ausgewählt")
 
-        its = ImpfterminService(codes, kontakt, PATH, notifications)
+        its = ImpfterminService(codes, kontakt, PATH, notifications, booking)
 
         # Prüfen, ob in allen angegebenen PLZs ein Impfzentrum verfügbar ist
         izs_by_plz = {

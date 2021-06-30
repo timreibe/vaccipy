@@ -1,10 +1,12 @@
 import os
+import re
 import time
 import traceback
 import random
 from json import JSONDecodeError
 from pathlib import Path
 from threading import Thread
+from time import time
 
 import requests
 from plyer import notification
@@ -95,6 +97,8 @@ def desktop_notification(operating_system: str, title: str, message: str):
 
     if 'windows' not in operating_system:
         return
+
+    message = message[:256]
 
     try:
         Thread(target=notification.notify(
@@ -226,6 +230,34 @@ def telegram_validation(notifications: dict):
     validation_msg = f"Ihr Vaccipy Validierungscode lautet: {validation_code}"
     telegram_notification(notifications, validation_msg)
     return validation_code
+
+
+def read_telegram(notifications: dict):
+    if 'api_token' not in notifications or 'chat_id' not in notifications:
+        return
+
+    headers = {
+        'Accept': 'application/json',
+        'User-Agent': 'vaccipy'
+    }
+
+    url = f'https://api.telegram.org/bot{notifications["api_token"]}/getUpdates'
+    params = {
+        'chat_id': notifications["chat_id"],
+        'offset': -1
+    }
+
+    r = requests.get(url, params=params, headers=headers)
+
+    if r.status_code != 200:
+        raise TelegramNotificationError(r.status_code, r.text)
+    for message_object in r.json().get('result'):
+        message = message_object.get('message')
+        if not message:
+            return
+
+        if message.get('text') and re.search(r"#\d", message.get('text')) and time() - message.get('date') <= 10:
+            return message.get('text').strip('#')
 
 
 def fire_notifications(notifications: dict, operating_system: str, title: str, message: str):

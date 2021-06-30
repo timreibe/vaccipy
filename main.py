@@ -240,7 +240,7 @@ def input_kontaktdaten_key(
             print(f"\n{str(exc)}\n")
 
 
-def run_search_interactive(kontaktdaten_path, configure_notifications, check_delay):
+def run_search_interactive(kontaktdaten_path, configure_notifications, check_delay, booking=True):
     """
     Interaktives Setup für die Terminsuche:
     1. Ggf. zuerst Eingabe, ob Kontaktdaten aus kontaktdaten.json geladen
@@ -269,10 +269,10 @@ def run_search_interactive(kontaktdaten_path, configure_notifications, check_del
     print()
     kontaktdaten = update_kontaktdaten_interactive(
         kontaktdaten, "search", configure_notifications, kontaktdaten_path)
-    return run_search(kontaktdaten, check_delay)
+    return run_search(kontaktdaten, check_delay, booking)
 
 
-def run_search(kontaktdaten, check_delay):
+def run_search(kontaktdaten, check_delay, booking=True):
     """
     Nicht-interaktive Terminsuche
 
@@ -311,7 +311,8 @@ def run_search(kontaktdaten, check_delay):
         notifications=notifications,
         zeitrahmen=zeitrahmen,
         check_delay=check_delay,
-        PATH=PATH)
+        PATH=PATH,
+        booking=booking)
 
 
 def gen_code_interactive(kontaktdaten_path):
@@ -404,6 +405,16 @@ def subcommand_search(args):
         run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec)
     else:
         run_search_interactive(args.file, args.configure_notifications, check_delay=args.retry_sec)
+
+
+def subcommand_search_no_booking(args):
+    if args.configure_only:
+        update_kontaktdaten_interactive(
+            get_kontaktdaten(args.file), "search", args.configure_notifications, args.file)
+    elif args.read_only:
+        run_search(get_kontaktdaten(args.file), check_delay=args.retry_sec, booking=False)
+    else:
+        run_search_interactive(args.file, args.configure_notifications, check_delay=args.retry_sec, booking=False)
 
 
 def subcommand_code(args):
@@ -519,6 +530,7 @@ def main():
                 "[1] Termin suchen\n"
                 "[2] Vermittlungscode generieren\n"
                 "[3] Eigene Chromium Instanz im Vaccipy Ordner installieren\n"
+                "[4] Termin suchen ohne zu buchen (nur Benachrichtigen)\n"
                 f"[x] Erweiterte Einstellungen {'verbergen' if extended_settings else 'anzeigen'}\n")
 
             if extended_settings:
@@ -538,6 +550,8 @@ def main():
                     subcommand_code(args)
                 elif option == "3":
                     subcommand_install_chromium()
+                elif option == "4":
+                    subcommand_search_no_booking(args)
                 elif option == "x":
                     extended_settings = not extended_settings
                 elif extended_settings and option == "c":
