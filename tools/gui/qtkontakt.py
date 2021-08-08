@@ -104,10 +104,7 @@ class QtKontakt(QtWidgets.QDialog):
         self.__lade_alle_werte()
 
         # Wähle passenden Reiter aus
-        if self.modus == modus.CODE_GENERIEREN:
-            self.tabWidget.setCurrentIndex(1)
-        else:
-            self.tabWidget.setCurrentIndex(0)
+        self.toolBox.setCurrentIndex(0)
 
         # Erstelle Events für LineEdits
         for line_edit in self.vermittlungscodes_tab.findChildren(QtWidgets.QLineEdit):
@@ -167,6 +164,9 @@ class QtKontakt(QtWidgets.QDialog):
             # '' sind alle Standard-Buttons e.g. Save, Reset
             self.disable_all_buttons(['', 'b_impfzentren_waehlen'])
 
+            #
+            self.i_anrede_combo_box.setCurrentText("Daten werden nicht benötigt")
+
         else:
             raise RuntimeError("Modus ungueltig!")
 
@@ -214,7 +214,7 @@ class QtKontakt(QtWidgets.QDialog):
             str: Speicherpfad
         """
 
-        speicherpfad = oeffne_file_dialog_save(self, "Kontaktdaten", self.standard_speicherpfad)
+        speicherpfad = self.standard_speicherpfad #oeffne_file_dialog_save(self, "Kontaktdaten", self.standard_speicherpfad)
 
         speichern(speicherpfad, data)
         return speicherpfad
@@ -222,7 +222,7 @@ class QtKontakt(QtWidgets.QDialog):
 
     def __lade_einstellungen(self):
         """
-        Lädt alle Werte aus einer JSON-Datei
+        Lädt alle Werte aus einer JSON-Datei.
         Speicherpfad wird vom User angefragt
         """
         try:
@@ -235,11 +235,16 @@ class QtKontakt(QtWidgets.QDialog):
         if speicherpfad is None:
             return
 
+        # Setze alle Werte Eingabefelder zurück
+        self.__reset_vermittlungscodes()
+        self.__reset_kontakdaten()
+        self.__reset_zeitrahmen()
+        self.__reset_notifications()
+
         self.standard_speicherpfad = speicherpfad
         self.update_path.emit(speicherpfad)
 
         self.__lade_alle_werte()
-
 
     def __button_box_clicked(self, button: QtWidgets.QPushButton):
         """
@@ -250,7 +255,7 @@ class QtKontakt(QtWidgets.QDialog):
         """
 
         clicked_button = self.buttonBox.standardButton(button)
-        if clicked_button == QtWidgets.QDialogButtonBox.Save:
+        if clicked_button == QtWidgets.QDialogButtonBox.Apply:
             self.bestaetigt()
         elif clicked_button == QtWidgets.QDialogButtonBox.Reset:
             self.__reset_vermittlungscodes()
@@ -258,10 +263,6 @@ class QtKontakt(QtWidgets.QDialog):
             self.__reset_zeitrahmen()
             self.__reset_notifications()
         elif clicked_button == QtWidgets.QDialogButtonBox.Open:
-            self.__reset_vermittlungscodes()
-            self.__reset_kontakdaten()
-            self.__reset_zeitrahmen()
-            self.__reset_notifications()
             self.__lade_einstellungen()
         elif clicked_button == QtWidgets.QDialogButtonBox.Cancel:
             self.reject()
@@ -418,12 +419,7 @@ class QtKontakt(QtWidgets.QDialog):
                        "Datei, indem Sie auf Speichern klicken.")
 
         # Wechsel auf den ersten Reiter
-        self.tabWidget.setCurrentIndex(0)
-
-
-
-
-
+        self.toolBox.setCurrentIndex(0)
 
     ##############################
     #        Kontakdaten         #
@@ -434,7 +430,7 @@ class QtKontakt(QtWidgets.QDialog):
         Öffnet den Dialog um PLZ auszuwählen
         """
 
-        impfzentren_dialog = QtImpfzentren(self)
+        impfzentren_dialog = QtImpfzentren(self, modus = self.modus)
         impfzentren_dialog.update_impfzentren_plz.connect(self.__set_impzentren_plz)
         impfzentren_dialog.show()
         impfzentren_dialog.exec_()

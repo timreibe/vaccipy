@@ -2,6 +2,8 @@ import os
 from PyQt5 import QtWidgets, uic, QtGui, QtCore
 from tools.utils import get_grouped_impfzentren
 from typing import Tuple, List
+from tools import Modus
+
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -18,6 +20,9 @@ class QtImpfzentren(QtWidgets.QDialog):
     # Ok
     # Cancel
 
+    ### label ###
+    # header_label
+
     ### QWidget ###
     # scrollAreaWidgetContents
 
@@ -25,7 +30,7 @@ class QtImpfzentren(QtWidgets.QDialog):
     # Gibt einen String mit allen aktiven PLZ zurück
     update_impfzentren_plz = QtCore.pyqtSignal(str)
 
-    def __init__(self, parent: QtWidgets.QWidget, pfad_fenster_layout=os.path.join(PATH, "impfzentren.ui")):
+    def __init__(self, parent: QtWidgets.QWidget,  modus: Modus, pfad_fenster_layout=os.path.join(PATH, "impfzentren.ui")):
         super().__init__(parent=parent)
 
         # Laden der .ui Datei und init config
@@ -33,6 +38,8 @@ class QtImpfzentren(QtWidgets.QDialog):
 
         # ButtonBox Event verknüpfen
         self.buttonBox.clicked.connect(self.__button_box_clicked)
+
+        self.modus = modus
 
         self.init_layout()
 
@@ -67,6 +74,9 @@ class QtImpfzentren(QtWidgets.QDialog):
                     form_layout.addRow(checkbox, info_grid)
 
             self.impfzentren_grid_layout.addLayout(form_layout, row+2, 0, 1, 1)
+
+            if self.modus == Modus.CODE_GENERIEREN:
+                self.header_label.setText("Wähle genau ein Impfzentrum")
 
     def get_horizontale_linie(self) -> QtWidgets.QFrame:
         """
@@ -130,6 +140,8 @@ class QtImpfzentren(QtWidgets.QDialog):
         Args:
             gruppe (str): Gruppenname welcher nicht deaktiviert wird
         """
+        if self.modus == Modus.TERMIN_SUCHEN:
+            return
 
         all_checkboxes = self.scrollAreaWidgetContents.findChildren(QtWidgets.QCheckBox)
 
