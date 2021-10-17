@@ -1,9 +1,9 @@
 # Danke, Ende.
 
-> Wow, was für ein Jahr. Angefangen im März als Hilfestellung bei der Terminsuche für Freunde und 
-> Familie haben wir heute (Sonntag, 17.10.2021) 
-> [knapp 40.000 Downloads](https://hanadigital.github.io/grev/?user=iamnotturner&repo=vaccipy) 
-> unserer Releases und unglaubliche 
+> Wow, was für ein Jahr. Angefangen im März als privates Projekt für Freunde und Familie, wurden 
+> unsere Releases bis heute (Sonntag, 17.10.2021) 
+> [knapp 40.000 Mal gedownloadet](https://hanadigital.github.io/grev/?user=iamnotturner&repo=vaccipy) 
+> und unglaubliche 
 > [6.465 € für für Ärzte ohne Grenzen](https://www.aerzte-ohne-grenzen.de/sich-engagieren/spendenaktion/online?cfd=pjs3m) 
 > gesammelt.
 > 
@@ -12,7 +12,7 @@
 > möchte ebenfalls **ein großes Dankeschön** an alle aussprechen, die sich an `vaccipy` 
 > beteiligten. Persönlich war das mein erstes Open-Source-Projekt, an dem ich *so richtig* 
 > mitgearbeitet habe. Ich konnte viel lernen und es hat mir sehr Spaß gemacht, mit euch gemeinsam an Lösungen zu tüfteln. 
-> Hoffentlich habt ihr ebenfalls etwas für euch mitgenommen - und wenn es nur ein Impftermin war.
+> Hoffentlich konntet ihr ebenfalls etwas für euch mitnehmen - und wenn es nur ein Impftermin war.
 > 
 > Habt eine gute Zeit. Danke, Ende.
 
