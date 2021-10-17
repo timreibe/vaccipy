@@ -1,3 +1,24 @@
+# Danke, Ende.
+
+> Wow, was für ein Jahr. Angefangen im März als privates Projekt für Freunde und Familie, wurden 
+> unsere Releases bis heute (Sonntag, 17.10.2021) 
+> [knapp 40.000 Mal gedownloadet](https://hanadigital.github.io/grev/?user=iamnotturner&repo=vaccipy) 
+> und unglaubliche 
+> [6.465 € für für Ärzte ohne Grenzen](https://www.aerzte-ohne-grenzen.de/sich-engagieren/spendenaktion/online?cfd=pjs3m) 
+> gesammelt.
+> 
+> Ende September haben die letzten Impfzentren geschlossen und die [Seite des Impftermin-Services](https://www.impfterminservice.de/danke) 
+> ist zu einer Landingpage mit Danksagungen geschrumpft. Damit ist unser Dienst getan und ich 
+> möchte ebenfalls **ein großes Dankeschön** an alle aussprechen, die sich an `vaccipy` 
+> beteiligten. Persönlich war das mein erstes Open-Source-Projekt, an dem ich *so richtig* 
+> mitgearbeitet habe. Ich konnte viel lernen und es hat mir sehr Spaß gemacht, mit euch gemeinsam an Lösungen zu tüfteln. 
+> Hoffentlich konntet ihr ebenfalls etwas für euch mitnehmen - und wenn es nur ein Impftermin war.
+> 
+> Habt eine gute Zeit. Danke, Ende.
+
+
+</br></br></br>
+
 # <img width="30px" src="images/spritze.ico"> vaccipy <img width="30px" src="images/spritze.ico">
 [![build](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml/badge.svg?branch=master)](https://github.com/iamnotturner/vaccipy/actions/workflows/build.yaml)
 [![deploy](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml/badge.svg)](https://github.com/iamnotturner/vaccipy/actions/workflows/deploy.yaml)
