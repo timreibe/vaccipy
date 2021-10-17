@@ -8,7 +8,7 @@
 > gesammelt.
 > 
 > Ende September haben die letzten Impfzentren geschlossen und die [Seite des Impftermin-Services](https://www.impfterminservice.de/danke) 
-> ist zu einer Landingpage mit Danksagung geschrumpft. Damit ist unser Dienst getan und ich 
+> ist zu einer Landingpage mit Danksagungen geschrumpft. Damit ist unser Dienst getan und ich 
 > möchte ebenfalls **ein großes Dankeschön** an alle aussprechen, die sich an `vaccipy` 
 > beteiligten. Persönlich war das mein erstes Open-Source-Projekt, an dem ich *so richtig* 
 > mitgearbeitet habe. Ich konnte viel lernen und es hat mir sehr Spaß gemacht, mit euch gemeinsam an Lösungen zu tüfteln. 
